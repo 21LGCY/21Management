@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { logout } from '@/lib/auth/client'
-import { LogOut, Menu, X, Users, Shield, Search } from 'lucide-react'
+import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 import type { UserRole } from '@/lib/types/database'
@@ -56,6 +56,40 @@ export default function Navbar({ role, username }: NavbarProps) {
                 >
                   <Search className="w-4 h-4" />
                   Tryouts
+                </Link>
+              </div>
+            )}
+
+            {/* Manager Navigation Links */}
+            {role === 'manager' && (
+              <div className="hidden md:flex items-center space-x-6">
+                <Link 
+                  href="/dashboard/manager"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+                >
+                  <Home className="w-4 h-4" />
+                  Overview
+                </Link>
+                <Link 
+                  href="/dashboard/manager/players"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+                >
+                  <Users className="w-4 h-4" />
+                  Player Management
+                </Link>
+                <Link 
+                  href="/dashboard/manager/teams"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+                >
+                  <Shield className="w-4 h-4" />
+                  Team/Roster Management
+                </Link>
+                <Link 
+                  href="/dashboard/manager/stats"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Stats Management
                 </Link>
               </div>
             )}
@@ -121,6 +155,44 @@ export default function Navbar({ role, username }: NavbarProps) {
                 >
                   <Search className="w-4 h-4" />
                   Tryouts
+                </Link>
+              </div>
+            )}
+
+            {/* Manager Links in Mobile */}
+            {role === 'manager' && (
+              <div className="space-y-2 pb-3 border-b border-gray-800">
+                <Link 
+                  href="/dashboard/manager"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Home className="w-4 h-4" />
+                  Overview
+                </Link>
+                <Link 
+                  href="/dashboard/manager/players"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users className="w-4 h-4" />
+                  Player Management
+                </Link>
+                <Link 
+                  href="/dashboard/manager/teams"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Shield className="w-4 h-4" />
+                  Team/Roster Management
+                </Link>
+                <Link 
+                  href="/dashboard/manager/stats"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Stats Management
                 </Link>
               </div>
             )}

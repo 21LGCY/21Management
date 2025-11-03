@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import Navbar from '@/components/Navbar'
 import StatCard from '@/components/StatCard'
-import { Users, Calendar, Trophy, Clock } from 'lucide-react'
+import { Users, Calendar, Trophy, Clock, Target, Award } from 'lucide-react'
 
 export default async function ManagerDashboard() {
   // Require manager role
@@ -54,7 +54,7 @@ export default async function ManagerDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, <span className="text-gradient">{user.full_name}</span>
+            Welcome back, <span className="text-gradient">{user.username}</span>
           </h1>
           <p className="text-gray-400">Manager Dashboard - Team and player management</p>
         </div>
