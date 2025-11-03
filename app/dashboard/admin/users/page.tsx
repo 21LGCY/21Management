@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth/server'
 import Navbar from '@/components/Navbar'
-import UserManagementClient from './UserManagementClient'
+import UserManagementClient from './UserManagementClientNew'
 
 export default async function UserManagementPage() {
   const user = await requireRole(['admin'])

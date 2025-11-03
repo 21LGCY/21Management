@@ -634,7 +634,6 @@ export default function UserForm({ userId }: UserFormProps) {
         </>
         )}
       </div>
-      
       {/* Form Actions */}
       <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
         <button
