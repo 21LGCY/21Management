@@ -13,6 +13,18 @@ interface UserFormProps {
 const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
 const STAFF_ROLES: StaffRole[] = ['Coach', 'Manager', 'Analyst']
 
+// All Valorant agents organized by role
+const VALORANT_AGENTS = [
+  // Duelists
+  'Jett', 'Phoenix', 'Reyna', 'Raze', 'Yoru', 'Neon', 'Iso',
+  // Initiators
+  'Sova', 'Breach', 'Skye', 'KAY/O', 'Fade', 'Gekko',
+  // Controllers
+  'Brimstone', 'Omen', 'Viper', 'Astra', 'Harbor', 'Clove',
+  // Sentinels
+  'Killjoy', 'Cypher', 'Sage', 'Chamber', 'Deadlock', 'Vyse',
+]
+
 const VALORANT_RANKS: ValorantRank[] = [
   'Ascendant 1', 'Ascendant 2', 'Ascendant 3',
   'Immortal 1', 'Immortal 2', 'Immortal 3',
@@ -56,6 +68,7 @@ export default function UserForm({ userId }: UserFormProps) {
     team_id: '',
     position: '' as ValorantRole | '',
     is_igl: false,
+    is_substitute: false,
     nationality: '',
     champion_pool: [] as string[],
     rank: '' as ValorantRank | '',
@@ -100,6 +113,7 @@ export default function UserForm({ userId }: UserFormProps) {
         team_id: data.team_id || '',
         position: data.position || '',
         is_igl: data.is_igl || false,
+        is_substitute: data.is_substitute || false,
         nationality: data.nationality || '',
         champion_pool: data.champion_pool || [],
         rank: data.rank || '',
@@ -123,12 +137,13 @@ export default function UserForm({ userId }: UserFormProps) {
           avatar_url: formData.avatar_url || null,
         }
 
-        // Only include player-specific fields if user is a player
+        // Update additional fields based on role
         if (formData.role === 'player') {
           updates.in_game_name = formData.in_game_name || null
           updates.team_id = formData.team_id || null
           updates.position = formData.position || null
           updates.is_igl = formData.is_igl
+          updates.is_substitute = formData.is_substitute
           updates.nationality = formData.nationality || null
           updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
           updates.rank = formData.rank || null
@@ -192,6 +207,7 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.team_id = formData.team_id || null
           updates.position = formData.position || null
           updates.is_igl = formData.is_igl
+          updates.is_substitute = formData.is_substitute
           updates.nationality = formData.nationality || null
           updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
           updates.rank = formData.rank || null
@@ -385,6 +401,19 @@ export default function UserForm({ userId }: UserFormProps) {
               IGL (In-Game Leader)
             </label>
           </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="is_substitute"
+              checked={formData.is_substitute}
+              onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
+              className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
+            />
+            <label htmlFor="is_substitute" className="ml-2 text-sm font-medium text-gray-300">
+              Substitute Player
+            </label>
+          </div>
         </div>
 
         {/* Additional Details */}
@@ -429,21 +458,26 @@ export default function UserForm({ userId }: UserFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Champion Pool
+              Agent Pool
             </label>
             <div className="flex gap-2 mb-2">
-              <input
-                type="text"
+              <select
                 value={championInput}
                 onChange={(e) => setChampionInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addChampion())}
-                placeholder="Add agent name..."
                 className="flex-1 px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              />
+              >
+                <option value="">Select agent...</option>
+                {VALORANT_AGENTS.map((agent) => (
+                  <option key={agent} value={agent}>
+                    {agent}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={addChampion}
-                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+                disabled={!championInput}
+                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add
               </button>
@@ -600,7 +634,7 @@ export default function UserForm({ userId }: UserFormProps) {
         </>
         )}
       </div>
-
+      
       {/* Form Actions */}
       <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
         <button

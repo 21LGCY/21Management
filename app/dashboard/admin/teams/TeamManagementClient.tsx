@@ -159,24 +159,13 @@ export default function TeamManagementClient() {
                   <h3 className="font-semibold text-white">{team.name}</h3>
                   <p className="text-sm text-gray-400">{team.game}</p>
                 </div>
-                <div className="flex gap-1">
-                  <Link
-                    href={`/dashboard/admin/teams/${team.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1 text-primary hover:bg-primary/10 rounded transition"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteTeam(team.id)
-                    }}
-                    className="p-1 text-red-400 hover:bg-red-400/10 rounded transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <Link
+                  href={`/dashboard/admin/teams/view/${team.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-sm font-medium text-primary hover:text-primary-dark transition"
+                >
+                  VIEW
+                </Link>
               </div>
             </div>
           ))}
