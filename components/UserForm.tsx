@@ -50,7 +50,6 @@ export default function UserForm({ userId }: UserFormProps) {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    full_name: '',
     role: 'player' as UserRole,
     in_game_name: '',
     team_id: '',
@@ -93,7 +92,6 @@ export default function UserForm({ userId }: UserFormProps) {
       setFormData({
         username: data.username,
         password: '', // Don't populate password for security
-        full_name: data.full_name,
         role: data.role,
         in_game_name: data.in_game_name || '',
         team_id: data.team_id || '',
@@ -116,7 +114,6 @@ export default function UserForm({ userId }: UserFormProps) {
       if (userId) {
         // Update existing user
         const updates: any = {
-          full_name: formData.full_name,
           updated_at: new Date().toISOString(),
         }
 
@@ -149,41 +146,59 @@ export default function UserForm({ userId }: UserFormProps) {
 
         if (error) throw error
       } else {
-        // Create new player
-        if (!formData.username || !formData.password || !formData.full_name) {
-          alert('Username, password, and full name are required')
+        // Create new user
+        if (!formData.username || !formData.password) {
+          alert('Username and password are required')
           setLoading(false)
           return
         }
 
+        console.log('Creating user with role:', formData.role)
+        console.log('Form data:', formData)
+
         const { data, error } = await supabase.rpc('create_user', {
           p_username: formData.username,
           p_password: formData.password,
-          p_full_name: formData.full_name,
           p_role: formData.role
         })
 
         if (error) throw error
 
-        // Update additional player fields (only for players)
-        if (formData.role === 'player') {
         const newUserId = data
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            in_game_name: formData.in_game_name || null,
-            team_id: formData.team_id || null,
-            position: formData.position || null,
-            is_igl: formData.is_igl,
-            nationality: formData.nationality || null,
-            champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
-            rank: formData.rank || null,
-            valorant_tracker_url: formData.valorant_tracker_url || null,
-            twitter_url: formData.twitter_url || null,
-          })
-          .eq('id', newUserId)
+        console.log('New user ID:', newUserId)
 
-        if (updateError) throw updateError
+        // Update additional fields for all users (player-specific fields only set for players)
+        const updates: any = {}
+        
+        if (formData.role === 'player') {
+          updates.in_game_name = formData.in_game_name || null
+          updates.team_id = formData.team_id || null
+          updates.position = formData.position || null
+          updates.is_igl = formData.is_igl
+          updates.nationality = formData.nationality || null
+          updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
+          updates.rank = formData.rank || null
+          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.twitter_url = formData.twitter_url || null
+        }
+
+        console.log('Updates to apply:', updates)
+
+        // Only update if there are fields to update
+        if (Object.keys(updates).length > 0) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', newUserId)
+
+          if (updateError) {
+            console.error('Update error:', updateError)
+            throw updateError
+          }
+          
+          console.log('Update successful')
+        } else {
+          console.log('No updates to apply (non-player role)')
         }
       }
 
@@ -244,19 +259,6 @@ export default function UserForm({ userId }: UserFormProps) {
               required={!userId}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             />
           </div>

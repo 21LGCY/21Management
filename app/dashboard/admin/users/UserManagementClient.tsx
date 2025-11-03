@@ -11,12 +11,24 @@ export default function UserManagementClient() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
+  const [teamFilter, setTeamFilter] = useState<string>('all')
+  const [positionFilter, setPositionFilter] = useState<string>('all')
+  const [teams, setTeams] = useState<any[]>([])
   
   const supabase = createClient()
 
   useEffect(() => {
     fetchUsers()
+    fetchTeams()
   }, [])
+
+  const fetchTeams = async () => {
+    const { data } = await supabase
+      .from('teams')
+      .select('id, name')
+      .order('name')
+    setTeams(data || [])
+  }
 
   const fetchUsers = async () => {
     try {
@@ -60,12 +72,13 @@ export default function UserManagementClient() {
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.in_game_name?.toLowerCase().includes(searchTerm.toLowerCase()))
     
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
+    const matchesTeam = teamFilter === 'all' || user.team_id === teamFilter || (teamFilter === 'none' && !user.team_id)
+    const matchesPosition = positionFilter === 'all' || user.position === positionFilter
     
-    return matchesSearch && matchesRole
+    return matchesSearch && matchesRole && matchesTeam && matchesPosition
   })
 
   const getRoleBadge = (role: UserRole) => {
@@ -91,8 +104,8 @@ export default function UserManagementClient() {
     <div>
       {/* Header with search and filters */}
       <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div className="flex-1 flex gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex-1 flex flex-wrap gap-4">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -112,6 +125,33 @@ export default function UserManagementClient() {
             <option value="admin">Admin</option>
             <option value="manager">Manager</option>
             <option value="player">Player</option>
+          </select>
+
+          <select
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value)}
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Teams</option>
+            <option value="none">No Team</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={positionFilter}
+            onChange={(e) => setPositionFilter(e.target.value)}
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Roles</option>
+            <option value="Duelist">Duelist</option>
+            <option value="Initiator">Initiator</option>
+            <option value="Controller">Controller</option>
+            <option value="Sentinel">Sentinel</option>
+            <option value="Flex">Flex</option>
           </select>
         </div>
 
@@ -137,7 +177,7 @@ export default function UserManagementClient() {
                   Account Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  IGN
+                  Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Team
@@ -175,8 +215,10 @@ export default function UserManagementClient() {
                   <tr key={user.id} className="hover:bg-dark transition">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="font-medium text-white">{user.full_name}</div>
-                        <div className="text-sm text-gray-400">@{user.username}</div>
+                        <div className="font-medium text-white">{user.username}</div>
+                        <div className="text-sm text-gray-400">
+                          {user.in_game_name ? `@${user.in_game_name}` : '-'}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -185,7 +227,7 @@ export default function UserManagementClient() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-white">{user.in_game_name || '-'}</span>
+                      <span className="text-white">{user.position || '-'}</span>
                       {user.is_igl && (
                         <span className="ml-2 px-2 py-0.5 text-xs bg-secondary/20 text-secondary border border-secondary/30 rounded">
                           IGL

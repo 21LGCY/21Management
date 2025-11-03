@@ -5,7 +5,6 @@ export interface AuthUser {
   user_id: string
   username: string
   role: 'admin' | 'manager' | 'player'
-  full_name: string
   avatar_url: string | null
 }
 
@@ -58,7 +57,6 @@ export function isAuthenticated(): boolean {
 export async function createUser(
   username: string,
   password: string,
-  fullName: string,
   role: 'admin' | 'manager' | 'player' = 'player'
 ): Promise<string> {
   const supabase = createClient()
@@ -67,7 +65,6 @@ export async function createUser(
     .rpc('create_user', {
       p_username: username,
       p_password: password,
-      p_full_name: fullName,
       p_role: role
     })
   

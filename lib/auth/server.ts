@@ -5,7 +5,6 @@ export interface AuthUser {
   user_id: string
   username: string
   role: 'admin' | 'manager' | 'player'
-  full_name: string
   avatar_url: string | null
 }
 
