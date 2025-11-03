@@ -17,6 +17,7 @@
 .DS_Store
 *.pem
 *.md
+*.sql
 
 # debug
 npm-debug.log*
