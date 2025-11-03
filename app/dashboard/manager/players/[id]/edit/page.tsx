@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import BackButton from '@/components/BackButton'
 import PlayerForm from '@/components/PlayerForm'
 
 interface EditPlayerPageProps {
@@ -33,13 +33,11 @@ export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href={`/dashboard/manager/players/${player.id}`}
-            className="inline-flex items-center gap-2 text-primary hover:text-primary-light mb-4 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Player Details
-          </Link>
+          <div className="mb-4">
+            <BackButton fallbackHref={`/dashboard/manager/players/${player.id}`}>
+              Back to Player Details
+            </BackButton>
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Edit Player
           </h1>

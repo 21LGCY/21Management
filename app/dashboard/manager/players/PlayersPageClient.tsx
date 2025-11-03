@@ -30,6 +30,7 @@ interface Player {
   phone?: string
   position?: string
   is_igl?: boolean
+  is_substitute?: boolean
   nationality?: string
   rank?: string
   champion_pool?: string[]
@@ -120,13 +121,6 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               <Users className="w-4 h-4 text-primary" />
               <span>{team?.name || 'Your Team'}</span>
             </div>
-            
-            <Link href="/dashboard/manager/players/new">
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                <Plus className="w-4 h-4" />
-                Add Player
-              </button>
-            </Link>
           </div>
         </div>
 
@@ -179,6 +173,11 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                     {player.is_igl && (
                       <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-medium">
                         IGL
+                      </span>
+                    )}
+                    {player.is_substitute && (
+                      <span className="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-lg font-medium">
+                        SUB
                       </span>
                     )}
                   </div>
@@ -292,17 +291,10 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               </p>
               <p className="text-gray-500 mb-4">
                 {players.length === 0 
-                  ? `Start by adding your first player to ${team?.name || 'your team'}`
+                  ? `Your roster for ${team?.name || 'your team'} is currently empty`
                   : 'Try adjusting your search criteria'
                 }
               </p>
-              {players.length === 0 && (
-                <Link href="/dashboard/manager/players/new">
-                  <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                    Add First Player
-                  </button>
-                </Link>
-              )}
             </div>
           )}
         </div>

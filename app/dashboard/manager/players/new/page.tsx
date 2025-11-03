@@ -1,7 +1,6 @@
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import PlayerForm from '@/components/PlayerForm'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import BackButton from '@/components/BackButton'
 
 export default async function NewPlayerPage() {
   const { user, teamId, team } = await requireManagerTeamAccess()
@@ -11,13 +10,11 @@ export default async function NewPlayerPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/dashboard/manager/players"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary-light mb-4 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Players
-          </Link>
+          <div className="mb-4">
+            <BackButton fallbackHref="/dashboard/manager/players">
+              Back to Players
+            </BackButton>
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Add New Player
           </h1>
@@ -25,7 +22,7 @@ export default async function NewPlayerPage() {
         </div>
         
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <PlayerForm teamId={teamId} teamName={team?.name || 'your team'} />
+          <PlayerForm teamId={teamId!} teamName={team?.name || 'your team'} />
         </div>
       </main>
     </div>

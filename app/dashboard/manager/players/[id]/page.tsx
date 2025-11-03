@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Mail, Phone, ExternalLink, Crown, User } from 'lucide-react'
+import BackButton from '@/components/BackButton'
+import { Edit, Mail, Phone, ExternalLink, Crown, User } from 'lucide-react'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -49,13 +50,11 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/dashboard/manager/players"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary-light mb-4 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Players
-          </Link>
+          <div className="mb-4">
+            <BackButton fallbackHref="/dashboard/manager/players">
+              Back to Players
+            </BackButton>
+          </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">
@@ -112,6 +111,11 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                   <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-lg font-medium flex items-center gap-1">
                     <Crown className="w-4 h-4" />
                     In-Game Leader
+                  </span>
+                )}
+                {player.is_substitute && (
+                  <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-sm rounded-lg font-medium">
+                    Substitute Player
                   </span>
                 )}
                 {player.nationality && (

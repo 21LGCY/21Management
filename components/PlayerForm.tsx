@@ -61,6 +61,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
     in_game_name: '',
     position: '' as ValorantRole | '',
     is_igl: false,
+    is_substitute: false,
     nationality: '',
     champion_pool: [] as string[],
     rank: '' as ValorantRank | '',
@@ -98,6 +99,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
       in_game_name: player.in_game_name || '',
       position: player.position || '',
       is_igl: player.is_igl || false,
+      is_substitute: player.is_substitute || false,
       nationality: player.nationality || '',
       champion_pool: player.champion_pool || [],
       rank: player.rank || '',
@@ -118,6 +120,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           in_game_name: formData.in_game_name || null,
           position: formData.position || null,
           is_igl: formData.is_igl,
+          is_substitute: formData.is_substitute,
           nationality: formData.nationality || null,
           champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
           rank: formData.rank || null,
@@ -159,6 +162,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           team_id: teamId, // Automatically assign to manager's team
           position: formData.position || null,
           is_igl: formData.is_igl,
+          is_substitute: formData.is_substitute,
           nationality: formData.nationality || null,
           champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
           rank: formData.rank || null,
@@ -331,6 +335,18 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 className="mr-2"
               />
               In-Game Leader (IGL)
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <input
+                type="checkbox"
+                checked={formData.is_substitute}
+                onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
+                className="mr-2"
+              />
+              Substitute Player
             </label>
           </div>
 

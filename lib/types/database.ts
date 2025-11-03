@@ -26,6 +26,7 @@ export interface UserProfile {
   in_game_name?: string
   position?: ValorantRole
   is_igl?: boolean
+  is_substitute?: boolean
   nationality?: string // ISO country code
   champion_pool?: string[] // Array of agent names
   rank?: ValorantRank
