@@ -1,5 +1,6 @@
 export type UserRole = 'admin' | 'manager' | 'player'
 export type ValorantRole = 'Duelist' | 'Initiator' | 'Controller' | 'Flex' | 'Sentinel'
+export type StaffRole = 'Coach' | 'Manager' | 'Analyst'
 export type ValorantRank = 
   | 'Ascendant 1' | 'Ascendant 2' | 'Ascendant 3'
   | 'Immortal 1' | 'Immortal 2' | 'Immortal 3'
@@ -19,8 +20,9 @@ export interface UserProfile {
   role: UserRole
   full_name: string
   avatar_url?: string
-  // Player-specific fields (only populated when role = 'player')
   team_id?: string
+  
+  // Player-specific fields (only populated when role = 'player')
   in_game_name?: string
   position?: ValorantRole
   is_igl?: boolean
@@ -30,6 +32,10 @@ export interface UserProfile {
   valorant_tracker_url?: string
   twitter_url?: string
   stats?: Record<string, any>
+  
+  // Manager-specific fields (only populated when role = 'manager')
+  staff_role?: StaffRole
+  
   created_at: string
   updated_at: string
 }

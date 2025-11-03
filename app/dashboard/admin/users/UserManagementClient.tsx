@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { UserProfile, UserRole } from '@/lib/types/database'
-import { Plus, Edit, Trash2, Search } from 'lucide-react'
+import { UserProfile, UserRole, ValorantRank } from '@/lib/types/database'
+import { Plus, Edit, Trash2, Search, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function UserManagementClient() {
   const [users, setUsers] = useState<UserProfile[]>([])
@@ -16,6 +17,21 @@ export default function UserManagementClient() {
   const [teams, setTeams] = useState<any[]>([])
   
   const supabase = createClient()
+
+  // Helper function to get rank image path
+  const getRankImage = (rank: ValorantRank | null | undefined): string | null => {
+    if (!rank) return null
+    const rankMap: Record<ValorantRank, string> = {
+      'Ascendant 1': '/images/asc_1_rank.webp',
+      'Ascendant 2': '/images/asc_2_rank.webp',
+      'Ascendant 3': '/images/asc_3_rank.webp',
+      'Immortal 1': '/images/immo_1_rank.webp',
+      'Immortal 2': '/images/immo_2_rank.webp',
+      'Immortal 3': '/images/immo_3_rank.webp',
+      'Radiant': '/images/rad_rank.webp',
+    }
+    return rankMap[rank] || null
+  }
 
   useEffect(() => {
     fetchUsers()
@@ -171,6 +187,9 @@ export default function UserManagementClient() {
             <thead className="bg-dark border-b border-gray-800">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Avatar
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -193,7 +212,7 @@ export default function UserManagementClient() {
             <tbody className="divide-y divide-gray-800">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="text-gray-400 text-lg">
                         {users.length === 0 ? 'No users yet' : 'No users found matching your filters'}
@@ -213,33 +232,82 @@ export default function UserManagementClient() {
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-dark transition">
+                    {/* Avatar */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {user.avatar_url ? (
+                          <Image
+                            src={user.avatar_url}
+                            alt={user.username}
+                            width={32}
+                            height={32}
+                            className="rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                            <UserIcon className="w-4 h-4 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    
+                    {/* User */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="font-medium text-white">{user.username}</div>
                         <div className="text-sm text-gray-400">
-                          {user.in_game_name ? `@${user.in_game_name}` : '-'}
+                          {user.role === 'player' && user.in_game_name ? `@${user.in_game_name}` : 
+                           user.role === 'manager' && user.staff_role ? user.staff_role : '-'}
                         </div>
                       </div>
                     </td>
+                    
+                    {/* Account Type */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs border rounded uppercase ${getRoleBadge(user.role)}`}>
                         {user.role}
                       </span>
                     </td>
+                    
+                    {/* Role - show staff_role for managers, position for players */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-white">{user.position || '-'}</span>
+                      <span className="text-white">
+                        {user.role === 'manager' ? (user.staff_role || '-') : 
+                         user.role === 'player' ? (user.position || '-') : '-'}
+                      </span>
                       {user.is_igl && (
                         <span className="ml-2 px-2 py-0.5 text-xs bg-secondary/20 text-secondary border border-secondary/30 rounded">
                           IGL
                         </span>
                       )}
                     </td>
+                    
+                    {/* Team */}
                     <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                       {(user as any).teams?.name || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                      {user.rank || '-'}
+                    
+                    {/* Rank - show image with tooltip */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.rank && getRankImage(user.rank) ? (
+                        <div className="relative group inline-block">
+                          <Image
+                            src={getRankImage(user.rank)!}
+                            alt={user.rank}
+                            width={32}
+                            height={32}
+                            className="rounded"
+                          />
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            {user.rank}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
+                    
+                    {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <Link

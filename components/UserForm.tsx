@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ValorantRole, ValorantRank, UserRole } from '@/lib/types/database'
+import { ValorantRole, ValorantRank, UserRole, StaffRole } from '@/lib/types/database'
 import { Save, X } from 'lucide-react'
 
 interface UserFormProps {
@@ -11,6 +11,7 @@ interface UserFormProps {
 }
 
 const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
+const STAFF_ROLES: StaffRole[] = ['Coach', 'Manager', 'Analyst']
 
 const VALORANT_RANKS: ValorantRank[] = [
   'Ascendant 1', 'Ascendant 2', 'Ascendant 3',
@@ -60,6 +61,8 @@ export default function UserForm({ userId }: UserFormProps) {
     rank: '' as ValorantRank | '',
     valorant_tracker_url: '',
     twitter_url: '',
+    staff_role: '' as StaffRole | '',
+    avatar_url: '',
   })
 
   const [championInput, setChampionInput] = useState('')
@@ -102,6 +105,8 @@ export default function UserForm({ userId }: UserFormProps) {
         rank: data.rank || '',
         valorant_tracker_url: data.valorant_tracker_url || '',
         twitter_url: data.twitter_url || '',
+        staff_role: data.staff_role || '',
+        avatar_url: data.avatar_url || '',
       })
     }
   }
@@ -115,6 +120,7 @@ export default function UserForm({ userId }: UserFormProps) {
         // Update existing user
         const updates: any = {
           updated_at: new Date().toISOString(),
+          avatar_url: formData.avatar_url || null,
         }
 
         // Only include player-specific fields if user is a player
@@ -126,6 +132,15 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.nationality = formData.nationality || null
           updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
           updates.rank = formData.rank || null
+          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.twitter_url = formData.twitter_url || null
+        }
+
+        // Include manager-specific fields if user is a manager
+        if (formData.role === 'manager') {
+          updates.team_id = formData.team_id || null
+          updates.staff_role = formData.staff_role || null
+          updates.nationality = formData.nationality || null
           updates.valorant_tracker_url = formData.valorant_tracker_url || null
           updates.twitter_url = formData.twitter_url || null
         }
@@ -168,7 +183,9 @@ export default function UserForm({ userId }: UserFormProps) {
         console.log('New user ID:', newUserId)
 
         // Update additional fields for all users (player-specific fields only set for players)
-        const updates: any = {}
+        const updates: any = {
+          avatar_url: formData.avatar_url || null,
+        }
         
         if (formData.role === 'player') {
           updates.in_game_name = formData.in_game_name || null
@@ -178,6 +195,14 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.nationality = formData.nationality || null
           updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
           updates.rank = formData.rank || null
+          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.twitter_url = formData.twitter_url || null
+        }
+
+        if (formData.role === 'manager') {
+          updates.team_id = formData.team_id || null
+          updates.staff_role = formData.staff_role || null
+          updates.nationality = formData.nationality || null
           updates.valorant_tracker_url = formData.valorant_tracker_url || null
           updates.twitter_url = formData.twitter_url || null
         }
@@ -261,6 +286,20 @@ export default function UserForm({ userId }: UserFormProps) {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Avatar URL
+            </label>
+            <input
+              type="url"
+              value={formData.avatar_url}
+              onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+              placeholder="https://example.com/avatar.jpg"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            />
+            <p className="mt-1 text-xs text-gray-500">Recommended: Square image, at least 256x256px</p>
           </div>
 
           <div>
@@ -430,6 +469,105 @@ export default function UserForm({ userId }: UserFormProps) {
         </div>
 
         {/* Links */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white">Links</h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Valorant Tracker URL
+            </label>
+            <input
+              type="url"
+              value={formData.valorant_tracker_url}
+              onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
+              placeholder="https://tracker.gg/valorant/profile/..."
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Twitter/X URL
+            </label>
+            <input
+              type="url"
+              value={formData.twitter_url}
+              onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
+              placeholder="https://x.com/..."
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+        </>
+        )}
+
+        {/* Manager Information - Only show for managers */}
+        {formData.role === 'manager' && (
+        <>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white">Manager Information</h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Team
+            </label>
+            <select
+              value={formData.team_id}
+              onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            >
+              <option value="">No Team</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Staff Role
+            </label>
+            <select
+              value={formData.staff_role}
+              onChange={(e) => setFormData({ ...formData, staff_role: e.target.value as StaffRole })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            >
+              <option value="">Select Role</option>
+              {STAFF_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Additional Details for Managers */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white">Additional Details</h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Nationality
+            </label>
+            <select
+              value={formData.nationality}
+              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            >
+              <option value="">Select Country</option>
+              {EUROPEAN_COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Links for Managers */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Links</h3>
           
