@@ -1,33 +1,32 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireRole } from '@/lib/auth/server'
+import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import Navbar from '@/components/Navbar'
 import { Shield, Users, Calendar, Clock, Plus, Search, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function ManagerTeamsPage() {
-  // Require manager role
-  const user = await requireRole(['manager'])
+  // Require manager role and get team access
+  const { user, teamId, team } = await requireManagerTeamAccess()
   
   const supabase = await createClient()
 
-  // Get all teams with player counts
-  const { data: teams } = await supabase
-    .from('teams')
-    .select(`
-      *,
-      profiles(id)
-    `)
-    .order('created_at', { ascending: false })
+  // Get player count for manager's team
+  const { count: playerCount } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .eq('role', 'player')
+    .eq('team_id', teamId)
 
-  // Get upcoming matches for scheduling overview
+  // Get upcoming matches for manager's team only
   const { data: upcomingMatches } = await supabase
     .from('matches')
     .select('*, teams(name)')
+    .eq('team_id', teamId)
     .gte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
     .limit(10)
 
-  // Get tryouts
+  // Get tryouts (if team-specific tryouts exist, otherwise general tryouts)
   const { data: tryouts } = await supabase
     .from('tryouts')
     .select('*')
@@ -44,20 +43,20 @@ export default async function ManagerTeamsPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             Team & Roster Management
           </h1>
-          <p className="text-gray-400">Manage teams, schedules, and tryouts</p>
+          <p className="text-gray-400">Manage {team?.name || 'your team'}, schedules, and tryouts</p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link href="/dashboard/manager/teams/new">
+          <Link href="/dashboard/manager/players/new">
             <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Shield className="w-5 h-5 text-primary" />
+                  <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-white">Create Team</p>
-                  <p className="text-sm text-gray-400">Add a new team</p>
+                  <p className="font-medium text-white">Add Player</p>
+                  <p className="text-sm text-gray-400">Recruit to your team</p>
                 </div>
               </div>
             </button>
@@ -93,68 +92,69 @@ export default async function ManagerTeamsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Teams Overview */}
+          {/* Your Team Overview */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Teams</h2>
-              <Link href="/dashboard/manager/teams/new">
+              <h2 className="text-xl font-semibold text-white">Your Team</h2>
+              <Link href={`/dashboard/manager/teams/${teamId}`}>
                 <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                  Add Team
+                  Manage Team
                 </button>
               </Link>
             </div>
             
-            <div className="space-y-4">
-              {teams && teams.length > 0 ? (
-                teams.map((team) => (
-                  <div
-                    key={team.id}
-                    className="p-4 bg-dark rounded-lg border border-gray-800 hover:border-primary/50 transition"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
-                          <Shield className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-white">{team.name}</h3>
-                          <p className="text-sm text-gray-400">{team.game}</p>
-                        </div>
-                      </div>
-                      <Link href={`/dashboard/manager/teams/${team.id}`}>
-                        <button className="text-primary hover:text-primary-light text-sm">
-                          Manage
-                        </button>
-                      </Link>
+            {team ? (
+              <div className="p-4 bg-dark rounded-lg border border-gray-800">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-primary" />
                     </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <Users className="w-4 h-4" />
-                        <span>{team.profiles?.length || 0} players</span>
-                      </div>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        team.status === 'active' 
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-gray-500/20 text-gray-400'
-                      }`}>
-                        {team.status || 'active'}
-                      </span>
+                    <div>
+                      <h3 className="text-xl font-medium text-white">{team.name}</h3>
+                      <p className="text-sm text-gray-400">{team.game}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No teams created yet</p>
-                  <Link href="/dashboard/manager/teams/new">
-                    <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                      Create First Team
-                    </button>
-                  </Link>
+                  <span className="px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-400">
+                    Active
+                  </span>
                 </div>
-              )}
-            </div>
+                
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
+                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm">Players</span>
+                    </div>
+                    <span className="text-2xl font-bold text-white">{playerCount || 0}</span>
+                  </div>
+                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
+                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">Matches</span>
+                    </div>
+                    <span className="text-2xl font-bold text-white">{upcomingMatches?.length || 0}</span>
+                  </div>
+                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
+                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
+                      <Trophy className="w-4 h-4" />
+                      <span className="text-sm">Tryouts</span>
+                    </div>
+                    <span className="text-2xl font-bold text-white">{tryouts?.length || 0}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-800 text-sm text-gray-400">
+                  Team created on {new Date(team.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">No team assigned</p>
+                <p className="text-gray-500">Contact an administrator to be assigned to a team</p>
+              </div>
+            )}
           </div>
 
           {/* Upcoming Matches */}
@@ -273,7 +273,7 @@ export default async function ManagerTeamsPage() {
                   <Users className="w-5 h-5 text-primary" />
                   <span className="text-white">Active Players</span>
                 </div>
-                <span className="text-blue-400 font-medium">{teams?.reduce((acc, team) => acc + (team.profiles?.length || 0), 0) || 0}</span>
+                <span className="text-blue-400 font-medium">{playerCount || 0}</span>
               </div>
               
               <div className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800">

@@ -1,34 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireRole } from '@/lib/auth/server'
+import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import Navbar from '@/components/Navbar'
 import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Trophy, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function ManagerStatsPage() {
-  // Require manager role
-  const user = await requireRole(['manager'])
+  // Require manager role and get team access
+  const { user, teamId, team } = await requireManagerTeamAccess()
   
   const supabase = await createClient()
 
-  // Get match statistics
+  // Get match statistics for manager's team only
   const { data: matches } = await supabase
     .from('matches')
     .select('*, teams(name)')
+    .eq('team_id', teamId)
     .order('scheduled_at', { ascending: false })
     .limit(20)
 
-  // Get player statistics
+  // Get player statistics for manager's team only
   const { data: players } = await supabase
     .from('profiles')
     .select('*, teams(name)')
     .eq('role', 'player')
+    .eq('team_id', teamId)
     .order('created_at', { ascending: false })
-
-  // Get teams for filtering
-  const { data: teams } = await supabase
-    .from('teams')
-    .select('*')
-    .order('name', { ascending: true })
 
   // Calculate some basic stats
   const totalMatches = matches?.length || 0
@@ -46,7 +42,7 @@ export default async function ManagerStatsPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             Statistics Management
           </h1>
-          <p className="text-gray-400">Track and manage game and player performance data</p>
+          <p className="text-gray-400">Track and manage {team?.name || 'your team'} performance data</p>
         </div>
 
         {/* Quick Actions */}
@@ -215,12 +211,10 @@ export default async function ManagerStatsPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Player Performance</h2>
               <div className="flex gap-2">
-                <select className="px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-400">
-                  <option>All Teams</option>
-                  {teams?.map((team) => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-2 px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-400">
+                  <Users className="w-4 h-4" />
+                  <span>{team?.name || 'Your Team'}</span>
+                </div>
                 <Link href="/dashboard/manager/stats/player/new">
                   <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
                     Add Stats
