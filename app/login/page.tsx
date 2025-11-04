@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { login } from '@/lib/auth/client'
 import { LogIn } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -35,9 +36,15 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Logo/Title */}
         <div className="text-center">
-          <h1 className="text-5xl font-bold mb-2">
-            <span className="text-gradient">Esports</span>
-          </h1>
+          <div className="flex justify-center mb-0">
+            <Image 
+              src="/images/21Legacy.webp" 
+              alt="21 Legacy" 
+              width={120} 
+              height={120}
+              className="w-30 h-30"
+            />
+          </div>
           <h2 className="text-2xl font-semibold text-gray-300">Management</h2>
           <p className="mt-4 text-gray-400">Sign in to your account</p>
         </div>
@@ -102,7 +109,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500">
-          Professional esports organization management
+          If you have any problems, contact the admins on Discord.
         </p>
       </div>
     </div>

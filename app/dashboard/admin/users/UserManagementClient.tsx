@@ -118,8 +118,22 @@ export default function UserManagementClient() {
 
   return (
     <div>
-      {/* Header with search and filters */}
-      <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      {/* Header with Add User button and count */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="text-gray-400">
+          Showing {filteredUsers.length} of {users.length} users
+        </div>
+        <Link
+          href="/dashboard/admin/users/new"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+        >
+          <Plus className="w-5 h-5" />
+          Add User
+        </Link>
+      </div>
+
+      {/* Search and filters */}
+      <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
         <div className="flex-1 flex flex-wrap gap-4">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -170,14 +184,6 @@ export default function UserManagementClient() {
             <option value="Flex">Flex</option>
           </select>
         </div>
-
-        <Link
-          href="/dashboard/admin/users/new"
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
-        >
-          <Plus className="w-5 h-5" />
-          Add User
-        </Link>
       </div>
 
       {/* Users Table */}
@@ -330,11 +336,6 @@ export default function UserManagementClient() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="mt-4 text-sm text-gray-400">
-        Showing {filteredUsers.length} of {users.length} users
       </div>
     </div>
   )

@@ -94,6 +94,20 @@ export default function UserManagementClient() {
 
   return (
     <div className="space-y-6">
+      {/* Add User Button and Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-gray-400 text-sm">
+          Showing {filteredUsers.length} of {users.length} users
+        </p>
+        <Link
+          href="/dashboard/admin/users/new"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+        >
+          <Plus className="w-4 h-4" />
+          Add User
+        </Link>
+      </div>
+
       {/* Search and Filters */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
         <div className="flex flex-col md:flex-row gap-4">
@@ -144,20 +158,6 @@ export default function UserManagementClient() {
             ))}
           </select>
         </div>
-      </div>
-
-      {/* Add User Button and Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-gray-400 text-sm">
-          Showing {filteredUsers.length} of {users.length} users
-        </p>
-        <Link
-          href="/dashboard/admin/users/new"
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
-        >
-          <Plus className="w-4 h-4" />
-          Add User
-        </Link>
       </div>
 
       {/* Users Grid */}

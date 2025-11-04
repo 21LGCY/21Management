@@ -5,6 +5,7 @@ import { logout } from '@/lib/auth/client'
 import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { UserRole } from '@/lib/types/database'
 
 interface NavbarProps {
@@ -28,9 +29,15 @@ export default function Navbar({ role, username }: NavbarProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-8">
             <Link href={`/dashboard/${role}`}>
-              <h1 className="text-2xl font-bold cursor-pointer">
-                <span className="text-gradient">Esports</span>
-              </h1>
+              <div className="flex items-center cursor-pointer">
+                <Image 
+                  src="/images/21.svg" 
+                  alt="21 Legacy" 
+                  width={40} 
+                  height={40}
+                  className="w-10 h-10"
+                />
+              </div>
             </Link>
             
             {/* Admin Navigation Links */}
