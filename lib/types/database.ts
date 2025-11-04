@@ -97,3 +97,42 @@ export interface Match {
   score?: string
   created_at: string
 }
+
+export type MatchType = 'Scrim' | 'Tournament' | 'Qualifier' | 'League' | 'Other'
+
+export interface MatchHistory {
+  id: string
+  team_id: string
+  opponent_name: string
+  match_date: string
+  map_name?: string
+  our_score: number
+  opponent_score: number
+  result: 'win' | 'loss' | 'draw'
+  match_type?: MatchType
+  notes?: string
+  created_at: string
+  created_by?: string
+}
+
+export interface PlayerMatchStats {
+  id: string
+  match_id: string
+  player_id: string
+  kills: number
+  deaths: number
+  assists: number
+  acs: number // Average Combat Score
+  headshot_percentage?: number
+  first_kills: number
+  first_deaths: number
+  plants: number
+  defuses: number
+  agent_played?: string
+  created_at: string
+}
+
+export interface MatchHistoryWithStats extends MatchHistory {
+  player_stats?: PlayerMatchStats[]
+  team?: { name: string }
+}

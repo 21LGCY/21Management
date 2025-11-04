@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Team, Match } from '@/lib/types/database'
-import { Plus, Edit, Trash2, Calendar, TrendingUp, Users } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, TrendingUp, Users, Trophy } from 'lucide-react'
 import Link from 'next/link'
+import RecordMatchModal from './RecordMatchModal'
 
 export default function TeamManagementClient() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -13,6 +14,7 @@ export default function TeamManagementClient() {
   const [loading, setLoading] = useState(true)
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [showMatchModal, setShowMatchModal] = useState(false)
+  const [showRecordMatchModal, setShowRecordMatchModal] = useState(false)
   
   const supabase = createClient()
 
@@ -130,6 +132,21 @@ export default function TeamManagementClient() {
 
   return (
     <div className="space-y-6">
+      {/* Header with Record Match Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Team Management</h1>
+          <p className="text-gray-400 mt-1">Manage teams and record match results</p>
+        </div>
+        <button
+          onClick={() => setShowRecordMatchModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+        >
+          <Trophy className="w-4 h-4" />
+          Record Match
+        </button>
+      </div>
+
       {/* Teams List */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -269,6 +286,19 @@ export default function TeamManagementClient() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Record Match Modal */}
+      {showRecordMatchModal && (
+        <RecordMatchModal
+          teams={teams}
+          onClose={() => setShowRecordMatchModal(false)}
+          onSuccess={() => {
+            setShowRecordMatchModal(false)
+            fetchData()
+            if (selectedTeam) fetchMatches(selectedTeam)
+          }}
+        />
       )}
 
       {/* Modals would go here - simplified for now */}
