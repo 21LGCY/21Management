@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Calendar, TrendingUp, Users, Trophy } from 'lucide-
 import Link from 'next/link'
 import Image from 'next/image'
 import RecordMatchModal from './RecordMatchModal'
+import MatchManagementModal from './MatchManagementModal'
 
 export default function TeamManagementClient() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -15,6 +16,7 @@ export default function TeamManagementClient() {
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [showMatchModal, setShowMatchModal] = useState(false)
   const [showRecordMatchModal, setShowRecordMatchModal] = useState(false)
+  const [showMatchManagementModal, setShowMatchManagementModal] = useState(false)
   
   const supabase = createClient()
 
@@ -171,13 +173,22 @@ export default function TeamManagementClient() {
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">Match History</h2>
-            <button
-              onClick={() => setShowRecordMatchModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
-            >
-              <Trophy className="w-4 h-4" />
-              Record Match
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowMatchManagementModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+              >
+                <Trophy className="w-4 h-4" />
+                Match Management
+              </button>
+              <button
+                onClick={() => setShowRecordMatchModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+              >
+                <Trophy className="w-4 h-4" />
+                Record Match
+              </button>
+            </div>
           </div>
           <p className="text-center text-gray-400 py-8">Match history will appear here</p>
         </div>
@@ -244,6 +255,18 @@ export default function TeamManagementClient() {
           onClose={() => setShowRecordMatchModal(false)}
           onSuccess={() => {
             setShowRecordMatchModal(false)
+            fetchData()
+            fetchAllMatches()
+          }}
+        />
+      )}
+
+      {/* Match Management Modal */}
+      {showMatchManagementModal && (
+        <MatchManagementModal
+          teams={teams}
+          onClose={() => setShowMatchManagementModal(false)}
+          onSuccess={() => {
             fetchData()
             fetchAllMatches()
           }}

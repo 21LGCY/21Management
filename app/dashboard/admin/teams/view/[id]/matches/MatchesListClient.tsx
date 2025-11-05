@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { MatchHistory } from '@/lib/types/database'
-import { ArrowLeft, Plus, Calendar, Trophy, TrendingUp, TrendingDown, Edit, Trash2, Target } from 'lucide-react'
+import { ArrowLeft, Plus, Calendar, Trophy, TrendingUp, TrendingDown, Edit, Trash2, Eye, Target } from 'lucide-react'
 import Link from 'next/link'
 
 interface MatchesListClientProps {
@@ -78,24 +78,24 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href={`/dashboard/admin/teams/view/${teamId}`}>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          <Link href="/dashboard/admin/teams">
+            <button className="p-2 hover:bg-gray-800 rounded-lg transition flex-shrink-0">
               <ArrowLeft className="w-5 h-5 text-gray-400" />
             </button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-white">{teamName} - Matches</h1>
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold text-white truncate">{teamName} - Matches</h1>
             <p className="text-gray-400 mt-1">View and manage all match history</p>
           </div>
         </div>
 
         <Link
           href={`/dashboard/admin/teams/view/${teamId}/matches/new`}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           Add Match
@@ -207,12 +207,12 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
               key={match.id}
               className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-2">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center flex-wrap gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-400">
+                      <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-400 whitespace-nowrap">
                         {new Date(match.match_date).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -223,11 +223,11 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                       </span>
                     </div>
                     {match.match_type && (
-                      <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
+                      <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded whitespace-nowrap">
                         {match.match_type}
                       </span>
                     )}
-                    <span className={`px-3 py-1 text-sm rounded-lg font-medium ${
+                    <span className={`px-3 py-1 text-sm rounded-lg font-medium whitespace-nowrap ${
                       match.result === 'win'
                         ? 'bg-green-500/20 text-green-300 border border-green-500/30'
                         : match.result === 'loss'
@@ -238,32 +238,34 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-2">
-                    <h3 className="text-xl font-bold text-white">
-                      {teamName} <span className="text-primary">{match.our_score}</span>
+                  <div className="mb-2">
+                    <h3 className="text-lg font-bold text-white break-words">
+                      <span className="text-white">{teamName}</span>{' '}
+                      <span className="text-primary">{match.our_score}</span>
                       <span className="text-gray-500 mx-2">-</span>
                       <span className={match.result === 'win' ? 'text-red-400' : 'text-primary'}>
                         {match.opponent_score}
-                      </span> {match.opponent_name}
+                      </span>{' '}
+                      <span className="text-white">{match.opponent_name}</span>
                     </h3>
                   </div>
 
                   {match.map_name && (
-                    <p className="text-sm text-gray-400">Map: {match.map_name}</p>
+                    <p className="text-sm text-gray-400 truncate">Map: {match.map_name}</p>
                   )}
 
                   {match.notes && (
-                    <p className="text-sm text-gray-400 mt-2">{match.notes}</p>
+                    <p className="text-sm text-gray-400 mt-2 line-clamp-2">{match.notes}</p>
                   )}
                 </div>
 
-                <div className="flex gap-2 ml-4">
+                <div className="flex gap-2 flex-shrink-0">
                   <Link href={`/dashboard/admin/teams/view/${teamId}/matches/${match.id}`}>
                     <button 
                       className="p-2 text-primary hover:bg-primary/10 rounded transition"
                       title="View Stats"
                     >
-                      <Target className="w-5 h-5" />
+                      <Eye className="w-5 h-5" />
                     </button>
                   </Link>
                   <Link href={`/dashboard/admin/teams/view/${teamId}/matches/${match.id}/edit`}>

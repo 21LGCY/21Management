@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import Navbar from '@/components/Navbar'
 import MatchesListClient from './MatchesListClient'
 
 interface MatchesListPageProps {
@@ -10,7 +11,7 @@ interface MatchesListPageProps {
 }
 
 export default async function MatchesListPage({ params }: MatchesListPageProps) {
-  await requireRole(['admin'])
+  const user = await requireRole(['admin'])
   
   const supabase = await createClient()
   
@@ -25,5 +26,13 @@ export default async function MatchesListPage({ params }: MatchesListPageProps) 
     redirect('/dashboard/admin/teams')
   }
 
-  return <MatchesListClient teamId={params.id} teamName={team.name} />
+  return (
+    <div className="min-h-screen bg-dark">
+      <Navbar role={user.role} username={user.username} />
+      
+      <main className="py-8">
+        <MatchesListClient teamId={params.id} teamName={team.name} />
+      </main>
+    </div>
+  )
 }
