@@ -1,19 +1,19 @@
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import Navbar from '@/components/Navbar'
-import StatsManagementClient from './StatsManagementClient'
+import RecordMatchClient from './RecordMatchClient'
 
-export default async function ManagerStatsPage() {
-  // Require manager role and get team access
+export default async function RecordMatchPage() {
   const { user, teamId, team } = await requireManagerTeamAccess()
 
   return (
     <div className="min-h-screen bg-dark">
       <Navbar role={user.role} username={user.username} />
-      <StatsManagementClient 
-        user={user} 
-        teamId={teamId!} 
-        teamName={team?.name || 'Your Team'} 
-      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <RecordMatchClient 
+          teamId={teamId!} 
+          teamName={team?.name || 'Your Team'} 
+        />
+      </div>
     </div>
   )
 }

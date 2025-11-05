@@ -66,7 +66,7 @@ export default async function TeamRosterPage() {
               <h1 className="text-3xl font-bold text-white mb-2">
                 Team Roster Management
               </h1>
-              <p className="text-gray-400">{teamDetails?.name || 'Your Team'} • Manage your squad</p>
+              <p className="text-gray-400">Manage your squad</p>
             </div>
             <div className="flex gap-3">
               <button className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition">
@@ -140,35 +140,6 @@ export default async function TeamRosterPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Team Information */}
-            <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Team Information</h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <p className="text-gray-400 text-sm">Team Name</p>
-                  <p className="text-white font-medium">{teamDetails?.name || 'Not set'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Team Tag</p>
-                  <p className="text-white font-medium">{teamDetails?.tag || 'Not set'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Game</p>
-                  <p className="text-white font-medium">{teamDetails?.game || 'VALORANT'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Created</p>
-                  <p className="text-white font-medium">
-                    {teamDetails?.created_at ? 
-                      new Date(teamDetails.created_at).toLocaleDateString() : 
-                      'Unknown'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Upcoming Matches */}
             {upcomingMatches && upcomingMatches.length > 0 && (
               <div className="bg-dark-card border border-gray-800 rounded-lg p-6">

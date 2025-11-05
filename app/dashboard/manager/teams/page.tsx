@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import Navbar from '@/components/Navbar'
+import SchedulePreview from '@/components/SchedulePreview'
 import { Shield, Users, Calendar, Clock, Plus, Search, Trophy } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,15 +17,6 @@ export default async function ManagerTeamsPage() {
     .select('*', { count: 'exact', head: true })
     .eq('role', 'player')
     .eq('team_id', teamId)
-
-  // Get upcoming matches for manager's team only
-  const { data: upcomingMatches } = await supabase
-    .from('matches')
-    .select('*, teams(name)')
-    .eq('team_id', teamId)
-    .gte('scheduled_at', new Date().toISOString())
-    .order('scheduled_at', { ascending: true })
-    .limit(10)
 
   // Get tryouts (if team-specific tryouts exist, otherwise general tryouts)
   const { data: tryouts } = await supabase
@@ -47,21 +39,7 @@ export default async function ManagerTeamsPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link href="/dashboard/manager/players/new">
-            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Add Player</p>
-                  <p className="text-sm text-gray-400">Recruit to your team</p>
-                </div>
-              </div>
-            </button>
-          </Link>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Link href="/dashboard/manager/teams/schedule">
             <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
               <div className="flex items-center gap-3">
@@ -69,8 +47,8 @@ export default async function ManagerTeamsPage() {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-white">Schedule Match</p>
-                  <p className="text-sm text-gray-400">Plan upcoming games</p>
+                  <p className="font-medium text-white">Schedule</p>
+                  <p className="text-sm text-gray-400">Manage team schedule</p>
                 </div>
               </div>
             </button>
@@ -91,115 +69,9 @@ export default async function ManagerTeamsPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Your Team Overview */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Your Team</h2>
-              <Link href={`/dashboard/manager/teams/${teamId}`}>
-                <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                  Manage Team
-                </button>
-              </Link>
-            </div>
-            
-            {team ? (
-              <div className="p-4 bg-dark rounded-lg border border-gray-800">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-medium text-white">{team.name}</h3>
-                      <p className="text-sm text-gray-400">{team.game}</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-400">
-                    Active
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
-                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm">Players</span>
-                    </div>
-                    <span className="text-2xl font-bold text-white">{playerCount || 0}</span>
-                  </div>
-                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
-                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm">Matches</span>
-                    </div>
-                    <span className="text-2xl font-bold text-white">{upcomingMatches?.length || 0}</span>
-                  </div>
-                  <div className="text-center p-3 bg-dark-card rounded-lg border border-gray-800">
-                    <div className="flex items-center gap-2 justify-center text-gray-400 mb-1">
-                      <Trophy className="w-4 h-4" />
-                      <span className="text-sm">Tryouts</span>
-                    </div>
-                    <span className="text-2xl font-bold text-white">{tryouts?.length || 0}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-800 text-sm text-gray-400">
-                  Team created on {new Date(team.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Shield className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-4">No team assigned</p>
-                <p className="text-gray-500">Contact an administrator to be assigned to a team</p>
-              </div>
-            )}
-          </div>
-
-          {/* Upcoming Matches */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Upcoming Matches</h2>
-              <Link href="/dashboard/manager/teams/schedule">
-                <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                  Schedule Match
-                </button>
-              </Link>
-            </div>
-            
-            <div className="space-y-4">
-              {upcomingMatches && upcomingMatches.length > 0 ? (
-                upcomingMatches.map((match) => (
-                  <div
-                    key={match.id}
-                    className="p-4 bg-dark rounded-lg border border-gray-800"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-white">
-                        {match.teams?.name} vs {match.opponent}
-                      </h3>
-                      <div className="flex items-center gap-1 text-gray-400 text-sm">
-                        <Clock className="w-4 h-4" />
-                        <span>{new Date(match.scheduled_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-400">{match.tournament}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No upcoming matches</p>
-                  <Link href="/dashboard/manager/teams/schedule">
-                    <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                      Schedule Match
-                    </button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-6">
+          {/* Weekly Schedule Preview */}
+          {teamId && <SchedulePreview teamId={teamId} />}
 
           {/* Recent Tryouts */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
@@ -274,14 +146,6 @@ export default async function ManagerTeamsPage() {
                   <span className="text-white">Active Players</span>
                 </div>
                 <span className="text-blue-400 font-medium">{playerCount || 0}</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800">
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <span className="text-white">Matches This Month</span>
-                </div>
-                <span className="text-yellow-400 font-medium">{upcomingMatches?.length || 0}</span>
               </div>
             </div>
           </div>

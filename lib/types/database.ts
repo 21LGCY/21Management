@@ -136,3 +136,25 @@ export interface MatchHistoryWithStats extends MatchHistory {
   player_stats?: PlayerMatchStats[]
   team?: { name: string }
 }
+
+export type ActivityType = 
+  | 'practice'
+  | 'individual_training'
+  | 'group_training'
+  | 'official_match'
+  | 'tournament'
+  | 'meeting'
+
+export interface ScheduleActivity {
+  id: string
+  team_id: string
+  type: ActivityType
+  title: string
+  description?: string
+  day_of_week: number // 0 = Sunday, 1 = Monday, etc.
+  time_slot: string // e.g., "1:00 PM"
+  duration: number // in hours
+  created_by: string
+  created_at: string
+  updated_at: string
+}
