@@ -4,17 +4,74 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus } from '@/lib/types/database'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus, X } from 'lucide-react'
 import Link from 'next/link'
+
+const VALORANT_AGENTS = [
+  'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
+  'Deadlock', 'Fade', 'Gekko', 'Harbor', 'Iso', 'Jett', 
+  'KAY/O', 'Killjoy', 'Neon', 'Omen', 'Phoenix', 'Raze', 
+  'Reyna', 'Sage', 'Skye', 'Sova', 'Viper', 'Vyse', 'Yoru'
+]
+
+const EUROPEAN_COUNTRIES = [
+  { code: 'AL', name: 'Albania' },
+  { code: 'AD', name: 'Andorra' },
+  { code: 'AT', name: 'Austria' },
+  { code: 'BY', name: 'Belarus' },
+  { code: 'BE', name: 'Belgium' },
+  { code: 'BA', name: 'Bosnia and Herzegovina' },
+  { code: 'BG', name: 'Bulgaria' },
+  { code: 'HR', name: 'Croatia' },
+  { code: 'CY', name: 'Cyprus' },
+  { code: 'CZ', name: 'Czech Republic' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'EE', name: 'Estonia' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'FR', name: 'France' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'GR', name: 'Greece' },
+  { code: 'HU', name: 'Hungary' },
+  { code: 'IS', name: 'Iceland' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'XK', name: 'Kosovo' },
+  { code: 'LV', name: 'Latvia' },
+  { code: 'LI', name: 'Liechtenstein' },
+  { code: 'LT', name: 'Lithuania' },
+  { code: 'LU', name: 'Luxembourg' },
+  { code: 'MT', name: 'Malta' },
+  { code: 'MD', name: 'Moldova' },
+  { code: 'MC', name: 'Monaco' },
+  { code: 'ME', name: 'Montenegro' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'MK', name: 'North Macedonia' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'RO', name: 'Romania' },
+  { code: 'RU', name: 'Russia' },
+  { code: 'SM', name: 'San Marino' },
+  { code: 'RS', name: 'Serbia' },
+  { code: 'SK', name: 'Slovakia' },
+  { code: 'SI', name: 'Slovenia' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'CH', name: 'Switzerland' },
+  { code: 'TR', name: 'Turkey' },
+  { code: 'UA', name: 'Ukraine' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'VA', name: 'Vatican City' },
+]
 
 export default function NewScoutForm() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [showAgentDropdown, setShowAgentDropdown] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
     team_category: '21L' as TeamCategory,
-    full_name: '',
     in_game_name: '',
     position: '' as ValorantRole | '',
     is_igl: false,
@@ -23,7 +80,6 @@ export default function NewScoutForm() {
     rank: '' as ValorantRank | '',
     valorant_tracker_url: '',
     twitter_url: '',
-    discord: '',
     status: 'not_contacted' as TryoutStatus,
     managed_by: '',
     contacted_by: '',
@@ -39,10 +95,21 @@ export default function NewScoutForm() {
       const { error } = await supabase
         .from('profiles_tryouts')
         .insert([{
-          ...formData,
+          username: formData.username,
+          team_category: formData.team_category,
+          in_game_name: formData.in_game_name || null,
           position: formData.position || null,
-          rank: formData.rank || null,
+          is_igl: formData.is_igl,
+          nationality: formData.nationality || null,
           champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
+          rank: formData.rank || null,
+          valorant_tracker_url: formData.valorant_tracker_url || null,
+          twitter_url: formData.twitter_url || null,
+          status: formData.status,
+          managed_by: formData.managed_by || null,
+          contacted_by: formData.contacted_by || null,
+          notes: formData.notes || null,
+          links: formData.links || null,
         }])
 
       if (error) throw error
@@ -57,9 +124,25 @@ export default function NewScoutForm() {
     }
   }
 
-  const handleChampionPoolChange = (value: string) => {
-    const agents = value.split(',').map(a => a.trim()).filter(Boolean)
-    setFormData({ ...formData, champion_pool: agents })
+  const toggleAgent = (agent: string) => {
+    if (formData.champion_pool.includes(agent)) {
+      setFormData({ 
+        ...formData, 
+        champion_pool: formData.champion_pool.filter(a => a !== agent) 
+      })
+    } else {
+      setFormData({ 
+        ...formData, 
+        champion_pool: [...formData.champion_pool, agent] 
+      })
+    }
+  }
+
+  const removeAgent = (agent: string) => {
+    setFormData({ 
+      ...formData, 
+      champion_pool: formData.champion_pool.filter(a => a !== agent) 
+    })
   }
 
   return (
@@ -72,7 +155,6 @@ export default function NewScoutForm() {
         Back to Scouting Database
       </Link>
 
-      {/* Basic Info */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Basic Information</h2>
         
@@ -87,13 +169,13 @@ export default function NewScoutForm() {
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Discord username or in-game name"
+              placeholder="Discord username"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team Category <span className="text-red-500">*</span>
+              Team <span className="text-red-500">*</span>
             </label>
             <select
               required
@@ -108,34 +190,38 @@ export default function NewScoutForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-            <input
-              type="text"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Player's real name"
-            />
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">In-Game Name</label>
             <input
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Alternative IGN"
+              placeholder="IGN"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
+            <select
+              value={formData.nationality}
+              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            >
+              <option value="">Select Country</option>
+              {EUROPEAN_COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Game Info */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Game Information</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
             <select
@@ -143,12 +229,12 @@ export default function NewScoutForm() {
               onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             >
-              <option value="">Select Position</option>
-              <option value="duelist">Duelist</option>
-              <option value="controller">Controller</option>
-              <option value="initiator">Initiator</option>
-              <option value="sentinel">Sentinel</option>
-              <option value="flex">Flex</option>
+              <option value="">Select</option>
+              <option value="Duelist">Duelist</option>
+              <option value="Controller">Controller</option>
+              <option value="Initiator">Initiator</option>
+              <option value="Sentinel">Sentinel</option>
+              <option value="Flex">Flex</option>
             </select>
           </div>
 
@@ -159,45 +245,15 @@ export default function NewScoutForm() {
               onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             >
-              <option value="">Select Rank</option>
-              <option value="iron1">Iron 1</option>
-              <option value="iron2">Iron 2</option>
-              <option value="iron3">Iron 3</option>
-              <option value="bronze1">Bronze 1</option>
-              <option value="bronze2">Bronze 2</option>
-              <option value="bronze3">Bronze 3</option>
-              <option value="silver1">Silver 1</option>
-              <option value="silver2">Silver 2</option>
-              <option value="silver3">Silver 3</option>
-              <option value="gold1">Gold 1</option>
-              <option value="gold2">Gold 2</option>
-              <option value="gold3">Gold 3</option>
-              <option value="platinum1">Platinum 1</option>
-              <option value="platinum2">Platinum 2</option>
-              <option value="platinum3">Platinum 3</option>
-              <option value="diamond1">Diamond 1</option>
-              <option value="diamond2">Diamond 2</option>
-              <option value="diamond3">Diamond 3</option>
-              <option value="ascendant1">Ascendant 1</option>
-              <option value="ascendant2">Ascendant 2</option>
-              <option value="ascendant3">Ascendant 3</option>
-              <option value="immortal1">Immortal 1</option>
-              <option value="immortal2">Immortal 2</option>
-              <option value="immortal3">Immortal 3</option>
-              <option value="radiant">Radiant</option>
+              <option value="">Select</option>
+              <option value="Ascendant1">Ascendant 1</option>
+              <option value="Ascendant2">Ascendant 2</option>
+              <option value="Ascendant3">Ascendant 3</option>
+              <option value="Immortal1">Immortal 1</option>
+              <option value="Immortal2">Immortal 2</option>
+              <option value="Immortal3">Immortal 3</option>
+              <option value="Radiant">Radiant</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
-            <input
-              type="text"
-              value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="ISO country code (e.g., FR, UK, DE)"
-              maxLength={2}
-            />
           </div>
 
           <div className="flex items-center">
@@ -208,53 +264,90 @@ export default function NewScoutForm() {
                 onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
                 className="w-4 h-4 text-primary bg-dark border-gray-800 rounded focus:ring-primary"
               />
-              Is IGL (In-Game Leader)
+              Is IGL
             </label>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
-          <input
-            type="text"
-            value={formData.champion_pool.join(', ')}
-            onChange={(e) => handleChampionPoolChange(e.target.value)}
-            className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            placeholder="Comma-separated agent names (e.g., Jett, Raze, Omen)"
-          />
-          <p className="text-xs text-gray-500 mt-1">Enter agent names separated by commas</p>
+          
+          {/* Selected Agents Display */}
+          {formData.champion_pool.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.champion_pool.map((agent) => (
+                <span
+                  key={agent}
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg text-sm"
+                >
+                  {agent}
+                  <button
+                    type="button"
+                    onClick={() => removeAgent(agent)}
+                    className="hover:text-white transition"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Agent Selector Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowAgentDropdown(!showAgentDropdown)}
+              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-left text-gray-400 hover:border-gray-700 focus:outline-none focus:border-primary flex items-center justify-between"
+            >
+              <span>{formData.champion_pool.length > 0 ? `${formData.champion_pool.length} agent(s) selected` : 'Select agents...'}</span>
+              <Plus className="w-4 h-4" />
+            </button>
+
+            {showAgentDropdown && (
+              <div className="absolute z-10 w-full mt-1 bg-dark border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {VALORANT_AGENTS.map((agent) => (
+                  <button
+                    key={agent}
+                    type="button"
+                    onClick={() => {
+                      toggleAgent(agent)
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-800 transition ${
+                      formData.champion_pool.includes(agent)
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    {agent}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Click to add/remove agents from the pool
+          </p>
         </div>
       </div>
 
-      {/* Contact & Links */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Contact & Links</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Discord</label>
-            <input
-              type="text"
-              value={formData.discord}
-              onChange={(e) => setFormData({ ...formData, discord: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Discord username or ID"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">VALORANT Tracker URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Tracker URL</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
               onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="https://tracker.gg/valorant/profile/..."
+              placeholder="https://tracker.gg/..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter/X URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
             <input
               type="url"
               value={formData.twitter_url}
@@ -264,24 +357,23 @@ export default function NewScoutForm() {
             />
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-300 mb-2">Other Links</label>
             <input
               type="text"
               value={formData.links}
               onChange={(e) => setFormData({ ...formData, links: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Additional links (YouTube, portfolio, etc.)"
+              placeholder="YouTube, portfolio, etc."
             />
           </div>
         </div>
       </div>
 
-      {/* Scout Management */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Scout Management</h2>
+        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Management</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
             <select
@@ -301,24 +393,28 @@ export default function NewScoutForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Managed By</label>
-            <input
-              type="text"
+            <select
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Staff member managing this scout"
-            />
+            >
+              <option value="">None</option>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+            </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Contacted By</label>
-            <input
-              type="text"
+            <select
               value={formData.contacted_by}
               onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
               className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Staff member who first contacted"
-            />
+            >
+              <option value="">None</option>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+            </select>
           </div>
         </div>
 
@@ -329,12 +425,11 @@ export default function NewScoutForm() {
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             rows={4}
             className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            placeholder="Internal notes about this player..."
+            placeholder="Internal notes..."
           />
         </div>
       </div>
 
-      {/* Submit */}
       <div className="flex justify-end gap-4 pt-4 border-t border-gray-800">
         <Link
           href="/dashboard/admin/tryouts?tab=scouting"
@@ -353,3 +448,4 @@ export default function NewScoutForm() {
     </form>
   )
 }
+
