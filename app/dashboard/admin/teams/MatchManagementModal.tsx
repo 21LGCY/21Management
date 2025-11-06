@@ -66,15 +66,6 @@ export default function MatchManagementModal({ teams, onClose, onSuccess }: Matc
     }
   }
 
-  const matchStats = matches.length > 0 ? {
-    total: matches.length,
-    wins: matches.filter(m => m.result === 'win').length,
-    losses: matches.filter(m => m.result === 'loss').length,
-    winRate: matches.length > 0 
-      ? Math.round((matches.filter(m => m.result === 'win').length / matches.length) * 100)
-      : 0
-  } : null
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-dark-card border border-gray-800 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -94,44 +85,34 @@ export default function MatchManagementModal({ teams, onClose, onSuccess }: Matc
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Team Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
-            <select
-              value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-            >
-              <option value="">Choose a team...</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name} - {team.game}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Match Stats Overview */}
-          {selectedTeamId && matchStats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-dark rounded-lg p-4 border border-gray-700">
-                <p className="text-sm text-gray-400 mb-1">Total</p>
-                <p className="text-2xl font-bold text-white">{matchStats.total}</p>
-              </div>
-              <div className="bg-dark rounded-lg p-4 border border-gray-700">
-                <p className="text-sm text-gray-400 mb-1">Wins</p>
-                <p className="text-2xl font-bold text-green-400">{matchStats.wins}</p>
-              </div>
-              <div className="bg-dark rounded-lg p-4 border border-gray-700">
-                <p className="text-sm text-gray-400 mb-1">Losses</p>
-                <p className="text-2xl font-bold text-red-400">{matchStats.losses}</p>
-              </div>
-              <div className="bg-dark rounded-lg p-4 border border-gray-700">
-                <p className="text-sm text-gray-400 mb-1">Win Rate</p>
-                <p className="text-2xl font-bold text-primary">{matchStats.winRate}%</p>
-              </div>
+          {/* Team Selector & View All Button */}
+          <div className="flex items-end gap-4">
+            <div className={`flex-1 ${selectedTeamId ? 'max-w-4xl' : ''}`}>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
+              <select
+                value={selectedTeamId}
+                onChange={(e) => setSelectedTeamId(e.target.value)}
+                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+              >
+                <option value="">Choose a team...</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} - {team.game}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
+            
+            {selectedTeamId && (
+              <Link
+                href={`/dashboard/admin/teams/view/${selectedTeamId}/matches`}
+                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg transition font-medium shadow-lg whitespace-nowrap"
+              >
+                <Eye className="w-5 h-5" />
+                View All Matches
+              </Link>
+            )}
+          </div>
 
           {/* Matches List */}
           {loading ? (
@@ -150,19 +131,15 @@ export default function MatchManagementModal({ teams, onClose, onSuccess }: Matc
               <p className="text-gray-500 text-sm">Use "Record Match" to add match results</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-400">All Matches ({matches.length})</p>
-                {selectedTeamId && (
-                  <Link
-                    href={`/dashboard/admin/teams/view/${selectedTeamId}/matches`}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 rounded-lg transition font-medium"
-                  >
-                    View All Matches
-                  </Link>
-                )}
+            <div className="space-y-4">
+              {/* Last 5 Matches Header */}
+              <div className="flex items-center justify-between border-b border-gray-700 pb-2">
+                <h3 className="text-lg font-semibold text-white">Last 5 Matches</h3>
+                <span className="text-sm text-gray-400">{Math.min(5, matches.length)} of {matches.length}</span>
               </div>
-              {matches.map((match) => (
+
+              {/* Matches */}
+              {matches.slice(0, 5).map((match) => (
                 <div
                   key={match.id}
                   className="bg-dark border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition"

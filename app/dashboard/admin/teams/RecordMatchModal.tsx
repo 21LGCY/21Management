@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Team, UserProfile, MatchType } from '@/lib/types/database'
-import { X, Save, Plus, Trash2 } from 'lucide-react'
+import { X, Save, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface RecordMatchModalProps {
   teams: Team[]
@@ -44,6 +44,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
   // Player statistics
   const [playerStats, setPlayerStats] = useState<PlayerStats[]>([])
+  const [expandedPlayers, setExpandedPlayers] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (selectedTeam) {
@@ -399,63 +400,100 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                     <p className="mt-1">Click "Add Player" to record player performance.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {playerStats.map((stat, index) => (
-                      <div key={index} className="border border-gray-700 rounded-lg p-3 relative">
-                        <button
-                          type="button"
-                          onClick={() => removePlayerStat(index)}
-                          className="absolute top-3 right-3 p-1.5 text-red-400 hover:bg-red-400/10 rounded transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-
-                        <h4 className="text-md font-semibold text-white mb-3">Player {index + 1}</h4>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          <div className="col-span-2">
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Player *</label>
-                            <select
-                              value={stat.playerId}
-                              onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
-                              className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
-                              required
+                  <div className="space-y-3">
+                    {playerStats.map((stat, index) => {
+                      const isExpanded = expandedPlayers.has(index)
+                      const playerName = players.find(p => p.id === stat.playerId)?.username || `Player ${index + 1}`
+                      
+                      return (
+                        <div key={index} className="border border-gray-700 rounded-lg overflow-hidden">
+                          {/* Header - Always visible */}
+                          <div className="bg-dark-card p-3 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newExpanded = new Set(expandedPlayers)
+                                if (isExpanded) {
+                                  newExpanded.delete(index)
+                                } else {
+                                  newExpanded.add(index)
+                                }
+                                setExpandedPlayers(newExpanded)
+                              }}
+                              className="flex items-center gap-2 flex-1 text-left hover:text-primary transition"
                             >
-                              <option value="">Select Player</option>
-                              {players
-                                .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
-                                .map(player => (
-                                  <option key={player.id} value={player.id}>
-                                    {player.username} {player.in_game_name ? `(${player.in_game_name})` : ''}
-                                  </option>
-                                ))}
-                            </select>
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 flex-shrink-0" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                              )}
+                              <div className="flex-1">
+                                <span className="font-semibold text-white">{playerName}</span>
+                                {stat.agentPlayed && (
+                                  <span className="ml-2 text-sm text-gray-400">• {stat.agentPlayed}</span>
+                                )}
+                                {!isExpanded && (
+                                  <span className="ml-3 text-xs text-gray-500">
+                                    K: {stat.kills} / D: {stat.deaths} / A: {stat.assists} / ACS: {stat.acs}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removePlayerStat(index)}
+                              className="p-1.5 text-red-400 hover:bg-red-400/10 rounded transition ml-2"
+                              title="Remove player"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
 
-                          <div className="col-span-2">
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Agent *</label>
-                            <input
-                              type="text"
-                              value={stat.agentPlayed}
-                              onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                              placeholder="e.g., Jett"
-                              className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
-                              required
-                            />
-                          </div>
+                          {/* Expandable content */}
+                          {isExpanded && (
+                            <div className="p-3 bg-dark">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="col-span-2">
+                                  <label className="block text-xs font-medium text-gray-400 mb-1">Player *</label>
+                                  <select
+                                    value={stat.playerId}
+                                    onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
+                                    className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
+                                    required
+                                  >
+                                    <option value="">Select Player</option>
+                                    {players
+                                      .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
+                                      .map(player => (
+                                        <option key={player.id} value={player.id}>
+                                          {player.username} {player.in_game_name ? `(${player.in_game_name})` : ''}
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
 
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">K</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">D</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">A</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">ACS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">HS%</label><input type="number" min="0" max="100" step="0.1" value={stat.headshotPercent} onChange={(e) => updatePlayerStat(index, 'headshotPercent', parseFloat(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">FK</label><input type="number" min="0" value={stat.firstKills} onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">FD</label><input type="number" min="0" value={stat.firstDeaths} onChange={(e) => updatePlayerStat(index, 'firstDeaths', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">Plants</label><input type="number" min="0" value={stat.plants} onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-xs font-medium text-gray-400 mb-1">Defuses</label><input type="number" min="0" value={stat.defuses} onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div className="col-span-2">
+                                  <label className="block text-xs font-medium text-gray-400 mb-1">Agent *</label>
+                                  <input
+                                    type="text"
+                                    value={stat.agentPlayed}
+                                    onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
+                                    placeholder="e.g., Jett"
+                                    className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
+                                    required
+                                  />
+                                </div>
+
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">K</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">D</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">A</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">ACS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

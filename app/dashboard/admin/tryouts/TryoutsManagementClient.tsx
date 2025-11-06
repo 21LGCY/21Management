@@ -57,7 +57,7 @@ export default function TryoutsManagementClient() {
       (tryout.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (tryout.in_game_name?.toLowerCase().includes(searchTerm.toLowerCase()))
     
-    const matchesStatus = statusFilter === 'all' || tryout.contact_status === statusFilter
+    const matchesStatus = statusFilter === 'all' || tryout.status === statusFilter
     const matchesRole = roleFilter === 'all' || tryout.position === roleFilter
     
     return matchesSearch && matchesStatus && matchesRole
@@ -65,13 +65,13 @@ export default function TryoutsManagementClient() {
 
   const getStatusColor = (status: TryoutStatus) => {
     switch (status) {
-      case 'Not Contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-      case 'Contacted/Pending': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-      case 'In Tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-      case 'Player': return 'bg-green-500/20 text-green-300 border-green-500/30'
-      case 'Substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-      case 'Rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
-      case 'Left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      case 'not_contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+      case 'contacted': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+      case 'accepted': return 'bg-green-500/20 text-green-300 border-green-500/30'
+      case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+      case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
+      case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
     }
   }
 
@@ -88,12 +88,12 @@ export default function TryoutsManagementClient() {
 
   const getStatusStats = () => {
     return {
-      notContacted: tryouts.filter(t => t.contact_status === 'Not Contacted').length,
-      contacted: tryouts.filter(t => t.contact_status === 'Contacted/Pending').length,
-      inTryouts: tryouts.filter(t => t.contact_status === 'In Tryouts').length,
-      accepted: tryouts.filter(t => t.contact_status === 'Player').length,
-      substitute: tryouts.filter(t => t.contact_status === 'Substitute').length,
-      rejected: tryouts.filter(t => t.contact_status === 'Rejected').length,
+      notContacted: tryouts.filter(t => t.status === 'not_contacted').length,
+      contacted: tryouts.filter(t => t.status === 'contacted').length,
+      inTryouts: tryouts.filter(t => t.status === 'in_tryouts').length,
+      accepted: tryouts.filter(t => t.status === 'accepted').length,
+      substitute: tryouts.filter(t => t.status === 'substitute').length,
+      rejected: tryouts.filter(t => t.status === 'rejected').length,
     }
   }
 
@@ -238,8 +238,8 @@ export default function TryoutsManagementClient() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs border rounded ${getStatusColor(tryout.contact_status)}`}>
-                        {tryout.contact_status}
+                      <span className={`px-2 py-1 text-xs border rounded ${getStatusColor(tryout.status)}`}>
+                        {tryout.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -304,3 +304,5 @@ export default function TryoutsManagementClient() {
     </div>
   )
 }
+
+

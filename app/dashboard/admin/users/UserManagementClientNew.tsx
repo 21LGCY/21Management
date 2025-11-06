@@ -191,7 +191,7 @@ export default function UserManagementClient() {
                       </h3>
                       {user.nationality && (
                         <Image
-                          src={`https://flagcdn.com/16x12/${user.nationality.toLowerCase()}.png`}
+                          src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
                           alt={user.nationality}
                           width={24}
                           height={18}

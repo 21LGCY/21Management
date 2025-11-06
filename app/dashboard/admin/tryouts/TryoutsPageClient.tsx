@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Calendar, MapPin, BarChart3 } from 'lucide-react'
+import { Users, Calendar, MapPin } from 'lucide-react'
 import ScoutingDatabase from './sections/ScoutingDatabase'
 import TryoutWeeks from './sections/TryoutWeeks'
-import AvailabilityZones from './sections/AvailabilityZones'
+import ZonesInterface from './sections/ZonesInterface'
 
 type TabType = 'scouting' | 'tryouts' | 'zones'
 
@@ -26,9 +26,9 @@ export default function TryoutsPageClient() {
     },
     {
       id: 'zones' as TabType,
-      name: 'Availability Zones',
+      name: 'Geographic Zones',
       icon: MapPin,
-      description: 'Visualize player availability heatmaps',
+      description: 'Visualize player geographic distribution by VALORANT zones',
     },
   ]
 
@@ -79,8 +79,9 @@ export default function TryoutsPageClient() {
       <div className="mt-6">
         {activeTab === 'scouting' && <ScoutingDatabase />}
         {activeTab === 'tryouts' && <TryoutWeeks />}
-        {activeTab === 'zones' && <AvailabilityZones />}
+        {activeTab === 'zones' && <ZonesInterface />}
       </div>
     </div>
   )
 }
+

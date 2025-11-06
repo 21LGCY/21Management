@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import Navbar from '@/components/Navbar'
 import StatCard from '@/components/StatCard'
-import { Users, Trophy, Calendar, TrendingUp } from 'lucide-react'
+import { Users, Trophy, Calendar } from 'lucide-react'
 
 export default async function AdminDashboard() {
   // Require admin role
@@ -49,7 +49,7 @@ export default async function AdminDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, <span className="text-gradient">{user.full_name}</span>
+            Welcome back, <span className="text-gradient">{user.username}</span>
           </h1>
           <p className="text-gray-400">Administrator Dashboard - System Overview</p>
         </div>
@@ -82,26 +82,20 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Teams List */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <h2 className="text-xl font-semibold text-white">Teams</h2>
-              <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                Add Team
-              </button>
             </div>
             <div className="space-y-3">
               {teams && teams.length > 0 ? (
                 teams.map((team) => (
                   <div
                     key={team.id}
-                    className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800 hover:border-primary/50 transition"
+                    className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800"
                   >
                     <div>
                       <p className="font-medium text-white">{team.name}</p>
                       <p className="text-sm text-gray-400">{team.game}</p>
                     </div>
-                    <button className="text-primary hover:text-primary-light text-sm">
-                      Manage
-                    </button>
                   </div>
                 ))
               ) : (
@@ -112,11 +106,8 @@ export default async function AdminDashboard() {
 
           {/* Recent Matches */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <h2 className="text-xl font-semibold text-white">Recent Matches</h2>
-              <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                Add Match
-              </button>
             </div>
             <div className="space-y-3">
               {recentMatches && recentMatches.length > 0 ? (
@@ -152,46 +143,6 @@ export default async function AdminDashboard() {
                 <p className="text-gray-400 text-center py-4">No matches yet</p>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8 bg-dark-card border border-gray-800 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 bg-dark border border-gray-700 hover:border-primary rounded-lg text-left transition group">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Manage Users</p>
-                  <p className="text-sm text-gray-400">Add or edit user roles</p>
-                </div>
-              </div>
-            </button>
-            <button className="p-4 bg-dark border border-gray-700 hover:border-primary rounded-lg text-left transition group">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Trophy className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Create Tournament</p>
-                  <p className="text-sm text-gray-400">Set up new competition</p>
-                </div>
-              </div>
-            </button>
-            <button className="p-4 bg-dark border border-gray-700 hover:border-primary rounded-lg text-left transition group">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white">View Reports</p>
-                  <p className="text-sm text-gray-400">Analytics and insights</p>
-                </div>
-              </div>
-            </button>
           </div>
         </div>
       </main>

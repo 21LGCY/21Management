@@ -5,14 +5,26 @@ export type ValorantRank =
   | 'Ascendant 1' | 'Ascendant 2' | 'Ascendant 3'
   | 'Immortal 1' | 'Immortal 2' | 'Immortal 3'
   | 'Radiant'
+export type TeamCategory = '21L' | '21GC' | '21ACA'
+export type TryoutWeekStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+export type HourSlot = 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+
 export type TryoutStatus = 
-  | 'Not Contacted'
-  | 'Contacted/Pending'
-  | 'In Tryouts'
-  | 'Player'
-  | 'Substitute'
-  | 'Rejected'
-  | 'Left'
+  | 'not_contacted'
+  | 'contacted'
+  | 'in_tryouts'
+  | 'accepted'
+  | 'substitute'
+  | 'rejected'
+  | 'left'
+
+// Time slots structure for player availability
+export type TimeSlots = {
+  [day in DayOfWeek]?: {
+    [hour: number]: boolean
+  }
+}
 
 export interface UserProfile {
   id: string
@@ -57,6 +69,7 @@ export interface Team {
 export interface ProfileTryout {
   id: string
   username: string
+  team_category: TeamCategory
   full_name?: string
   in_game_name?: string
   position?: ValorantRole
@@ -66,7 +79,8 @@ export interface ProfileTryout {
   rank?: ValorantRank
   valorant_tracker_url?: string
   twitter_url?: string
-  contact_status: TryoutStatus
+  discord?: string
+  status: TryoutStatus // Keep as 'status' to match database column name
   last_contact_date?: string
   managed_by?: string
   contacted_by?: string
@@ -74,6 +88,35 @@ export interface ProfileTryout {
   links?: string
   created_at: string
   updated_at: string
+}
+
+// Tryout Week - Represents a full week of tryouts for a specific team
+export interface TryoutWeek {
+  id: string
+  team_category: TeamCategory
+  week_start: string // ISO date string (Monday)
+  week_end: string // ISO date string (Sunday)
+  week_label: string // e.g., "Week 1", "January Tryouts"
+  status: TryoutWeekStatus
+  notes?: string
+  created_by?: string
+  created_at: string
+  updated_at: string
+}
+
+// Player Availability - Links tryout profiles to tryout weeks with their response
+export interface PlayerAvailability {
+  id: string
+  tryout_week_id: string
+  player_id: string
+  token: string // Unique token for player access
+  time_slots: TimeSlots // Hourly availability per day
+  submitted_at?: string
+  created_at: string
+  updated_at: string
+  // Joined data
+  player?: ProfileTryout
+  tryout_week?: TryoutWeek
 }
 
 export interface Tournament {

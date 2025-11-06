@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ProfileTryout, TryoutStatus, ValorantRole } from '@/lib/types/database'
+import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
 import { Plus, Edit, Trash2, Search, ExternalLink, Filter } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,6 +12,7 @@ export default function ScoutingDatabase() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
   const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
+  const [teamFilter, setTeamFilter] = useState<TeamCategory | 'all'>('all')
   
   const supabase = createClient()
 
@@ -57,21 +58,22 @@ export default function ScoutingDatabase() {
       (tryout.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (tryout.in_game_name?.toLowerCase().includes(searchTerm.toLowerCase()))
     
-    const matchesStatus = statusFilter === 'all' || tryout.contact_status === statusFilter
+    const matchesStatus = statusFilter === 'all' || tryout.status === statusFilter
     const matchesRole = roleFilter === 'all' || tryout.position === roleFilter
+    const matchesTeam = teamFilter === 'all' || tryout.team_category === teamFilter
     
-    return matchesSearch && matchesStatus && matchesRole
+    return matchesSearch && matchesStatus && matchesRole && matchesTeam
   })
 
   const getStatusColor = (status: TryoutStatus) => {
     switch (status) {
-      case 'Not Contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-      case 'Contacted/Pending': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-      case 'In Tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-      case 'Player': return 'bg-green-500/20 text-green-300 border-green-500/30'
-      case 'Substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-      case 'Rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
-      case 'Left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      case 'not_contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+      case 'contacted': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+      case 'accepted': return 'bg-green-500/20 text-green-300 border-green-500/30'
+      case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+      case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
+      case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
     }
   }
 
@@ -88,12 +90,12 @@ export default function ScoutingDatabase() {
 
   const getStatusStats = () => {
     return {
-      notContacted: tryouts.filter(t => t.contact_status === 'Not Contacted').length,
-      contacted: tryouts.filter(t => t.contact_status === 'Contacted/Pending').length,
-      inTryouts: tryouts.filter(t => t.contact_status === 'In Tryouts').length,
-      accepted: tryouts.filter(t => t.contact_status === 'Player').length,
-      substitute: tryouts.filter(t => t.contact_status === 'Substitute').length,
-      rejected: tryouts.filter(t => t.contact_status === 'Rejected').length,
+      notContacted: tryouts.filter(t => t.status === 'not_contacted').length,
+      contacted: tryouts.filter(t => t.status === 'contacted').length,
+      inTryouts: tryouts.filter(t => t.status === 'in_tryouts').length,
+      accepted: tryouts.filter(t => t.status === 'accepted').length,
+      substitute: tryouts.filter(t => t.status === 'substitute').length,
+      rejected: tryouts.filter(t => t.status === 'rejected').length,
     }
   }
 
@@ -150,6 +152,17 @@ export default function ScoutingDatabase() {
           </div>
           
           <select
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value as TeamCategory | 'all')}
+            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Teams</option>
+            <option value="21L">21L</option>
+            <option value="21GC">21GC</option>
+            <option value="21ACA">21 ACA</option>
+          </select>
+          
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
             className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
@@ -178,7 +191,7 @@ export default function ScoutingDatabase() {
           </select>
 
           <Link
-            href="/dashboard/admin/tryouts/new"
+            href="/dashboard/admin/tryouts/scouts/new"
             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
@@ -194,6 +207,7 @@ export default function ScoutingDatabase() {
             <thead className="bg-dark border-b border-gray-800">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Player</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Team</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Role</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Rank</th>
@@ -205,7 +219,7 @@ export default function ScoutingDatabase() {
             <tbody className="divide-y divide-gray-800">
               {filteredTryouts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-400">
                     No scouting profiles found. Click "Add Scout" to create one.
                   </td>
                 </tr>
@@ -224,8 +238,13 @@ export default function ScoutingDatabase() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.contact_status)}`}>
-                        {tryout.contact_status}
+                      <span className="px-2 py-1 text-xs bg-primary/20 text-primary border border-primary/30 rounded">
+                        {tryout.team_category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
+                        {tryout.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -295,3 +314,5 @@ export default function ScoutingDatabase() {
     </div>
   )
 }
+
+

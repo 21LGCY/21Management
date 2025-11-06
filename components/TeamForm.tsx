@@ -14,6 +14,7 @@ interface Player {
   full_name: string
   in_game_name: string | null
   position: string | null
+  team_id: string | null
 }
 
 export default function TeamForm({ teamId }: TeamFormProps) {
@@ -30,21 +31,25 @@ export default function TeamForm({ teamId }: TeamFormProps) {
   })
 
   useEffect(() => {
-    fetchPlayers()
-    if (teamId) {
-      fetchTeam()
+    const loadData = async () => {
+      if (teamId) {
+        await fetchTeam()
+      }
+      await fetchPlayers()
     }
+    loadData()
   }, [teamId])
 
   const fetchPlayers = async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, in_game_name, position')
+        .select('id, full_name, in_game_name, position, team_id')
         .eq('role', 'player')
         .order('full_name')
 
       if (error) throw error
+      console.log('Fetched players:', data)
       setAvailablePlayers(data || [])
     } catch (error) {
       console.error('Error fetching players:', error)
@@ -78,6 +83,8 @@ export default function TeamForm({ teamId }: TeamFormProps) {
         .eq('team_id', teamId)
 
       if (membersError) throw membersError
+      console.log('Team members:', membersData)
+      console.log('Team ID:', teamId)
       setTeamPlayers(membersData?.map(p => p.id) || [])
     } catch (error) {
       console.error('Error fetching team:', error)
@@ -237,39 +244,61 @@ export default function TeamForm({ teamId }: TeamFormProps) {
           <h3 className="text-lg font-semibold text-white">Team Members</h3>
           <p className="text-sm text-gray-400">Select players to add to this team</p>
           
+          {/* Debug info */}
+          {teamId && (
+            <div className="text-xs text-gray-500">
+              Debug: Total players: {availablePlayers.length}, Team players: {teamPlayers.length}, 
+              Filtered: {availablePlayers.filter(p => !p.team_id || p.team_id === teamId).length}
+            </div>
+          )}
+          
           <div className="max-h-96 overflow-y-auto bg-dark-card border border-gray-800 rounded-lg">
             {availablePlayers.length === 0 ? (
               <div className="p-4 text-center text-gray-400">
                 No players available. Create players first.
               </div>
-            ) : (
-              <div className="divide-y divide-gray-800">
-                {availablePlayers.map((player) => (
-                  <label
-                    key={player.id}
-                    className="flex items-center gap-3 p-3 hover:bg-dark transition cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={teamPlayers.includes(player.id)}
-                      onChange={() => togglePlayer(player.id)}
-                      className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-white">{player.full_name}</div>
-                      <div className="text-sm text-gray-400">
-                        {player.in_game_name || 'No IGN'} 
-                        {player.position && (
-                          <span className="ml-2 text-xs text-gray-500">
-                            • {player.position}
-                          </span>
-                        )}
+            ) : (() => {
+              const filteredPlayers = availablePlayers.filter(player => 
+                !player.team_id || player.team_id === teamId
+              )
+              
+              console.log('Rendering - Filtered players:', filteredPlayers)
+              console.log('Rendering - Team ID:', teamId)
+              console.log('Rendering - Team players state:', teamPlayers)
+              
+              return filteredPlayers.length === 0 ? (
+                <div className="p-4 text-center text-gray-400">
+                  No players available. All players are assigned to other teams.
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-800">
+                  {filteredPlayers.map((player) => (
+                    <label
+                      key={player.id}
+                      className="flex items-center gap-3 p-3 hover:bg-dark transition cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={teamPlayers.includes(player.id)}
+                        onChange={() => togglePlayer(player.id)}
+                        className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-white">{player.full_name}</div>
+                        <div className="text-sm text-gray-400">
+                          {player.in_game_name || 'No IGN'} 
+                          {player.position && (
+                            <span className="ml-2 text-xs text-gray-500">
+                              • {player.position}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
+                    </label>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
 
           {teamPlayers.length > 0 && (

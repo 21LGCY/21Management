@@ -197,13 +197,13 @@ export default function TeamManagementClient() {
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">Planning</h2>
-            <button
-              onClick={() => setShowMatchModal(true)}
+            <Link
+              href="/dashboard/admin/teams/schedule"
               className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
             >
               <Calendar className="w-4 h-4" />
-              Manage Planning
-            </button>
+              Schedule Management
+            </Link>
           </div>
 
           <div className="space-y-3">

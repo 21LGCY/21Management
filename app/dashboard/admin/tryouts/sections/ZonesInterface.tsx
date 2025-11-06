@@ -1,0 +1,343 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
+import { Globe, Users, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
+
+// VALORANT European Zones mapping
+const VALORANT_ZONES: Record<string, string[]> = {
+  'Europe du Nord': ['Denmark', 'Finland', 'Ireland', 'Iceland', 'Norway', 'Sweden', 'United Kingdom', 'GB', 'UK', 'DK', 'FI', 'IE', 'IS', 'NO', 'SE'],
+  'Europe de l\'Est': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia', 'Bulgaria', 'Croatia', 'Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan', 'Latvia', 'Lithuania', 'Moldova', 'Montenegro', 'Poland', 'Romania', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Czechia', 'Czech Republic', 'Ukraine', 'Uzbekistan', 'AL', 'AM', 'AZ', 'BY', 'BA', 'BG', 'HR', 'EE', 'GE', 'GR', 'HU', 'KZ', 'LV', 'LT', 'MD', 'ME', 'PL', 'RO', 'RU', 'RS', 'SK', 'SI', 'CZ', 'UA', 'UZ'],
+  'DACH': ['Germany', 'Austria', 'Switzerland', 'DE', 'AT', 'CH'],
+  'IBIT': ['Spain', 'Italy', 'Portugal', 'ES', 'IT', 'PT'],
+  'France': ['France', 'FR'],
+}
+
+interface ZoneStats {
+  zone: string
+  count: number
+  players: ProfileTryout[]
+  percentage: number
+}
+
+export default function ZonesInterface() {
+  const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
+  const [loading, setLoading] = useState(true)
+  const [zoneStats, setZoneStats] = useState<ZoneStats[]>([])
+  
+  const [teamFilter, setTeamFilter] = useState<TeamCategory | 'all'>('all')
+  const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('in_tryouts')
+  const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    fetchTryouts()
+  }, [])
+
+  useEffect(() => {
+    calculateZoneStats()
+  }, [tryouts, teamFilter, statusFilter, roleFilter])
+
+  const fetchTryouts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles_tryouts')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTryouts(data || [])
+    } catch (error) {
+      console.error('Error fetching tryouts:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getZoneForNationality = (nationality: string): string | null => {
+    if (!nationality) return null
+    
+    for (const [zone, countries] of Object.entries(VALORANT_ZONES)) {
+      if (countries.some(country => 
+        nationality.toLowerCase().includes(country.toLowerCase()) ||
+        country.toLowerCase().includes(nationality.toLowerCase())
+      )) {
+        return zone
+      }
+    }
+    return 'Autre'
+  }
+
+  const calculateZoneStats = () => {
+    let filtered = tryouts
+    
+    // Apply filters
+    if (teamFilter !== 'all') {
+      filtered = filtered.filter(t => t.team_category === teamFilter)
+    }
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(t => t.status === statusFilter)
+    }
+    
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter(t => t.position === roleFilter)
+    }
+
+    // Exclude players without nationality
+    const playersWithNationality = filtered.filter(t => t.nationality)
+    
+    const zoneMap = new Map<string, ProfileTryout[]>()
+    
+    playersWithNationality.forEach(tryout => {
+      const zone = getZoneForNationality(tryout.nationality || '')
+      if (zone) {
+        if (!zoneMap.has(zone)) {
+          zoneMap.set(zone, [])
+        }
+        zoneMap.get(zone)?.push(tryout)
+      }
+    })
+
+    const total = playersWithNationality.length
+    const stats: ZoneStats[] = Array.from(zoneMap.entries())
+      .map(([zone, zonePlayers]) => ({
+        zone,
+        count: zonePlayers.length,
+        players: zonePlayers,
+        percentage: total > 0 ? (zonePlayers.length / total) * 100 : 0
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    setZoneStats(stats)
+  }
+
+  const getZoneColor = (zone: string): string => {
+    const colors: Record<string, string> = {
+      'Europe du Nord': 'from-green-500 to-emerald-600',
+      'Europe de l\'Est': 'from-purple-500 to-violet-600',
+      'DACH': 'from-yellow-500 to-orange-500',
+      'IBIT': 'from-red-500 to-pink-500',
+      'France': 'from-blue-500 to-indigo-600',
+      'Autre': 'from-gray-500 to-gray-600'
+    }
+    return colors[zone] || 'from-gray-500 to-gray-600'
+  }
+
+  const getStatusColor = (status: TryoutStatus) => {
+    switch (status) {
+      case 'accepted': return 'bg-green-500/20 text-green-300'
+      case 'substitute': return 'bg-purple-500/20 text-purple-300'
+      case 'in_tryouts': return 'bg-blue-500/20 text-blue-300'
+      case 'contacted': return 'bg-yellow-500/20 text-yellow-300'
+      case 'not_contacted': return 'bg-slate-500/20 text-slate-300'
+      case 'rejected': return 'bg-red-500/20 text-red-300'
+      case 'left': return 'bg-gray-500/20 text-gray-300'
+    }
+  }
+
+  const getStatusLabel = (status: TryoutStatus) => {
+    switch (status) {
+      case 'accepted': return 'accepted'
+      case 'substitute': return 'substitute'
+      case 'in_tryouts': return 'Tryout'
+      case 'contacted': return 'Contacted'
+      case 'not_contacted': return 'not_contacted'
+      case 'rejected': return 'rejected'
+      case 'left': return 'left'
+    }
+  }
+
+  const totalPlayersWithNationality = (() => {
+    let filtered = tryouts
+    
+    if (teamFilter !== 'all') {
+      filtered = filtered.filter(t => t.team_category === teamFilter)
+    }
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(t => t.status === statusFilter)
+    }
+    
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter(t => t.position === roleFilter)
+    }
+    
+    return filtered.filter(t => t.nationality).length
+  })()
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Filters */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            <Globe className="w-7 h-7 text-primary" />
+            VALORANT Zones
+          </h2>
+          <p className="text-gray-400 mt-1">
+            Geographic distribution: [ {totalPlayersWithNationality} players with nationality ]
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3">
+          {/* Team Filter */}
+          <select
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value as TeamCategory | 'all')}
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Teams</option>
+            <option value="21L">21L</option>
+            <option value="21GC">21GC</option>
+            <option value="21ACA">21 ACA</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Status</option>
+            <option value="Not Contacted">Not Contacted</option>
+            <option value="Contacted/Pending">Contacted</option>
+            <option value="In Tryouts">In Tryouts</option>
+            <option value="Player">Player</option>
+            <option value="Substitute">Substitute</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Left">Left</option>
+          </select>
+
+          {/* Role Filter */}
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+          >
+            <option value="all">All Roles</option>
+            <option value="Duelist">Duelist</option>
+            <option value="Initiator">Initiator</option>
+            <option value="Controller">Controller</option>
+            <option value="Sentinel">Sentinel</option>
+            <option value="Flex">Flex</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Zone Statistics */}
+      {zoneStats.length === 0 ? (
+        <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
+          <Globe className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <div className="text-gray-400 mb-2">No nationality data available</div>
+          <p className="text-gray-500 text-sm">
+            Add nationalities to player profiles to see zone distribution
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {zoneStats.map((stat) => (
+            <div
+              key={stat.zone}
+              className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className={`inline-block px-3 py-1 rounded-lg bg-gradient-to-r ${getZoneColor(stat.zone)} text-white font-bold text-sm mb-2`}>
+                    {stat.zone}
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Users className="w-4 h-4" />
+                    <span className="text-2xl font-bold text-white">{stat.count}</span>
+                    <span className="text-sm">Players</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-primary">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-xl font-bold">{stat.percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
+                <div
+                  className={`h-2 rounded-full bg-gradient-to-r ${getZoneColor(stat.zone)} transition-all duration-500`}
+                  style={{ width: `${stat.percentage}%` }}
+                />
+              </div>
+
+              {/* Player List */}
+              <div className="space-y-2">
+                <div className="text-xs text-gray-500 mb-2">Players:</div>
+                {stat.players.slice(0, 5).map(player => (
+                  <div
+                    key={player.id}
+                    className="block p-2 rounded bg-dark/50 hover:bg-dark transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="text-sm text-white font-medium">
+                          {player.username}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {player.nationality}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-3">
+                        <span className="text-xs px-2 py-1 rounded bg-white/10 text-gray-300">
+                          {player.position || 'N/A'}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${getStatusColor(player.status)}`}>
+                          {getStatusLabel(player.status)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {stat.players.length > 5 && (
+                  <div className="text-xs text-gray-500 mt-1 pl-2">
+                    +{stat.players.length - 5} more
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Zone Legend */}
+      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+        <h3 className="text-xl font-bold text-white mb-4">VALORANT Zone Definitions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          {Object.entries(VALORANT_ZONES).map(([zone, countries]) => (
+            <div key={zone} className="text-gray-400">
+              <span className={`inline-block px-2 py-1 rounded bg-gradient-to-r ${getZoneColor(zone)} text-white text-xs font-bold mr-2`}>
+                {zone}
+              </span>
+              <div className="mt-1 text-xs text-gray-500">
+                {countries.filter(c => c.length > 2).slice(0, 3).join(', ')}
+                {countries.filter(c => c.length > 2).length > 3 && ` +${countries.filter(c => c.length > 2).length - 3} more`}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+

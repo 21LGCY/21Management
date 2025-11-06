@@ -121,7 +121,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                 {player.nationality && (
                   <span className="px-3 py-1 bg-gray-700 text-gray-300 text-sm rounded-lg font-medium flex items-center gap-2">
                     <img 
-                      src={`https://flagcdn.com/16x12/${player.nationality.toLowerCase()}.png`} 
+                      src={`https://flagcdn.com/${player.nationality.toLowerCase()}.svg`} 
                       alt={player.nationality}
                       className="w-4 h-3"
                     />

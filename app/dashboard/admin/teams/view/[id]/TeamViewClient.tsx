@@ -136,7 +136,7 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
             {member.nationality && (
               <div className="relative group">
                 <Image
-                  src={`https://flagcdn.com/16x12/${member.nationality.toLowerCase()}.png`}
+                  src={`https://flagcdn.com/${member.nationality.toLowerCase()}.svg`}
                   alt={member.nationality}
                   width={20}
                   height={15}

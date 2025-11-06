@@ -203,7 +203,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                         {player.nationality ? (
                           <span className="flex items-center gap-1">
                             <img 
-                              src={`https://flagcdn.com/16x12/${player.nationality.toLowerCase()}.png`} 
+                              src={`https://flagcdn.com/${player.nationality.toLowerCase()}.svg`} 
                               alt={player.nationality}
                               className="w-4 h-3"
                             />

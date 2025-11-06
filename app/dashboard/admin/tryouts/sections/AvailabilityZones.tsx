@@ -61,3 +61,4 @@ export default function AvailabilityZones() {
     </div>
   )
 }
+
