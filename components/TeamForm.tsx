@@ -192,7 +192,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Team Alpha"
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             />
           </div>
 
@@ -206,7 +206,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
               onChange={(e) => setFormData({ ...formData, tag: e.target.value.toUpperCase() })}
               placeholder="e.g., TMA"
               maxLength={5}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary uppercase"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary uppercase font-sans"
             />
             <p className="mt-1 text-xs text-gray-400">Max 5 characters</p>
           </div>
@@ -220,7 +220,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
               value={formData.logo_url}
               onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
               placeholder="https://example.com/logo.png"
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             />
             <p className="mt-1 text-xs text-gray-400">Enter a URL to an image (PNG, JPG, SVG)</p>
             {formData.logo_url && (

@@ -170,12 +170,13 @@ export default function NewTryoutWeekForm() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'not_contacted': return 'not_contacted'
+      case 'not_contacted': return 'Not Contacted'
       case 'contacted': return 'Contacted'
-      case 'in_tryouts': return 'in_tryouts'
-      case 'accepted': return 'Accepted'
-      case 'substitute': return 'substitute'
-      case 'rejected': return 'rejected'
+      case 'in_tryouts': return 'In Tryouts'
+      case 'accepted': return 'Player'
+      case 'substitute': return 'Substitute'
+      case 'rejected': return 'Rejected'
+      case 'left': return 'Left'
       default: return status
     }
   }
@@ -211,7 +212,7 @@ export default function NewTryoutWeekForm() {
               <select
                 value={formData.team_category}
                 onChange={handleInputChange('team_category')}
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
                 required
               >
                 <option value="21L">21L</option>
@@ -230,7 +231,7 @@ export default function NewTryoutWeekForm() {
                 value={formData.week_label}
                 onChange={handleInputChange('week_label')}
                 placeholder="e.g., Week 1, January Tryouts"
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Optional - Helps identify this session easily
@@ -244,7 +245,7 @@ export default function NewTryoutWeekForm() {
               <textarea
                 value={formData.notes}
                 onChange={handleInputChange('notes')}
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px]"
+                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] font-sans"
                 placeholder="e.g., Players present in the session with roles"
               />
             </div>
@@ -260,7 +261,7 @@ export default function NewTryoutWeekForm() {
                   value={formData.week_start}
                   onChange={handleInputChange('week_start')}
                   required
-                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
                 />
               </div>
               <div>
@@ -273,7 +274,7 @@ export default function NewTryoutWeekForm() {
                   onChange={handleInputChange('week_end')}
                   required
                   readOnly
-                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-gray-400 cursor-not-allowed"
+                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-gray-400 cursor-not-allowed font-sans"
                 />
               </div>
             </div>
@@ -307,7 +308,7 @@ export default function NewTryoutWeekForm() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search for a player..."
-                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
               />
             </div>
 
@@ -317,7 +318,7 @@ export default function NewTryoutWeekForm() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
               >
                 <option value="all">All Statuses</option>
                 <option value="inTryouts">In Tryouts</option>

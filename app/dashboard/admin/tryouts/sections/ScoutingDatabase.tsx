@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
-import { Plus, Edit, Trash2, Search, ExternalLink, Filter } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, ExternalLink, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function ScoutingDatabase() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
@@ -88,18 +89,31 @@ export default function ScoutingDatabase() {
     }
   }
 
-  const getStatusStats = () => {
-    return {
-      notContacted: tryouts.filter(t => t.status === 'not_contacted').length,
-      contacted: tryouts.filter(t => t.status === 'contacted').length,
-      inTryouts: tryouts.filter(t => t.status === 'in_tryouts').length,
-      accepted: tryouts.filter(t => t.status === 'accepted').length,
-      substitute: tryouts.filter(t => t.status === 'substitute').length,
-      rejected: tryouts.filter(t => t.status === 'rejected').length,
+  const getRankImage = (rank: string | null | undefined): string | null => {
+    if (!rank) return null
+    const rankMap: Record<string, string> = {
+      'Ascendant 1': '/images/asc_1_rank.webp',
+      'Ascendant 2': '/images/asc_2_rank.webp',
+      'Ascendant 3': '/images/asc_3_rank.webp',
+      'Immortal 1': '/images/immo_1_rank.webp',
+      'Immortal 2': '/images/immo_2_rank.webp',
+      'Immortal 3': '/images/immo_3_rank.webp',
+      'Radiant': '/images/rad_rank.webp',
     }
+    return rankMap[rank] || null
   }
 
-  const stats = getStatusStats()
+  const getStatusLabel = (status: TryoutStatus) => {
+    switch (status) {
+      case 'not_contacted': return 'Not Contacted'
+      case 'contacted': return 'Contacted'
+      case 'in_tryouts': return 'In Tryouts'
+      case 'accepted': return 'Player'
+      case 'substitute': return 'Substitute'
+      case 'rejected': return 'Rejected'
+      case 'left': return 'Left'
+    }
+  }
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">
@@ -109,52 +123,24 @@ export default function ScoutingDatabase() {
 
   return (
     <div className="space-y-6">
-      {/* Status Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">Not Contacted</p>
-          <p className="text-2xl font-bold text-gray-300">{stats.notContacted}</p>
+      {/* Header with Add Scout button */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by name, username, or IGN..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+          />
         </div>
-        <div className="bg-dark-card border border-blue-800/50 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">Contacted</p>
-          <p className="text-2xl font-bold text-blue-300">{stats.contacted}</p>
-        </div>
-        <div className="bg-dark-card border border-yellow-800/50 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">In Tryouts</p>
-          <p className="text-2xl font-bold text-yellow-300">{stats.inTryouts}</p>
-        </div>
-        <div className="bg-dark-card border border-green-800/50 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">Players</p>
-          <p className="text-2xl font-bold text-green-300">{stats.accepted}</p>
-        </div>
-        <div className="bg-dark-card border border-purple-800/50 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">Substitutes</p>
-          <p className="text-2xl font-bold text-purple-300">{stats.substitute}</p>
-        </div>
-        <div className="bg-dark-card border border-red-800/50 rounded-lg p-4">
-          <p className="text-xs text-gray-400 mb-1 uppercase">Rejected</p>
-          <p className="text-2xl font-bold text-red-300">{stats.rejected}</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by name, username, or IGN..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
-          </div>
-          
+        
+        <div className="flex flex-wrap gap-2">
           <select
             value={teamFilter}
             onChange={(e) => setTeamFilter(e.target.value as TeamCategory | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
           >
             <option value="all">All Teams</option>
             <option value="21L">21L</option>
@@ -165,22 +151,22 @@ export default function ScoutingDatabase() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
           >
             <option value="all">All Statuses</option>
-            <option value="Not Contacted">Not Contacted</option>
-            <option value="Contacted/Pending">Contacted/Pending</option>
-            <option value="In Tryouts">In Tryouts</option>
-            <option value="Player">Player</option>
-            <option value="Substitute">Substitute</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Left">Left</option>
+            <option value="not_contacted">Not Contacted</option>
+            <option value="contacted">Contacted</option>
+            <option value="in_tryouts">In Tryouts</option>
+            <option value="accepted">Player</option>
+            <option value="substitute">Substitute</option>
+            <option value="rejected">Rejected</option>
+            <option value="left">Left</option>
           </select>
 
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
           >
             <option value="all">All Roles</option>
             <option value="Duelist">Duelist</option>
@@ -200,117 +186,146 @@ export default function ScoutingDatabase() {
         </div>
       </div>
 
-      {/* Players Table */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-dark border-b border-gray-800">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Player</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Team</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Managed By</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Last Contact</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
-              {filteredTryouts.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-400">
-                    No scouting profiles found. Click "Add Scout" to create one.
-                  </td>
-                </tr>
-              ) : (
-                filteredTryouts.map((tryout) => (
-                  <tr key={tryout.id} className="hover:bg-dark transition">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-white">
-                          {tryout.full_name || tryout.username}
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          {tryout.in_game_name && `${tryout.in_game_name} • `}
-                          @{tryout.username}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs bg-primary/20 text-primary border border-primary/30 rounded">
-                        {tryout.team_category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
-                        {tryout.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        <span className={`px-2 py-1 text-xs border rounded ${getRoleColor(tryout.position)}`}>
-                          {tryout.position || 'N/A'}
-                        </span>
-                        {tryout.is_igl && (
-                          <span className="px-2 py-0.5 text-xs bg-secondary/20 text-secondary border border-secondary/30 rounded">
-                            IGL
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-300 text-sm">
-                      {tryout.rank || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-gray-300 text-sm">
-                      {tryout.managed_by || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-gray-300 text-sm">
-                      {tryout.last_contact_date 
-                        ? new Date(tryout.last_contact_date).toLocaleDateString()
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        {tryout.valorant_tracker_url && (
-                          <a
-                            href={tryout.valorant_tracker_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded transition"
-                            title="View Tracker"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                        <Link
-                          href={`/dashboard/admin/tryouts/${tryout.id}`}
-                          className="p-2 text-primary hover:bg-primary/10 rounded transition"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => deleteTryout(tryout.id)}
-                          className="p-2 text-red-400 hover:bg-red-400/10 rounded transition"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {/* Player Cards Grid */}
+      {filteredTryouts.length === 0 ? (
+        <div className="text-center py-12 bg-dark-card border border-gray-800 rounded-lg">
+          <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-400 mb-2">No scouting profiles found</p>
+          <p className="text-gray-500 text-sm">Click "Add Scout" to create one</p>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredTryouts.map((tryout) => {
+            const rankImage = getRankImage(tryout.rank)
+            
+            return (
+              <div key={tryout.id} className="bg-dark-card border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition flex flex-col">
+                <div className="flex flex-col items-center text-center">
+                  {/* Header with Status Badge */}
+                  <div className="w-full flex justify-between items-start mb-3">
+                    <span className={`px-2 py-1 text-xs border rounded ${getStatusColor(tryout.status)}`}>
+                      {getStatusLabel(tryout.status)}
+                    </span>
+                    <button
+                      onClick={() => deleteTryout(tryout.id)}
+                      className="p-1 text-red-400 hover:bg-red-400/10 rounded transition"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
 
-      {/* Footer Stats */}
-      <div className="text-sm text-gray-400 text-center">
-        Showing {filteredTryouts.length} of {tryouts.length} scouting profiles
-      </div>
+                  {/* Avatar Placeholder */}
+                  <div className="mb-3">
+                    <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+                      <UserIcon className="w-6 h-6 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Username with Nationality Flag */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-white">
+                      {tryout.in_game_name || tryout.username}
+                    </h3>
+                    {tryout.nationality && (
+                      <div className="relative group">
+                        <Image
+                          src={`https://flagcdn.com/${tryout.nationality.toLowerCase()}.svg`}
+                          alt={tryout.nationality}
+                          width={20}
+                          height={15}
+                          className="object-contain"
+                        />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {tryout.nationality}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <p className="text-xs text-gray-400 mb-2">{tryout.username}</p>
+
+                  {/* Role Badges */}
+                  <div className="flex flex-wrap gap-1 justify-center mb-3">
+                    {tryout.position && (
+                      <span className={`px-2 py-0.5 text-xs border rounded ${getRoleColor(tryout.position)}`}>
+                        {tryout.position}
+                      </span>
+                    )}
+                    {tryout.is_igl && (
+                      <span className="px-2 py-0.5 text-xs rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                        IGL
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Rank Image */}
+                  {tryout.rank && rankImage && (
+                    <div className="relative group mb-3">
+                      <Image
+                        src={rankImage}
+                        alt={tryout.rank}
+                        width={32}
+                        height={32}
+                        className="object-contain"
+                      />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                        {tryout.rank}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Agent Pool */}
+                  {tryout.champion_pool && tryout.champion_pool.length > 0 && (
+                    <div className="w-full mb-3">
+                      <p className="text-xs text-gray-400 mb-1">Main Agents</p>
+                      <p className="text-xs text-gray-300">
+                        {tryout.champion_pool.slice(0, 2).join(', ')}
+                        {tryout.champion_pool.length > 2 && ` +${tryout.champion_pool.length - 2}`}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Team Badge */}
+                  <div className="w-full mb-3">
+                    <span className="px-2 py-1 text-xs bg-primary/20 text-primary border border-primary/30 rounded">
+                      {tryout.team_category}
+                    </span>
+                  </div>
+
+                  {/* Links */}
+                  {(tryout.valorant_tracker_url || tryout.twitter_url || tryout.links) && (
+                    <div className="flex gap-2 mt-auto pt-3 border-t border-gray-800 w-full justify-center">
+                      {tryout.valorant_tracker_url && (
+                        <a
+                          href={tryout.valorant_tracker_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-400 hover:text-primary transition"
+                          title="Tracker"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                      {tryout.twitter_url && (
+                        <a
+                          href={tryout.twitter_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-400 hover:text-primary transition"
+                          title="Twitter"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

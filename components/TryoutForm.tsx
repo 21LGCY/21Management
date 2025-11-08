@@ -198,7 +198,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             />
           </div>
 
@@ -210,7 +210,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
               type="text"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             />
           </div>
 
@@ -222,7 +222,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             />
           </div>
 
@@ -233,7 +233,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <select
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select Role</option>
               {VALORANT_ROLES.map((role) => (
@@ -269,7 +269,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <select
               value={formData.nationality}
               onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select Country</option>
               {EUROPEAN_COUNTRIES.map((country) => (
@@ -287,7 +287,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <select
               value={formData.rank}
               onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select Rank</option>
               {VALORANT_RANKS.map((rank) => (

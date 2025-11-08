@@ -16,19 +16,16 @@ export default function TryoutsPageClient() {
       id: 'scouting' as TabType,
       name: 'Scouting Database',
       icon: Users,
-      description: 'Manage player scouting and recruitment pipeline',
     },
     {
       id: 'tryouts' as TabType,
       name: 'Tryout Weeks',
       icon: Calendar,
-      description: 'Schedule tryout sessions and track availability',
     },
     {
       id: 'zones' as TabType,
       name: 'Geographic Zones',
       icon: MapPin,
-      description: 'Visualize player geographic distribution by VALORANT zones',
     },
   ]
 
@@ -66,13 +63,6 @@ export default function TryoutsPageClient() {
             )
           })}
         </nav>
-      </div>
-
-      {/* Tab Description */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-        <p className="text-gray-400">
-          {tabs.find(t => t.id === activeTab)?.description}
-        </p>
       </div>
 
       {/* Tab Content */}

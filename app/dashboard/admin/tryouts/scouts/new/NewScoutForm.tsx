@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus } from '@/lib/types/database'
@@ -69,6 +69,8 @@ export default function NewScoutForm() {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [showAgentDropdown, setShowAgentDropdown] = useState(false)
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; username: string }>>([])
+  const [managerUsers, setManagerUsers] = useState<Array<{ id: string; username: string }>>([])
   const [formData, setFormData] = useState({
     username: '',
     team_category: '21L' as TeamCategory,
@@ -86,6 +88,36 @@ export default function NewScoutForm() {
     notes: '',
     links: '',
   })
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      // Fetch admin users
+      const { data: admins, error: adminError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('role', 'admin')
+        .order('username')
+
+      if (adminError) throw adminError
+      setAdminUsers(admins || [])
+
+      // Fetch manager users
+      const { data: managers, error: managerError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('role', 'manager')
+        .order('username')
+
+      if (managerError) throw managerError
+      setManagerUsers(managers || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -168,7 +200,7 @@ export default function NewScoutForm() {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               placeholder="Discord username"
             />
           </div>
@@ -181,7 +213,7 @@ export default function NewScoutForm() {
               required
               value={formData.team_category}
               onChange={(e) => setFormData({ ...formData, team_category: e.target.value as TeamCategory })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="21L">21L</option>
               <option value="21GC">21GC</option>
@@ -195,7 +227,7 @@ export default function NewScoutForm() {
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               placeholder="IGN"
             />
           </div>
@@ -205,7 +237,7 @@ export default function NewScoutForm() {
             <select
               value={formData.nationality}
               onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select Country</option>
               {EUROPEAN_COUNTRIES.map((country) => (
@@ -221,13 +253,13 @@ export default function NewScoutForm() {
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Game Information</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
             <select
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select</option>
               <option value="Duelist">Duelist</option>
@@ -243,30 +275,30 @@ export default function NewScoutForm() {
             <select
               value={formData.rank}
               onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">Select</option>
-              <option value="Ascendant1">Ascendant 1</option>
-              <option value="Ascendant2">Ascendant 2</option>
-              <option value="Ascendant3">Ascendant 3</option>
-              <option value="Immortal1">Immortal 1</option>
-              <option value="Immortal2">Immortal 2</option>
-              <option value="Immortal3">Immortal 3</option>
+              <option value="Ascendant 1">Ascendant 1</option>
+              <option value="Ascendant 2">Ascendant 2</option>
+              <option value="Ascendant 3">Ascendant 3</option>
+              <option value="Immortal 1">Immortal 1</option>
+              <option value="Immortal 2">Immortal 2</option>
+              <option value="Immortal 3">Immortal 3</option>
               <option value="Radiant">Radiant</option>
             </select>
           </div>
+        </div>
 
-          <div className="flex items-center">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.is_igl}
-                onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
-                className="w-4 h-4 text-primary bg-dark border-gray-800 rounded focus:ring-primary"
-              />
-              Is IGL
-            </label>
-          </div>
+        <div className="flex items-center">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.is_igl}
+              onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
+              className="w-4 h-4 text-primary bg-dark border-gray-800 rounded focus:ring-primary"
+            />
+            <span className="font-sans">Is IGL (In-Game Leader)</span>
+          </label>
         </div>
 
         <div>
@@ -298,14 +330,14 @@ export default function NewScoutForm() {
             <button
               type="button"
               onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-left text-gray-400 hover:border-gray-700 focus:outline-none focus:border-primary flex items-center justify-between"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-left text-gray-400 hover:border-gray-700 focus:outline-none focus:border-primary flex items-center justify-between font-sans"
             >
               <span>{formData.champion_pool.length > 0 ? `${formData.champion_pool.length} agent(s) selected` : 'Select agents...'}</span>
               <Plus className="w-4 h-4" />
             </button>
 
             {showAgentDropdown && (
-              <div className="absolute z-10 w-full mt-1 bg-dark border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-dark-card border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                 {VALORANT_AGENTS.map((agent) => (
                   <button
                     key={agent}
@@ -313,7 +345,7 @@ export default function NewScoutForm() {
                     onClick={() => {
                       toggleAgent(agent)
                     }}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-800 transition ${
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-800 transition font-sans ${
                       formData.champion_pool.includes(agent)
                         ? 'bg-primary/10 text-primary'
                         : 'text-gray-300'
@@ -341,7 +373,7 @@ export default function NewScoutForm() {
               type="url"
               value={formData.valorant_tracker_url}
               onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               placeholder="https://tracker.gg/..."
             />
           </div>
@@ -352,7 +384,7 @@ export default function NewScoutForm() {
               type="url"
               value={formData.twitter_url}
               onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               placeholder="https://twitter.com/..."
             />
           </div>
@@ -363,7 +395,7 @@ export default function NewScoutForm() {
               type="text"
               value={formData.links}
               onChange={(e) => setFormData({ ...formData, links: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               placeholder="YouTube, portfolio, etc."
             />
           </div>
@@ -379,7 +411,7 @@ export default function NewScoutForm() {
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as TryoutStatus })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="not_contacted">Not Contacted</option>
               <option value="contacted">Contacted</option>
@@ -396,11 +428,23 @@ export default function NewScoutForm() {
             <select
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">None</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
+              <optgroup label="Admins">
+                {adminUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Managers">
+                {managerUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -409,11 +453,23 @@ export default function NewScoutForm() {
             <select
               value={formData.contacted_by}
               onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             >
               <option value="">None</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
+              <optgroup label="Admins">
+                {adminUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Managers">
+                {managerUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
         </div>
@@ -424,7 +480,7 @@ export default function NewScoutForm() {
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             rows={4}
-            className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+            className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
             placeholder="Internal notes..."
           />
         </div>
