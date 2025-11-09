@@ -18,6 +18,7 @@ export type TryoutStatus =
   | 'substitute'
   | 'rejected'
   | 'left'
+  | 'player'
 
 // Time slots structure for player availability
 export type TimeSlots = {

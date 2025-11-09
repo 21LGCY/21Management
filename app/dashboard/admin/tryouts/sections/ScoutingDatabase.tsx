@@ -75,6 +75,7 @@ export default function ScoutingDatabase() {
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
       case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      case 'player': return 'bg-primary/20 text-primary border-primary/30'
     }
   }
 
@@ -108,10 +109,11 @@ export default function ScoutingDatabase() {
       case 'not_contacted': return 'Not Contacted'
       case 'contacted': return 'Contacted'
       case 'in_tryouts': return 'In Tryouts'
-      case 'accepted': return 'Player'
+      case 'accepted': return 'Accepted'
       case 'substitute': return 'Substitute'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
+      case 'player': return 'Player'
     }
   }
 
@@ -157,10 +159,11 @@ export default function ScoutingDatabase() {
             <option value="not_contacted">Not Contacted</option>
             <option value="contacted">Contacted</option>
             <option value="in_tryouts">In Tryouts</option>
-            <option value="accepted">Player</option>
+            <option value="accepted">Accepted</option>
             <option value="substitute">Substitute</option>
             <option value="rejected">Rejected</option>
             <option value="left">Left</option>
+            <option value="player">Player</option>
           </select>
 
           <select
@@ -199,128 +202,92 @@ export default function ScoutingDatabase() {
             const rankImage = getRankImage(tryout.rank)
             
             return (
-              <div key={tryout.id} className="bg-dark-card border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition flex flex-col">
-                <div className="flex flex-col items-center text-center">
-                  {/* Header with Status Badge */}
-                  <div className="w-full flex justify-between items-start mb-3">
-                    <span className={`px-2 py-1 text-xs border rounded ${getStatusColor(tryout.status)}`}>
-                      {getStatusLabel(tryout.status)}
-                    </span>
-                    <button
-                      onClick={() => deleteTryout(tryout.id)}
-                      className="p-1 text-red-400 hover:bg-red-400/10 rounded transition"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Avatar Placeholder */}
-                  <div className="mb-3">
-                    <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
-                      <UserIcon className="w-6 h-6 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Username with Nationality Flag */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-white">
-                      {tryout.in_game_name || tryout.username}
-                    </h3>
-                    {tryout.nationality && (
-                      <div className="relative group">
-                        <Image
-                          src={`https://flagcdn.com/${tryout.nationality.toLowerCase()}.svg`}
-                          alt={tryout.nationality}
-                          width={20}
-                          height={15}
-                          className="object-contain"
-                        />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                          {tryout.nationality}
+              <div key={tryout.id} className="bg-dark-card border border-gray-800 rounded-lg hover:border-gray-700 transition relative group">
+                <Link href={`/dashboard/admin/tryouts/scouts/view/${tryout.id}`} className="block p-4">
+                  <div className="space-y-3">
+                    {/* Header: Name/IGN (left) + Rank & Status (right) */}
+                    <div className="flex items-start justify-between gap-3">
+                      {/* Left: Name & IGN */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="text-lg font-bold text-white truncate">
+                            {tryout.in_game_name || tryout.username}
+                          </h3>
+                          {tryout.nationality && (
+                            <Image
+                              src={`https://flagcdn.com/${tryout.nationality.toLowerCase()}.svg`}
+                              alt={tryout.nationality}
+                              width={20}
+                              height={15}
+                              className="object-contain flex-shrink-0"
+                            />
+                          )}
                         </div>
+                        {tryout.in_game_name && (
+                          <p className="text-sm text-gray-400">@{tryout.username}</p>
+                        )}
+                      </div>
+
+                      {/* Right: Rank & Status */}
+                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                        {/* Rank Image */}
+                        {tryout.rank && rankImage && (
+                          <div className="relative group/rank">
+                            <Image
+                              src={rankImage}
+                              alt={tryout.rank}
+                              width={40}
+                              height={40}
+                              className="object-contain"
+                            />
+                            <div className="absolute bottom-full right-0 mb-z px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                              {tryout.rank}
+                            </div>
+                          </div>
+                        )}
+                        {/* Team | Status Badge */}
+                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
+                          {tryout.team_category} | {getStatusLabel(tryout.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Role Badges */}
+                    <div className="flex flex-wrap gap-1">
+                      {tryout.position && (
+                        <span className={`px-2 py-0.5 text-xs border rounded ${getRoleColor(tryout.position)}`}>
+                          {tryout.position}
+                        </span>
+                      )}
+                      {tryout.is_igl && (
+                        <span className="px-2 py-0.5 text-xs rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                          IGL
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Agent Pool */}
+                    {tryout.champion_pool && tryout.champion_pool.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Main Agents</p>
+                        <p className="text-xs text-gray-300">
+                          {tryout.champion_pool.slice(0, 2).join(', ')}
+                          {tryout.champion_pool.length > 2 && ` +${tryout.champion_pool.length - 2}`}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Notes/Description */}
+                    {tryout.notes && (
+                      <div className="pt-2 border-t border-gray-800">
+                        <p className="text-xs text-gray-400 mb-1">Notes</p>
+                        <p className="text-xs text-gray-300 line-clamp-2">
+                          {tryout.notes}
+                        </p>
                       </div>
                     )}
                   </div>
-                  
-                  <p className="text-xs text-gray-400 mb-2">{tryout.username}</p>
-
-                  {/* Role Badges */}
-                  <div className="flex flex-wrap gap-1 justify-center mb-3">
-                    {tryout.position && (
-                      <span className={`px-2 py-0.5 text-xs border rounded ${getRoleColor(tryout.position)}`}>
-                        {tryout.position}
-                      </span>
-                    )}
-                    {tryout.is_igl && (
-                      <span className="px-2 py-0.5 text-xs rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-                        IGL
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Rank Image */}
-                  {tryout.rank && rankImage && (
-                    <div className="relative group mb-3">
-                      <Image
-                        src={rankImage}
-                        alt={tryout.rank}
-                        width={32}
-                        height={32}
-                        className="object-contain"
-                      />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                        {tryout.rank}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Agent Pool */}
-                  {tryout.champion_pool && tryout.champion_pool.length > 0 && (
-                    <div className="w-full mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Main Agents</p>
-                      <p className="text-xs text-gray-300">
-                        {tryout.champion_pool.slice(0, 2).join(', ')}
-                        {tryout.champion_pool.length > 2 && ` +${tryout.champion_pool.length - 2}`}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Team Badge */}
-                  <div className="w-full mb-3">
-                    <span className="px-2 py-1 text-xs bg-primary/20 text-primary border border-primary/30 rounded">
-                      {tryout.team_category}
-                    </span>
-                  </div>
-
-                  {/* Links */}
-                  {(tryout.valorant_tracker_url || tryout.twitter_url || tryout.links) && (
-                    <div className="flex gap-2 mt-auto pt-3 border-t border-gray-800 w-full justify-center">
-                      {tryout.valorant_tracker_url && (
-                        <a
-                          href={tryout.valorant_tracker_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-primary transition"
-                          title="Tracker"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                      {tryout.twitter_url && (
-                        <a
-                          href={tryout.twitter_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-400 hover:text-primary transition"
-                          title="Twitter"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
+                </Link>
               </div>
             )
           })}

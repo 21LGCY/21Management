@@ -173,10 +173,11 @@ export default function NewTryoutWeekForm() {
       case 'not_contacted': return 'Not Contacted'
       case 'contacted': return 'Contacted'
       case 'in_tryouts': return 'In Tryouts'
-      case 'accepted': return 'Player'
+      case 'accepted': return 'Accepted'
       case 'substitute': return 'Substitute'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
+      case 'player': return 'Player'
       default: return status
     }
   }

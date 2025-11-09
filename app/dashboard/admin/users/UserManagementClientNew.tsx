@@ -24,6 +24,36 @@ const getRankImage = (rank: string | undefined | null): string | null => {
   return rankMap[rank] || null
 }
 
+// Get role color for badge
+const getRoleColor = (role: UserRole) => {
+  switch (role) {
+    case 'admin': return 'bg-red-500/20 text-red-300 border-red-500/30'
+    case 'manager': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+    case 'player': return 'bg-green-500/20 text-green-300 border-green-500/30'
+  }
+}
+
+// Get role label
+const getRoleLabel = (role: UserRole) => {
+  switch (role) {
+    case 'admin': return 'Admin'
+    case 'manager': return 'Manager'
+    case 'player': return 'Player'
+  }
+}
+
+// Get position color
+const getPositionColor = (position?: string) => {
+  switch (position) {
+    case 'Duelist': return 'bg-red-500/20 text-red-300 border-red-500/30'
+    case 'Initiator': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+    case 'Controller': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+    case 'Sentinel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+    case 'Flex': return 'bg-green-500/20 text-green-300 border-green-500/30'
+    default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+  }
+}
+
 export default function UserManagementClient() {
   const [users, setUsers] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,7 +73,7 @@ export default function UserManagementClient() {
   const fetchTeams = async () => {
     const { data } = await supabase
       .from('teams')
-      .select('id, name')
+      .select('id, name, tag')
       .order('name')
     setTeams(data || [])
   }
@@ -52,7 +82,7 @@ export default function UserManagementClient() {
     try {
       let query = supabase
         .from('profiles')
-        .select('*, teams(name)')
+        .select('*, teams(name, tag)')
         .order('created_at', { ascending: false })
 
       const { data, error } = await query
@@ -125,7 +155,7 @@ export default function UserManagementClient() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
           >
             <option value="all">All Account Types</option>
             <option value="admin">Admin</option>
@@ -136,7 +166,7 @@ export default function UserManagementClient() {
           <select
             value={teamFilter}
             onChange={(e) => setTeamFilter(e.target.value)}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
           >
             <option value="all">All Teams</option>
             <option value="none">No Team</option>
@@ -150,7 +180,7 @@ export default function UserManagementClient() {
           <select
             value={positionFilter}
             onChange={(e) => setPositionFilter(e.target.value)}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
           >
             <option value="all">All Roles</option>
             {roles.map((role) => (
@@ -161,170 +191,115 @@ export default function UserManagementClient() {
       </div>
 
       {/* Users Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredUsers.length > 0 ? (
-          filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:border-primary/50 transition flex flex-col"
-            >
-              {/* User Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center overflow-hidden">
-                    {user.avatar_url ? (
-                      <Image
-                        src={user.avatar_url}
-                        alt={user.username}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <UserIcon className="w-6 h-6 text-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-white truncate">
-                        {user.in_game_name || user.username}
-                      </h3>
-                      {user.nationality && (
-                        <Image
-                          src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
-                          alt={user.nationality}
-                          width={24}
-                          height={18}
-                          className="object-contain flex-shrink-0"
-                          title={user.nationality}
-                        />
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-400 truncate">{user.username}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 ml-2">
-                  <Link href={`/dashboard/admin/users/view/${user.id}`}>
-                    <button className="text-primary hover:text-primary-light text-sm font-medium whitespace-nowrap">
-                      View
-                    </button>
-                  </Link>
-                </div>
-              </div>
+          filteredUsers.map((user) => {
+            const rankImage = getRankImage(user.rank)
+            const teamTag = (user as any).teams?.tag || null
+            
+            return (
+              <Link
+                key={user.id}
+                href={`/dashboard/admin/users/view/${user.id}`}
+                className="block bg-dark-card border border-gray-800 rounded-lg hover:border-gray-700 transition"
+              >
+                <div className="p-4 flex flex-col h-full">
+                  <div className="space-y-2 flex-1">
+                    {/* Header: Name/IGN (left) + Team|Role Badge & Rank (right) */}
+                    <div className="flex items-start justify-between gap-3">
+                      {/* Left: Name & IGN */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="text-lg font-bold text-white truncate">
+                            {user.in_game_name || user.username}
+                          </h3>
+                          {user.nationality && (
+                            <Image
+                              src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
+                              alt={user.nationality}
+                              width={20}
+                              height={15}
+                              className="object-contain flex-shrink-0"
+                            />
+                          )}
+                        </div>
+                        {user.in_game_name && (
+                          <p className="text-sm text-gray-400">@{user.username}</p>
+                        )}
+                      </div>
 
-              {/* Account Type Badge and Rank */}
-              <div className="flex items-center justify-between mb-4">
-                <span className={`px-2 py-1 text-xs rounded-lg font-medium flex items-center gap-1 ${
-                  user.role === 'admin' 
-                    ? 'bg-red-500/20 text-red-400' 
-                    : user.role === 'manager' 
-                    ? 'bg-blue-500/20 text-blue-400' 
-                    : 'bg-green-500/20 text-green-400'
-                }`}>
-                  {user.role === 'admin' && <Shield className="w-3 h-3" />}
-                  {user.role === 'manager' && <Crown className="w-3 h-3" />}
-                  {user.role === 'player' && <Users className="w-3 h-3" />}
-                  {user.role.toUpperCase()}
-                </span>
-                {user.rank && getRankImage(user.rank) && (
-                  <div className="relative group">
-                    <Image
-                      src={getRankImage(user.rank)!}
-                      alt={user.rank}
-                      width={48}
-                      height={48}
-                      className="object-contain"
-                    />
-                    <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                      {user.rank}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Player-specific Info */}
-              {user.role === 'player' && (
-                <div className="space-y-3">
-                  {/* Role and Status Badges */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {user.position && (
-                      <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-lg font-medium">
-                        {user.position}
-                      </span>
-                    )}
-                    {user.is_igl && (
-                      <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-medium">
-                        IGL
-                      </span>
-                    )}
-                    {user.is_substitute && (
-                      <span className="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-lg font-medium">
-                        SUB
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Agent Pool */}
-                  {user.champion_pool && user.champion_pool.length > 0 && (
-                    <div>
-                      <p className="text-gray-400 text-xs mb-1">Main Agents</p>
-                      <div className="flex flex-wrap gap-1">
-                        {user.champion_pool.slice(0, 3).map((agent: string) => (
-                          <span key={agent} className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
-                            {agent}
-                          </span>
-                        ))}
-                        {user.champion_pool.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
-                            +{user.champion_pool.length - 3}
-                          </span>
+                      {/* Right: Team|Role Badge & Rank */}
+                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                        {/* Team | Role Badge */}
+                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getRoleColor(user.role)}`}>
+                          {teamTag || 'No Team'} | {getRoleLabel(user.role)}
+                        </span>
+                        
+                        {/* Rank Image */}
+                        {user.rank && rankImage && (
+                          <div className="relative group/rank">
+                            <Image
+                              src={rankImage}
+                              alt={user.rank}
+                              width={40}
+                              height={40}
+                              className="object-contain"
+                            />
+                            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                              {user.rank}
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
-                  )}
+
+                    {/* Player-specific Info */}
+                    {user.role === 'player' && (
+                      <div className="space-y-2">
+                        {/* Role and Status Badges */}
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {user.position && (
+                            <span className={`px-2 py-0.5 text-xs border rounded ${getPositionColor(user.position)}`}>
+                              {user.position}
+                            </span>
+                          )}
+                          {user.is_igl && (
+                            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded border border-yellow-500/30">
+                              IGL
+                            </span>
+                          )}
+                          {user.is_substitute && (
+                            <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded border border-orange-500/30">
+                              SUB
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Agent Pool */}
+                        {user.champion_pool && user.champion_pool.length > 0 && (
+                          <div>
+                            <p className="text-xs text-gray-400 mb-1">Main Agents</p>
+                            <p className="text-xs text-gray-300">
+                              {user.champion_pool.slice(0, 2).join(', ')}
+                              {user.champion_pool.length > 2 && ` +${user.champion_pool.length - 2}`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Manager-specific Info */}
+                    {user.role === 'manager' && user.staff_role && (
+                      <div>
+                        <p className="text-xs text-gray-400">Role</p>
+                        <p className="text-sm text-white font-medium">{user.staff_role}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-
-              {/* Manager-specific Info */}
-              {user.role === 'manager' && (
-                <div className="space-y-3">
-                  {user.staff_role && (
-                    <div>
-                      <p className="text-gray-400 text-sm">Role</p>
-                      <p className="text-white font-medium">{user.staff_role}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Spacer to push content to bottom */}
-              <div className="flex-grow"></div>
-
-              {/* Team Info */}
-              <div className="mt-4">
-                <p className="text-gray-400 text-sm mb-1">Team</p>
-                {user.team_id ? (
-                  <Link 
-                    href={`/dashboard/admin/teams/view/${user.team_id}`}
-                    className="inline-flex items-center gap-1.5 text-primary hover:text-primary-light font-medium transition"
-                  >
-                    <span>{(user as any).teams?.name || 'Unknown Team'}</span>
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                  </Link>
-                ) : (
-                  <p className="text-white font-medium">No Team</p>
-                )}
-              </div>
-
-              {/* Join Date - Always at bottom */}
-              <div className="mt-4 pt-4 border-t border-gray-800">
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>Joined</span>
-                  <span>{new Date(user.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-          ))
+              </Link>
+            )
+          })
         ) : (
           <div className="col-span-full text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />

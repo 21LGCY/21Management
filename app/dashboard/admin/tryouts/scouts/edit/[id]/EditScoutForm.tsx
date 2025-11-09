@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus } from '@/lib/types/database'
+import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus, ProfileTryout } from '@/lib/types/database'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -64,10 +64,15 @@ const EUROPEAN_COUNTRIES = [
   { code: 'VA', name: 'Vatican City' },
 ]
 
-export default function NewScoutForm() {
+interface EditScoutFormProps {
+  scoutId: string
+}
+
+export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
   const router = useRouter()
   const supabase = createClient()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showAgentDropdown, setShowAgentDropdown] = useState(false)
   const [adminUsers, setAdminUsers] = useState<Array<{ id: string; username: string }>>([])
   const [managerUsers, setManagerUsers] = useState<Array<{ id: string; username: string }>>([])
@@ -91,12 +96,50 @@ export default function NewScoutForm() {
   })
 
   useEffect(() => {
+    fetchScout()
     fetchUsers()
-  }, [])
+  }, [scoutId])
+
+  const fetchScout = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles_tryouts')
+        .select('*')
+        .eq('id', scoutId)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setFormData({
+          username: data.username || '',
+          team_category: data.team_category || '21L',
+          in_game_name: data.in_game_name || '',
+          position: data.position || '',
+          is_igl: data.is_igl || false,
+          nationality: data.nationality || '',
+          champion_pool: data.champion_pool || [],
+          rank: data.rank || '',
+          valorant_tracker_url: data.valorant_tracker_url || '',
+          twitter_url: data.twitter_url || '',
+          status: data.status || 'not_contacted',
+          managed_by: data.managed_by || '',
+          contacted_by: data.contacted_by || '',
+          contacted_by_date: data.last_contact_date || '',
+          notes: data.notes || '',
+          links: data.links || '',
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching scout:', error)
+      alert('Failed to load scout profile')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchUsers = async () => {
     try {
-      // Fetch admin users
       const { data: admins, error: adminError } = await supabase
         .from('profiles')
         .select('id, username')
@@ -106,7 +149,6 @@ export default function NewScoutForm() {
       if (adminError) throw adminError
       setAdminUsers(admins || [])
 
-      // Fetch manager users
       const { data: managers, error: managerError } = await supabase
         .from('profiles')
         .select('id, username')
@@ -122,12 +164,12 @@ export default function NewScoutForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSaving(true)
 
     try {
       const { error } = await supabase
         .from('profiles_tryouts')
-        .insert([{
+        .update({
           username: formData.username,
           team_category: formData.team_category,
           in_game_name: formData.in_game_name || null,
@@ -144,17 +186,18 @@ export default function NewScoutForm() {
           last_contact_date: formData.contacted_by_date || null,
           notes: formData.notes || null,
           links: formData.links || null,
-        }])
+        })
+        .eq('id', scoutId)
 
       if (error) throw error
 
-      router.push('/dashboard/admin/tryouts?tab=scouting')
+      router.push(`/dashboard/admin/tryouts/scouts/view/${scoutId}`)
       router.refresh()
     } catch (error) {
-      console.error('Error creating scout profile:', error)
-      alert('Failed to create scout profile. Please try again.')
+      console.error('Error updating scout profile:', error)
+      alert('Failed to update scout profile. Please try again.')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -179,14 +222,22 @@ export default function NewScoutForm() {
     })
   }
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <form onSubmit={handleSubmit} className="bg-dark-card border border-gray-800 rounded-lg p-6 space-y-6">
       <Link
-        href="/dashboard/admin/tryouts?tab=scouting"
+        href={`/dashboard/admin/tryouts/scouts/view/${scoutId}`}
         className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-4"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Scouting Database
+        Back to Scout Profile
       </Link>
 
       <div className="space-y-4">
@@ -306,7 +357,6 @@ export default function NewScoutForm() {
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
           
-          {/* Selected Agents Display */}
           {formData.champion_pool.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.champion_pool.map((agent) => (
@@ -327,7 +377,6 @@ export default function NewScoutForm() {
             </div>
           )}
 
-          {/* Agent Selector Dropdown */}
           <div className="relative">
             <button
               type="button"
@@ -477,7 +526,6 @@ export default function NewScoutForm() {
           </div>
         </div>
 
-        {/* Conditional Contact Date Field */}
         {formData.contacted_by && (
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Contact Date</label>
@@ -504,20 +552,19 @@ export default function NewScoutForm() {
 
       <div className="flex justify-end gap-4 pt-4 border-t border-gray-800">
         <Link
-          href="/dashboard/admin/tryouts?tab=scouting"
+          href={`/dashboard/admin/tryouts/scouts/view/${scoutId}`}
           className="px-6 py-2 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-800 transition"
         >
           Cancel
         </Link>
         <button
           type="submit"
-          disabled={loading}
+          disabled={saving}
           className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
         >
-          {loading ? 'Creating...' : 'Create Scout Profile'}
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </form>
   )
 }
-
