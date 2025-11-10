@@ -18,21 +18,13 @@ type TryoutWeekWithStats = TryoutWeek & {
 interface TryoutWeeksManagerProps {
   teamId: string | null
   team: any | null
+  teamCategory: TeamCategory | null
 }
 
-export default function TryoutWeeksManager({ teamId, team }: TryoutWeeksManagerProps) {
+export default function TryoutWeeksManager({ teamId, team, teamCategory }: TryoutWeeksManagerProps) {
   const [tryoutWeeks, setTryoutWeeks] = useState<TryoutWeekWithStats[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
-
-  // Get team category from team data
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
 
   useEffect(() => {
     if (teamCategory) {

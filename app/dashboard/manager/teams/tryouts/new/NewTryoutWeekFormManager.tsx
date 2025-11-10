@@ -9,9 +9,10 @@ import { TeamCategory, ProfileTryout } from '@/lib/types/database'
 
 interface NewTryoutWeekFormManagerProps {
   team: any
+  teamCategory: TeamCategory | null
 }
 
-export default function NewTryoutWeekFormManager({ team }: NewTryoutWeekFormManagerProps) {
+export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryoutWeekFormManagerProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [players, setPlayers] = useState<ProfileTryout[]>([])
@@ -19,15 +20,6 @@ export default function NewTryoutWeekFormManager({ team }: NewTryoutWeekFormMana
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const supabase = createClient()
-
-  // Get team category from team data
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
 
   const [formData, setFormData] = useState({
     team_category: teamCategory as TeamCategory,

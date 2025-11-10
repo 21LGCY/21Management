@@ -12,17 +12,8 @@ interface ScoutViewPageProps {
 }
 
 export default async function ScoutViewManagerPage({ params }: ScoutViewPageProps) {
-  const { user, teamId, team } = await requireManagerTeamAccess()
+  const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
   const supabase = await createClient()
-
-  // Get team category from team data with more precise mapping
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
 
   // Get the scout profile
   const { data: scout, error } = await supabase

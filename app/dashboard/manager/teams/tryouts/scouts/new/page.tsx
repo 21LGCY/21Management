@@ -4,16 +4,7 @@ import BackButton from '@/components/BackButton'
 import NewScoutManagerForm from './NewScoutManagerForm'
 
 export default async function NewScoutManagerPage() {
-  const { user, teamId, team } = await requireManagerTeamAccess()
-
-  // Determine team category from team name with more precise mapping
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
+  const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
 
   return (
     <div className="min-h-screen bg-dark">

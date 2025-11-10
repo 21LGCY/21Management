@@ -11,9 +11,10 @@ import { useRouter } from 'next/navigation'
 interface ScoutingDatabaseManagerProps {
   teamId: string | null
   team: any | null
+  teamCategory: TeamCategory | null
 }
 
-export default function ScoutingDatabaseManager({ teamId, team }: ScoutingDatabaseManagerProps) {
+export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: ScoutingDatabaseManagerProps) {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -23,71 +24,28 @@ export default function ScoutingDatabaseManager({ teamId, team }: ScoutingDataba
   const supabase = createClient()
   const router = useRouter()
 
-  // Get team category from team data with more precise mapping
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
-
-  // Temporary debug to see actual team names
-  if (team?.name) {
-    console.log('🔍 Team mapping debug:', {
-      originalName: team.name,
-      lowercased: team.name.toLowerCase(),
-      mappedTo: teamCategory,
-      checks: {
-        hasLegacyGC: team.name.toLowerCase().includes('legacy gc'),
-        has21GC: team.name.toLowerCase().includes('21gc'),
-        hasAcademy: team.name.toLowerCase().includes('academy'),
-        has21ACA: team.name.toLowerCase().includes('21aca'),
-        has21Legacy: team.name.toLowerCase().includes('21 legacy'),
-        hasLegacyOnly: team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')
-      }
-    })
-  }
-
   useEffect(() => {
     fetchTryouts()
   }, [teamCategory])
 
   const fetchTryouts = async () => {
     try {
-      let query = supabase
-        .from('profiles_tryouts')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      // Filter by team category if available, otherwise show no results
-      if (teamCategory) {
-        query = query.eq('team_category', teamCategory)
-      } else {
-        // If no team category, return empty array to prevent showing all tryouts
+      // Filter by team_category column directly from the database
+      if (!teamCategory) {
         setTryouts([])
         setLoading(false)
         return
       }
 
-      const { data, error } = await query
+      const { data, error } = await supabase
+        .from('profiles_tryouts')
+        .select('*')
+        .eq('team_category', teamCategory)
+        .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      // Additional filtering to exclude players who already exist in profiles table (already on a team)
-      const { data: existingPlayers } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('role', 'player')
-
-      const existingUsernames = new Set(existingPlayers?.map(p => p.username) || [])
-      
-      // Filter out tryouts for players who are already on any team
-      const filteredData = (data || []).filter(tryout => 
-        !existingUsernames.has(tryout.username) || tryout.status === 'player'
-      )
-
-      setTryouts(filteredData)
+      setTryouts(data || [])
     } catch (error) {
       console.error('Error fetching tryouts:', error)
       setTryouts([])
@@ -302,7 +260,7 @@ export default function ScoutingDatabaseManager({ teamId, team }: ScoutingDataba
             )}
             {!teamCategory && (
               <span className="ml-2 px-2 py-1 bg-red-500/20 text-red-300 text-sm rounded">
-                Team mapping error - Contact admin
+                No team category assigned - Contact admin
               </span>
             )}
           </p>
@@ -313,13 +271,13 @@ export default function ScoutingDatabaseManager({ teamId, team }: ScoutingDataba
       )}
 
       {/* Show warning if no team category detected */}
-      {!teamCategory && team && (
+      {!teamCategory && (
         <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
           <p className="text-yellow-300">
-            ⚠️ Unable to determine team category for "{team.name}". Please contact an administrator.
+            ⚠️ No team category assigned. Unable to load scouting database.
           </p>
           <p className="text-yellow-400 text-sm mt-1">
-            Expected team names: "21L", "21Legacy", "21GC", or "21ACA"
+            Please contact an administrator to assign a team category (21L, 21GC, or 21ACA) to your team.
           </p>
         </div>
       )}

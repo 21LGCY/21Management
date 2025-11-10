@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/server'
+import { TeamCategory } from '@/lib/types/database'
 
 export interface ManagerTeamAccess {
   user: any
   teamId: string | null
   team: any | null
+  teamCategory: TeamCategory | null
 }
 
 /**
@@ -28,10 +30,25 @@ export async function getManagerTeamAccess(): Promise<ManagerTeamAccess> {
     throw new Error('Manager is not assigned to a team')
   }
 
+  // Map team name to team category
+  const team = Array.isArray(userProfile.teams) ? userProfile.teams[0] : userProfile.teams
+  const teamName = team?.name?.toLowerCase() || ''
+  let teamCategory: TeamCategory | null = null
+  
+  if (teamName.includes('legacy gc') || teamName.includes('21gc')) {
+    teamCategory = '21GC'
+  } else if (teamName.includes('academy') || teamName.includes('21aca')) {
+    teamCategory = '21ACA'
+  } else if (teamName.includes('21 legacy') || teamName.includes('21l') || 
+             (teamName.includes('legacy') && !teamName.includes('gc') && !teamName.includes('academy'))) {
+    teamCategory = '21L'
+  }
+
   return {
     user,
     teamId: userProfile.team_id,
-    team: userProfile.teams
+    team: team,
+    teamCategory
   }
 }
 

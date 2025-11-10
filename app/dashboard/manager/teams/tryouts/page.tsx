@@ -4,7 +4,7 @@ import BackButton from '@/components/BackButton'
 import TryoutsManagerClient from './TryoutsManagerClient'
 
 export default async function ManagerTryoutsPage() {
-  const { user, teamId, team } = await requireManagerTeamAccess()
+  const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
 
   return (
     <div className="min-h-screen bg-dark">
@@ -23,7 +23,7 @@ export default async function ManagerTryoutsPage() {
           <p className="text-gray-400">Manage tryouts and scout players for {team?.name || 'your team'}</p>
         </div>
         
-        <TryoutsManagerClient teamId={teamId} team={team} />
+        <TryoutsManagerClient teamId={teamId} team={team} teamCategory={teamCategory} />
       </main>
     </div>
   )

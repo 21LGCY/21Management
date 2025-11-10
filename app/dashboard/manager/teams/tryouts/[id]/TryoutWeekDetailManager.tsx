@@ -12,9 +12,10 @@ import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 interface TryoutWeekDetailManagerProps {
   weekId: string
   team: any
+  teamCategory: TeamCategory | null
 }
 
-export default function TryoutWeekDetailManager({ weekId, team }: TryoutWeekDetailManagerProps) {
+export default function TryoutWeekDetailManager({ weekId, team, teamCategory }: TryoutWeekDetailManagerProps) {
   const router = useRouter()
   const [week, setWeek] = useState<TryoutWeek | null>(null)
   const [availabilities, setAvailabilities] = useState<PlayerAvailability[]>([])
@@ -32,15 +33,6 @@ export default function TryoutWeekDetailManager({ weekId, team }: TryoutWeekDeta
   const [editedNotes, setEditedNotes] = useState('')
   const [savingInfo, setSavingInfo] = useState(false)
   const supabase = createClient()
-
-  // Get team category from team data
-  const teamCategory = team?.name ? (
-    team.name.toLowerCase().includes('legacy gc') || team.name.toLowerCase().includes('21gc') ? '21GC' :
-    team.name.toLowerCase().includes('academy') || team.name.toLowerCase().includes('21aca') ? '21ACA' :
-    team.name.toLowerCase().includes('21 legacy') || team.name.toLowerCase().includes('21l') || 
-    (team.name.toLowerCase().includes('legacy') && !team.name.toLowerCase().includes('gc') && !team.name.toLowerCase().includes('academy')) ? '21L' :
-    null
-  ) : null
 
   // Filter players in Add Players modal based on search
   const filteredAvailablePlayers = useMemo(() => {

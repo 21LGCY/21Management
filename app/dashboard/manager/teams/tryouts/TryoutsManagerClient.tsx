@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Users, Calendar, MapPin } from 'lucide-react'
+import { TeamCategory } from '@/lib/types/database'
 import ScoutingDatabaseManager from './sections/ScoutingDatabaseManager'
 import TryoutWeeksManager from './sections/TryoutWeeksManager'
 import ZonesInterfaceManager from './sections/ZonesInterfaceManager'
@@ -11,9 +12,10 @@ type TabType = 'scouting' | 'tryouts' | 'zones'
 interface TryoutsManagerClientProps {
   teamId: string | null
   team: any | null
+  teamCategory: TeamCategory | null
 }
 
-export default function TryoutsManagerClient({ teamId, team }: TryoutsManagerClientProps) {
+export default function TryoutsManagerClient({ teamId, team, teamCategory }: TryoutsManagerClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('scouting')
 
   const tabs = [
@@ -72,9 +74,9 @@ export default function TryoutsManagerClient({ teamId, team }: TryoutsManagerCli
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'scouting' && <ScoutingDatabaseManager teamId={teamId} team={team} />}
-        {activeTab === 'tryouts' && <TryoutWeeksManager teamId={teamId} team={team} />}
-        {activeTab === 'zones' && <ZonesInterfaceManager teamId={teamId} team={team} />}
+        {activeTab === 'scouting' && <ScoutingDatabaseManager teamId={teamId} team={team} teamCategory={teamCategory} />}
+        {activeTab === 'tryouts' && <TryoutWeeksManager teamId={teamId} team={team} teamCategory={teamCategory} />}
+        {activeTab === 'zones' && <ZonesInterfaceManager teamId={teamId} team={team} teamCategory={teamCategory} />}
       </div>
     </div>
   )
