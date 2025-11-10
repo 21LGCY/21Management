@@ -119,36 +119,6 @@ export default async function ManagerTeamsPage() {
               )}
             </div>
           </div>
-
-          {/* Team Performance Overview */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Performance Overview</h2>
-              <Link href="/dashboard/manager/stats">
-                <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
-                  View Details
-                </button>
-              </Link>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800">
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-5 h-5 text-primary" />
-                  <span className="text-white">Win Rate</span>
-                </div>
-                <span className="text-green-400 font-medium">75%</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800">
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-primary" />
-                  <span className="text-white">Active Players</span>
-                </div>
-                <span className="text-blue-400 font-medium">{playerCount || 0}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
     </div>

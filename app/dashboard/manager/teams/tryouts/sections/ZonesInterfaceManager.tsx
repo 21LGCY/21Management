@@ -4,115 +4,15 @@ import { useState, useEffect } from 'react'
 import { Globe, Users, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TeamCategory, TryoutStatus, ValorantRole } from '@/lib/types/database'
+import Link from 'next/link'
 
-// VALORANT Zone mapping (same as admin)
-const VALORANT_ZONES: { [key: string]: string[] } = {
-  'EMEA': [
-    'AT', 'Austria',
-    'BE', 'Belgium', 
-    'BG', 'Bulgaria',
-    'HR', 'Croatia',
-    'CY', 'Cyprus',
-    'CZ', 'Czech Republic',
-    'DK', 'Denmark',
-    'EE', 'Estonia',
-    'FI', 'Finland',
-    'FR', 'France',
-    'DE', 'Germany',
-    'GR', 'Greece',
-    'HU', 'Hungary',
-    'IS', 'Iceland',
-    'IE', 'Ireland',
-    'IT', 'Italy',
-    'LV', 'Latvia',
-    'LI', 'Liechtenstein',
-    'LT', 'Lithuania',
-    'LU', 'Luxembourg',
-    'MT', 'Malta',
-    'NL', 'Netherlands',
-    'NO', 'Norway',
-    'PL', 'Poland',
-    'PT', 'Portugal',
-    'RO', 'Romania',
-    'SK', 'Slovakia',
-    'SI', 'Slovenia',
-    'ES', 'Spain',
-    'SE', 'Sweden',
-    'CH', 'Switzerland',
-    'GB', 'United Kingdom', 'UK',
-    'TR', 'Turkey',
-    'RU', 'Russia',
-    'UA', 'Ukraine',
-    'BY', 'Belarus',
-    'MD', 'Moldova',
-    'RS', 'Serbia',
-    'BA', 'Bosnia and Herzegovina',
-    'ME', 'Montenegro',
-    'MK', 'North Macedonia',
-    'AL', 'Albania',
-    'XK', 'Kosovo',
-    'GE', 'Georgia',
-    'AM', 'Armenia',
-    'AZ', 'Azerbaijan'
-  ],
-  'Americas': [
-    'US', 'United States',
-    'CA', 'Canada',
-    'MX', 'Mexico',
-    'BR', 'Brazil',
-    'AR', 'Argentina',
-    'CL', 'Chile',
-    'PE', 'Peru',
-    'CO', 'Colombia',
-    'VE', 'Venezuela',
-    'UY', 'Uruguay',
-    'PY', 'Paraguay',
-    'BO', 'Bolivia',
-    'EC', 'Ecuador',
-    'GY', 'Guyana',
-    'SR', 'Suriname',
-    'GF', 'French Guiana',
-    'CR', 'Costa Rica',
-    'PA', 'Panama',
-    'NI', 'Nicaragua',
-    'HN', 'Honduras',
-    'GT', 'Guatemala',
-    'BZ', 'Belize',
-    'SV', 'El Salvador',
-    'CU', 'Cuba',
-    'DO', 'Dominican Republic',
-    'HT', 'Haiti',
-    'JM', 'Jamaica',
-    'TT', 'Trinidad and Tobago'
-  ],
-  'APAC': [
-    'AU', 'Australia',
-    'NZ', 'New Zealand',
-    'JP', 'Japan',
-    'KR', 'Korea', 'South Korea',
-    'CN', 'China',
-    'TW', 'Taiwan',
-    'HK', 'Hong Kong',
-    'MO', 'Macau',
-    'SG', 'Singapore',
-    'MY', 'Malaysia',
-    'TH', 'Thailand',
-    'VN', 'Vietnam',
-    'PH', 'Philippines',
-    'ID', 'Indonesia',
-    'BN', 'Brunei',
-    'KH', 'Cambodia',
-    'LA', 'Laos',
-    'MM', 'Myanmar',
-    'IN', 'India',
-    'PK', 'Pakistan',
-    'BD', 'Bangladesh',
-    'LK', 'Sri Lanka',
-    'MV', 'Maldives',
-    'NP', 'Nepal',
-    'BT', 'Bhutan',
-    'MN', 'Mongolia'
-  ]
+// VALORANT European Zones mapping (same as admin)
+const VALORANT_ZONES: Record<string, string[]> = {
+  'Europe du Nord': ['Denmark', 'Finland', 'Ireland', 'Iceland', 'Norway', 'Sweden', 'United Kingdom', 'GB', 'UK', 'DK', 'FI', 'IE', 'IS', 'NO', 'SE'],
+  'Europe de l\'Est': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia', 'Bulgaria', 'Croatia', 'Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan', 'Latvia', 'Lithuania', 'Moldova', 'Montenegro', 'Poland', 'Romania', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Czechia', 'Czech Republic', 'Ukraine', 'Uzbekistan', 'AL', 'AM', 'AZ', 'BY', 'BA', 'BG', 'HR', 'EE', 'GE', 'GR', 'HU', 'KZ', 'LV', 'LT', 'MD', 'ME', 'PL', 'RO', 'RU', 'RS', 'SK', 'SI', 'CZ', 'UA', 'UZ'],
+  'DACH': ['Germany', 'Austria', 'Switzerland', 'DE', 'AT', 'CH'],
+  'IBIT': ['Spain', 'Italy', 'Portugal', 'ES', 'IT', 'PT'],
+  'France': ['France', 'FR'],
 }
 
 interface ZoneStats {
@@ -160,7 +60,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
   }
 
   const getPlayerZone = (nationality: string | null | undefined): string => {
-    if (!nationality) return 'Unknown'
+    if (!nationality) return 'Autre'
     
     for (const [zone, countries] of Object.entries(VALORANT_ZONES)) {
       if (countries.some(country => 
@@ -170,7 +70,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
         return zone
       }
     }
-    return 'Other'
+    return 'Autre'
   }
 
   const zoneStats: ZoneStats[] = (() => {
@@ -207,14 +107,16 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       .sort((a, b) => b.count - a.count)
   })()
 
-  const getZoneColor = (zone: string) => {
-    switch (zone) {
-      case 'EMEA': return 'from-blue-500 to-purple-600'
-      case 'Americas': return 'from-green-500 to-blue-500'
-      case 'APAC': return 'from-orange-500 to-red-500'
-      case 'Other': return 'from-gray-500 to-gray-600'
-      default: return 'from-gray-500 to-gray-600'
+  const getZoneColor = (zone: string): string => {
+    const colors: Record<string, string> = {
+      'Europe du Nord': 'from-green-500 to-emerald-600',
+      'Europe de l\'Est': 'from-purple-500 to-violet-600',
+      'DACH': 'from-yellow-500 to-orange-500',
+      'IBIT': 'from-red-500 to-pink-500',
+      'France': 'from-blue-500 to-indigo-600',
+      'Autre': 'from-gray-500 to-gray-600'
     }
+    return colors[zone] || 'from-gray-500 to-gray-600'
   }
 
   const getStatusColor = (status: TryoutStatus) => {
