@@ -133,9 +133,10 @@ export default function TeamManagementClient() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <div
+            <Link
               key={team.id}
-              className="p-4 rounded-lg border bg-dark border-gray-800 hover:border-gray-700 transition"
+              href={`/dashboard/admin/teams/view/${team.id}`}
+              className="p-4 rounded-lg border bg-dark border-gray-800 hover:border-gray-700 transition cursor-pointer"
             >
               <div className="flex items-center gap-3 mb-2">
                 {team.logo_url ? (
@@ -155,14 +156,8 @@ export default function TeamManagementClient() {
                   <h3 className="font-semibold text-white">{team.name}</h3>
                   <p className="text-sm text-gray-400">{team.game}</p>
                 </div>
-                <Link
-                  href={`/dashboard/admin/teams/view/${team.id}`}
-                  className="text-sm font-medium text-primary hover:text-primary-dark transition"
-                >
-                  VIEW
-                </Link>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

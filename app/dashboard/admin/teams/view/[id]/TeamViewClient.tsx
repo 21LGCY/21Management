@@ -2,22 +2,29 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, UserProfile } from '@/lib/types/database'
-import { ArrowLeft, Users, Shield, User as UserIcon, Edit, Trash2, Plus } from 'lucide-react'
+import { Team, UserProfile, UserRole } from '@/lib/types/database'
+import { ArrowLeft, Users, Shield, User as UserIcon, Edit, Trash2, Plus, MessageSquare, Map } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import TeamCommunication from './TeamCommunication'
 
 interface TeamViewClientProps {
   teamId: string
+  userId: string
+  userName: string
+  userRole: UserRole
 }
 
-export default function TeamViewClient({ teamId }: TeamViewClientProps) {
+type TabType = 'roster' | 'strat_map' | 'review_praccs'
+
+export default function TeamViewClient({ teamId, userId, userName, userRole }: TeamViewClientProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [players, setPlayers] = useState<UserProfile[]>([])
   const [substitutes, setSubstitutes] = useState<UserProfile[]>([])
   const [staff, setStaff] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabType>('roster')
   
   const supabase = createClient()
   const router = useRouter()
@@ -100,17 +107,12 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
     const rankImage = getRankImage(member.rank)
     
     return (
-      <div key={member.id} className="bg-dark border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition flex flex-col">
+      <Link 
+        key={member.id} 
+        href={`/dashboard/admin/users/view/${member.id}`}
+        className="bg-dark border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition flex flex-col cursor-pointer"
+      >
         <div className="flex flex-col items-center text-center">
-          {/* Header with View button */}
-          <div className="w-full flex justify-end mb-2">
-            <Link href={`/dashboard/admin/users/view/${member.id}`}>
-              <button className="text-primary hover:text-primary-light text-sm font-medium">
-                View
-              </button>
-            </Link>
-          </div>
-
           {/* Avatar */}
           <div className="mb-3">
             {member.avatar_url ? (
@@ -196,7 +198,7 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
             <span>{new Date(member.created_at).toLocaleDateString()}</span>
           </div>
         )}
-      </div>
+      </Link>
     )
   }
 
@@ -259,14 +261,54 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
         </div>
       </div>
 
-      {/* Roster Content */}
-      <div className="space-y-6">
-        {/* Main Roster */}
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Main Roster</h2>
+      {/* Tabs Navigation */}
+      <div className="border-b border-gray-800">
+        <nav className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('roster')}
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+              activeTab === 'roster'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Roster
+          </button>
+          <button
+            onClick={() => setActiveTab('strat_map')}
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+              activeTab === 'strat_map'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            <Map className="w-4 h-4" />
+            Strat Map
+          </button>
+          <button
+            onClick={() => setActiveTab('review_praccs')}
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+              activeTab === 'review_praccs'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Review Praccs
+          </button>
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'roster' && (
+        <div className="space-y-6">
+          {/* Main Roster */}
+          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-semibold text-white">Main Roster</h2>
               </div>
             </div>
             {players.length === 0 ? (
@@ -288,7 +330,7 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
               <p className="text-gray-400 text-center py-8">No substitutes</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {substitutes.map((sub) => renderMemberCard(sub))}
+                {substitutes.map((sub) => renderMemberCard(sub, true))}
               </div>
             )}
           </div>
@@ -308,6 +350,27 @@ export default function TeamViewClient({ teamId }: TeamViewClientProps) {
             )}
           </div>
         </div>
+      )}
+
+      {activeTab === 'strat_map' && (
+        <TeamCommunication
+          teamId={teamId}
+          section="strat_map"
+          userId={userId}
+          userName={userName}
+          userRole={userRole}
+        />
+      )}
+
+      {activeTab === 'review_praccs' && (
+        <TeamCommunication
+          teamId={teamId}
+          section="review_praccs"
+          userId={userId}
+          userName={userName}
+          userRole={userRole}
+        />
+      )}
     </div>
   )
 }

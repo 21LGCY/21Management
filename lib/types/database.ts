@@ -1,5 +1,5 @@
 export type UserRole = 'admin' | 'manager' | 'player'
-export type ValorantRole = 'Duelist' | 'Initiator' | 'Controller' | 'Flex' | 'Sentinel'
+export type ValorantRole = 'Duelist' | 'Initiator' | 'Controller' | 'Flex' | 'Sentinel' | 'Staff'
 export type StaffRole = 'Coach' | 'Manager' | 'Analyst'
 export type ValorantRank = 
   | 'Ascendant 1' | 'Ascendant 2' | 'Ascendant 3'
@@ -9,6 +9,8 @@ export type TeamCategory = '21L' | '21GC' | '21ACA'
 export type TryoutWeekStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 export type HourSlot = 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+export type CommunicationSection = 'strat_map' | 'review_praccs'
+export type MessageType = 'text' | 'image'
 
 export type TryoutStatus = 
   | 'not_contacted'
@@ -199,6 +201,20 @@ export interface ScheduleActivity {
   time_slot: string // e.g., "1:00 PM"
   duration: number // in hours
   created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TeamMessage {
+  id: string
+  team_id: string
+  section: CommunicationSection
+  message_type: MessageType
+  content: string
+  image_url?: string | null
+  author_id: string
+  author_name: string
+  author_role: UserRole
   created_at: string
   updated_at: string
 }

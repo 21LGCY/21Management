@@ -191,7 +191,7 @@ export default function UserManagementClient() {
       </div>
 
       {/* Users Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => {
             const rankImage = getRankImage(user.rank)
@@ -205,27 +205,45 @@ export default function UserManagementClient() {
               >
                 <div className="p-4 flex flex-col h-full">
                   <div className="space-y-2 flex-1">
-                    {/* Header: Name/IGN (left) + Team|Role Badge & Rank (right) */}
+                    {/* Header: Avatar + Name/IGN (left) + Team|Role Badge & Rank (right) */}
                     <div className="flex items-start justify-between gap-3">
-                      {/* Left: Name & IGN */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="text-lg font-bold text-white truncate">
-                            {user.in_game_name || user.username}
-                          </h3>
-                          {user.nationality && (
+                      {/* Left: Avatar + Name & IGN */}
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Avatar */}
+                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {user.avatar_url ? (
                             <Image
-                              src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
-                              alt={user.nationality}
-                              width={20}
-                              height={15}
-                              className="object-contain flex-shrink-0"
+                              src={user.avatar_url}
+                              alt={user.username}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
                             />
+                          ) : (
+                            <UserIcon className="w-6 h-6 text-primary" />
                           )}
                         </div>
-                        {user.in_game_name && (
-                          <p className="text-sm text-gray-400">@{user.username}</p>
-                        )}
+                        
+                        {/* Name & IGN */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h3 className="text-lg font-bold text-white truncate">
+                              {user.in_game_name || user.username}
+                            </h3>
+                            {user.nationality && (
+                              <Image
+                                src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
+                                alt={user.nationality}
+                                width={20}
+                                height={15}
+                                className="object-contain flex-shrink-0"
+                              />
+                            )}
+                          </div>
+                          {user.in_game_name && (
+                            <p className="text-sm text-gray-400">@{user.username}</p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Right: Team|Role Badge & Rank */}

@@ -232,6 +232,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
             <option value="Controller">Controller</option>
             <option value="Sentinel">Sentinel</option>
             <option value="Flex">Flex</option>
+            <option value="Staff">Staff</option>
           </select>
         </div>
       </div>

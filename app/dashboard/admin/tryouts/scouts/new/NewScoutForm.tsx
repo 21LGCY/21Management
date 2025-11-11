@@ -269,6 +269,7 @@ export default function NewScoutForm() {
               <option value="Initiator">Initiator</option>
               <option value="Sentinel">Sentinel</option>
               <option value="Flex">Flex</option>
+              <option value="Staff">Staff</option>
             </select>
           </div>
 

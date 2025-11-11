@@ -156,6 +156,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       case 'Controller': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'Sentinel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
       case 'Flex': return 'bg-green-500/20 text-green-300 border-green-500/30'
+      case 'Staff': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
       default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
     }
   }
@@ -236,6 +237,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             <option value="Controller">Controller</option>
             <option value="Sentinel">Sentinel</option>
             <option value="Flex">Flex</option>
+            <option value="Staff">Staff</option>
           </select>
 
           <Link
