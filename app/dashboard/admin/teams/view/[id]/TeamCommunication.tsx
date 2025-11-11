@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { TeamMessage, CommunicationSection, UserRole } from '@/lib/types/database'
+import { TeamMessage, CommunicationSection, UserRole, ValorantMap } from '@/lib/types/database'
 import { Send, Image as ImageIcon, Link as LinkIcon, Trash2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -12,6 +12,7 @@ interface TeamCommunicationProps {
   userId: string
   userName: string
   userRole: UserRole
+  mapName?: ValorantMap // Optional: only for strat_map section
 }
 
 export default function TeamCommunication({ 
@@ -19,7 +20,8 @@ export default function TeamCommunication({
   section, 
   userId, 
   userName, 
-  userRole 
+  userRole,
+  mapName
 }: TeamCommunicationProps) {
   const [messages, setMessages] = useState<TeamMessage[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,7 +38,7 @@ export default function TeamCommunication({
     
     // Subscribe to real-time updates
     const channel = supabase
-      .channel(`team_messages_${teamId}_${section}`)
+      .channel(`team_messages_${teamId}_${section}_${mapName || 'all'}`)
       .on(
         'postgres_changes',
         {
@@ -47,9 +49,14 @@ export default function TeamCommunication({
         (payload) => {
           console.log('Real-time update:', payload) // Debug log
           
-          // Filter for this team and section
+          // Filter for this team, section, and map
           const message = payload.new as TeamMessage
-          if (payload.eventType === 'INSERT' && message.team_id === teamId && message.section === section) {
+          const matchesFilter = 
+            message.team_id === teamId && 
+            message.section === section &&
+            (section === 'strat_map' ? message.map_name === mapName : message.map_name === null)
+          
+          if (payload.eventType === 'INSERT' && matchesFilter) {
             setMessages(prev => [...prev, message])
           } else if (payload.eventType === 'DELETE') {
             setMessages(prev => prev.filter(m => m.id !== payload.old.id))
@@ -61,7 +68,7 @@ export default function TeamCommunication({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [teamId, section])
+  }, [teamId, section, mapName])
 
   useEffect(() => {
     scrollToBottom()
@@ -73,12 +80,20 @@ export default function TeamCommunication({
 
   const fetchMessages = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('team_messages')
         .select('*')
         .eq('team_id', teamId)
         .eq('section', section)
-        .order('created_at', { ascending: true })
+
+      // Filter by map if in strat_map section
+      if (section === 'strat_map' && mapName) {
+        query = query.eq('map_name', mapName)
+      } else if (section === 'review_praccs') {
+        query = query.is('map_name', null)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: true })
 
       if (error) throw error
       setMessages(data || [])
@@ -102,6 +117,7 @@ export default function TeamCommunication({
           section,
           message_type: 'text',
           content: message.trim(),
+          map_name: section === 'strat_map' ? mapName : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole
@@ -172,6 +188,7 @@ export default function TeamCommunication({
           message_type: 'image',
           content: file.name,
           image_url: imageUrl,
+          map_name: section === 'strat_map' ? mapName : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole

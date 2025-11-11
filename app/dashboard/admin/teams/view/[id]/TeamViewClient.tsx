@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import TeamCommunication from './TeamCommunication'
+import StratMapSelection from './StratMapSelection'
 
 interface TeamViewClientProps {
   teamId: string
@@ -353,13 +354,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       )}
 
       {activeTab === 'strat_map' && (
-        <TeamCommunication
-          teamId={teamId}
-          section="strat_map"
-          userId={userId}
-          userName={userName}
-          userRole={userRole}
-        />
+        <StratMapSelection teamId={teamId} />
       )}
 
       {activeTab === 'review_praccs' && (
