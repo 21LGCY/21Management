@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import TeamCommunication from './TeamCommunication'
 import StratMapSelection from './StratMapSelection'
+import PraccsReviewSelection from './PraccsReviewSelection'
 
 interface TeamViewClientProps {
   teamId: string
@@ -358,13 +359,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       )}
 
       {activeTab === 'review_praccs' && (
-        <TeamCommunication
-          teamId={teamId}
-          section="review_praccs"
-          userId={userId}
-          userName={userName}
-          userRole={userRole}
-        />
+        <PraccsReviewSelection teamId={teamId} />
       )}
     </div>
   )

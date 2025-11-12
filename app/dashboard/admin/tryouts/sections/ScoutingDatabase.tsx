@@ -230,11 +230,15 @@ export default function ScoutingDatabase() {
                         )}
                       </div>
 
-                      {/* Right: Rank & Status */}
-                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                        {/* Rank Image */}
+                      {/* Right: Team|Status Badge & Rank - absolute positioning */}
+                      <div className="flex-shrink-0 relative">
+                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
+                          {tryout.team_category} | {getStatusLabel(tryout.status)}
+                        </span>
+                        
+                        {/* Rank Image - positioned below badge */}
                         {tryout.rank && rankImage && (
-                          <div className="relative group/rank">
+                          <div className="absolute top-full right-0 mt-3 group/rank">
                             <Image
                               src={rankImage}
                               alt={tryout.rank}
@@ -242,15 +246,11 @@ export default function ScoutingDatabase() {
                               height={40}
                               className="object-contain"
                             />
-                            <div className="absolute bottom-full right-0 mb-z px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                               {tryout.rank}
                             </div>
                           </div>
                         )}
-                        {/* Team | Status Badge */}
-                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
-                          {tryout.team_category} | {getStatusLabel(tryout.status)}
-                        </span>
                       </div>
                     </div>
 

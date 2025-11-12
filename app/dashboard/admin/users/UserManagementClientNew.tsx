@@ -246,16 +246,15 @@ export default function UserManagementClient() {
                         </div>
                       </div>
 
-                      {/* Right: Team|Role Badge & Rank */}
-                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                        {/* Team | Role Badge */}
+                      {/* Right: Team|Role Badge & Rank - absolute positioning */}
+                      <div className="flex-shrink-0 relative">
                         <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getRoleColor(user.role)}`}>
                           {teamTag || 'No Team'} | {getRoleLabel(user.role)}
                         </span>
                         
-                        {/* Rank Image */}
+                        {/* Rank Image - positioned below badge */}
                         {user.rank && rankImage && (
-                          <div className="relative group/rank">
+                          <div className="absolute top-full right-0 mt-3 group/rank">
                             <Image
                               src={rankImage}
                               alt={user.rank}

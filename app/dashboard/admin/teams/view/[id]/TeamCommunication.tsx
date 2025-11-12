@@ -13,6 +13,7 @@ interface TeamCommunicationProps {
   userName: string
   userRole: UserRole
   mapName?: ValorantMap // Optional: only for strat_map section
+  matchId?: string // Optional: only for review_praccs section
 }
 
 export default function TeamCommunication({ 
@@ -21,7 +22,8 @@ export default function TeamCommunication({
   userId, 
   userName, 
   userRole,
-  mapName
+  mapName,
+  matchId
 }: TeamCommunicationProps) {
   const [messages, setMessages] = useState<TeamMessage[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,8 +91,8 @@ export default function TeamCommunication({
       // Filter by map if in strat_map section
       if (section === 'strat_map' && mapName) {
         query = query.eq('map_name', mapName)
-      } else if (section === 'review_praccs') {
-        query = query.is('map_name', null)
+      } else if (section === 'review_praccs' && matchId) {
+        query = query.eq('match_id', matchId)
       }
 
       const { data, error } = await query.order('created_at', { ascending: true })
@@ -118,6 +120,7 @@ export default function TeamCommunication({
           message_type: 'text',
           content: message.trim(),
           map_name: section === 'strat_map' ? mapName : null,
+          match_id: section === 'review_praccs' ? matchId : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole
@@ -189,6 +192,7 @@ export default function TeamCommunication({
           content: file.name,
           image_url: imageUrl,
           map_name: section === 'strat_map' ? mapName : null,
+          match_id: section === 'review_praccs' ? matchId : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole

@@ -226,6 +226,7 @@ export interface TeamMessage {
   content: string
   image_url?: string | null
   map_name?: ValorantMap | null
+  match_id?: string | null
   author_id: string
   author_name: string
   author_role: UserRole

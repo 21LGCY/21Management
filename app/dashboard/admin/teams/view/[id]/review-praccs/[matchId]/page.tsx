@@ -1,26 +1,23 @@
 import { requireRole } from '@/lib/auth/server'
-import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
-import MatchDetailsClient from './MatchDetailsClient'
+import { notFound } from 'next/navigation'
+import PraccsReviewClient from './PraccsReviewClient'
 
-interface MatchDetailsPageProps {
-  params: {
-    id: string
-    matchId: string
-  }
-}
-
-export default async function MatchDetailsPage({ params }: MatchDetailsPageProps) {
-  const user = await requireRole(['admin'])
+export default async function PraccsReviewPage({ 
+  params 
+}: { 
+  params: { id: string; matchId: string } 
+}) {
+  const user = await requireRole(['admin', 'manager', 'player'])
 
   return (
     <div className="min-h-screen bg-dark">
       <Navbar role={user.role} username={user.username} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <MatchDetailsClient 
-          matchId={params.matchId} 
+        <PraccsReviewClient 
           teamId={params.id}
+          matchId={params.matchId}
           userId={user.user_id}
           userName={user.username}
           userRole={user.role}

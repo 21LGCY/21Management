@@ -2,21 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/database'
+import { MatchHistory, PlayerMatchStats, UserProfile, UserRole } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Trophy, Edit, Trash2 } from 'lucide-react'
+import { ArrowLeft, Calendar, Trophy, Edit, Trash2, MessageSquare } from 'lucide-react'
+import TeamCommunication from '../../TeamCommunication'
 
 interface MatchDetailsClientProps {
   matchId: string
   teamId: string
+  userId: string
+  userName: string
+  userRole: UserRole
 }
 
 interface PlayerStatsWithProfile extends PlayerMatchStats {
   player: UserProfile
 }
 
-export default function MatchDetailsClient({ matchId, teamId }: MatchDetailsClientProps) {
+export default function MatchDetailsClient({ matchId, teamId, userId, userName, userRole }: MatchDetailsClientProps) {
   const router = useRouter()
   const supabase = createClient()
   
@@ -296,6 +300,24 @@ export default function MatchDetailsClient({ matchId, teamId }: MatchDetailsClie
           </div>
         )}
       </div>
+
+      {/* Practice Review Section - Only for Scrims/Praccs */}
+      {match && (match.match_type === 'Scrim' || match.match_type === 'Other') && (
+        <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <MessageSquare className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold text-white">Practice Review</h2>
+          </div>
+          <TeamCommunication
+            teamId={teamId}
+            section="review_praccs"
+            matchId={matchId}
+            userId={userId}
+            userName={userName}
+            userRole={userRole}
+          />
+        </div>
+      )}
     </div>
   )
 }
