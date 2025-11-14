@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Team, ValorantMap, UserRole, StratType } from '@/lib/types/database'
 import { ArrowLeft, Map as MapIcon, Target, Users, X } from 'lucide-react'
 import Link from 'next/link'
-import TeamCommunication from '../../TeamCommunication'
+import TeamCommunication from '@/app/dashboard/admin/teams/view/[id]/TeamCommunication'
 
 interface StratMapClientProps {
   teamId: string
@@ -161,7 +161,7 @@ export default function StratMapClient({
       <div className="text-center py-12">
         <p className="text-gray-400 mb-4">Team not found</p>
         <Link
-          href="/dashboard/admin/teams"
+          href="/dashboard/manager/teams"
           className="text-primary hover:underline"
         >
           Back to Teams
@@ -175,7 +175,7 @@ export default function StratMapClient({
       {/* Header */}
       <div className="flex items-center gap-6">
         <Link
-          href={`/dashboard/admin/teams/view/${teamId}`}
+          href="/dashboard/manager/teams"
           className="text-gray-400 hover:text-white transition"
         >
           <ArrowLeft className="w-6 h-6" />
@@ -196,7 +196,7 @@ export default function StratMapClient({
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-5 h-5 text-primary" />
-              <label className="text-sm font-medium text-gray-300">Type of Strat</label>
+              <label className="text-sm font-medium text-gray-300">type of Strat</label>
             </div>
             <div className="flex gap-2">
               <button
@@ -207,7 +207,7 @@ export default function StratMapClient({
                     : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >
-                All
+                Toutes
               </button>
               <button
                 onClick={() => setStratType('attack')}

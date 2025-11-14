@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { TeamMessage, CommunicationSection, UserRole, ValorantMap } from '@/lib/types/database'
-import { Send, Image as ImageIcon, Link as LinkIcon, Trash2, Loader2 } from 'lucide-react'
+import { TeamMessage, CommunicationSection, UserRole, ValorantMap, StratType } from '@/lib/types/database'
+import { Send, Image as ImageIcon, Link as LinkIcon, Trash2, Loader2, Save } from 'lucide-react'
 import Image from 'next/image'
 
 interface TeamCommunicationProps {
@@ -14,6 +14,9 @@ interface TeamCommunicationProps {
   userRole: UserRole
   mapName?: ValorantMap // Optional: only for strat_map section
   matchId?: string // Optional: only for review_praccs section
+  stratTypeFilter?: StratType | 'all' // Optional: filter by strategy type
+  compositionFilter?: string // Optional: filter by team composition
+  onSaveComposition?: () => void // Optional: callback to trigger composition save
 }
 
 export default function TeamCommunication({ 
@@ -23,7 +26,10 @@ export default function TeamCommunication({
   userName, 
   userRole,
   mapName,
-  matchId
+  matchId,
+  stratTypeFilter = 'all',
+  compositionFilter = '',
+  onSaveComposition
 }: TeamCommunicationProps) {
   const [messages, setMessages] = useState<TeamMessage[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +76,7 @@ export default function TeamCommunication({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [teamId, section, mapName])
+  }, [teamId, section, mapName, stratTypeFilter, compositionFilter])
 
   useEffect(() => {
     scrollToBottom()
@@ -98,7 +104,27 @@ export default function TeamCommunication({
       const { data, error } = await query.order('created_at', { ascending: true })
 
       if (error) throw error
-      setMessages(data || [])
+      
+      // Apply client-side filters
+      let filteredData = data || []
+      
+      if (stratTypeFilter && stratTypeFilter !== 'all') {
+        // Filter by strategy type, but always show composition messages
+        filteredData = filteredData.filter(msg => 
+          msg.strat_type === stratTypeFilter || 
+          msg.content.includes('**Team Composition**')
+        )
+      }
+      
+      if (compositionFilter) {
+        const compositionLower = compositionFilter.toLowerCase()
+        filteredData = filteredData.filter(msg => 
+          msg.composition?.toLowerCase().includes(compositionLower) ||
+          msg.content.toLowerCase().includes(compositionLower)
+        )
+      }
+      
+      setMessages(filteredData)
     } catch (error) {
       console.error('Error fetching messages:', error)
     } finally {
@@ -121,6 +147,8 @@ export default function TeamCommunication({
           content: message.trim(),
           map_name: section === 'strat_map' ? mapName : null,
           match_id: section === 'review_praccs' ? matchId : null,
+          strat_type: section === 'strat_map' && stratTypeFilter !== 'all' ? stratTypeFilter : null,
+          composition: section === 'strat_map' && compositionFilter ? compositionFilter : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole
@@ -193,6 +221,8 @@ export default function TeamCommunication({
           image_url: imageUrl,
           map_name: section === 'strat_map' ? mapName : null,
           match_id: section === 'review_praccs' ? matchId : null,
+          strat_type: section === 'strat_map' && stratTypeFilter !== 'all' ? stratTypeFilter : null,
+          composition: section === 'strat_map' && compositionFilter ? compositionFilter : null,
           author_id: userId,
           author_name: userName,
           author_role: userRole
@@ -250,6 +280,32 @@ export default function TeamCommunication({
     }
   }
 
+  const renderFormattedText = (text: string) => {
+    // Split by lines first
+    const lines = text.split('\n')
+    
+    return lines.map((line, lineIndex) => {
+      // Handle bold text **text**
+      const parts = line.split(/(\*\*.*?\*\*)/)
+      
+      return (
+        <span key={lineIndex}>
+          {parts.map((part, partIndex) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={partIndex} className="font-bold text-white">
+                  {part.slice(2, -2)}
+                </strong>
+              )
+            }
+            return <span key={partIndex}>{part}</span>
+          })}
+          {lineIndex < lines.length - 1 && <br />}
+        </span>
+      )
+    })
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -270,13 +326,23 @@ export default function TeamCommunication({
           messages.map((msg) => (
             <div key={msg.id} className="flex gap-3 group">
               <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-1">
+                <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                   <span className={`font-medium ${getRoleColor(msg.author_role)}`}>
                     {msg.author_name}
                   </span>
                   <span className="text-xs text-gray-500">
                     {new Date(msg.created_at).toLocaleString()}
                   </span>
+                  {/* Strategy Type Badge - only show if not a composition message */}
+                  {msg.strat_type && !msg.content.includes('**Team Composition**') && (
+                    <span className={`px-2 py-0.5 text-xs rounded-full border ${
+                      msg.strat_type === 'attack'
+                        ? 'bg-red-500/20 border-red-500 text-red-400'
+                        : 'bg-blue-500/20 border-blue-500 text-blue-400'
+                    }`}>
+                      {msg.strat_type === 'attack' ? 'Attack' : 'Defense'}
+                    </span>
+                  )}
                 </div>
                 
                 {msg.message_type === 'text' ? (
@@ -292,7 +358,9 @@ export default function TeamCommunication({
                         {msg.content}
                       </a>
                     ) : (
-                      <p className="text-gray-300 whitespace-pre-wrap break-words">{msg.content}</p>
+                      <div className="text-gray-300 break-words">
+                        {renderFormattedText(msg.content)}
+                      </div>
                     )}
                   </div>
                 ) : (
@@ -353,6 +421,19 @@ export default function TeamCommunication({
               <ImageIcon className="w-5 h-5" />
             )}
           </button>
+
+          {/* Save Composition Button - only show for strat_map section */}
+          {section === 'strat_map' && onSaveComposition && compositionFilter && (
+            <button
+              type="button"
+              onClick={onSaveComposition}
+              className="px-4 py-2 bg-green-500/20 border border-green-500 hover:bg-green-500/30 text-green-400 rounded-lg transition flex items-center gap-2"
+              title="Save composition to chat"
+            >
+              <Save className="w-5 h-5" />
+              <span className="hidden sm:inline">Save Comp</span>
+            </button>
+          )}
           
           <input
             type="text"

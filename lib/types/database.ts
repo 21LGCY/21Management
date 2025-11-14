@@ -11,6 +11,7 @@ export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'frida
 export type HourSlot = 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
 export type CommunicationSection = 'strat_map' | 'review_praccs'
 export type MessageType = 'text' | 'image'
+export type StratType = 'attack' | 'defense'
 export type ValorantMap = 
   | 'Ascent' 
   | 'Bind' 
@@ -227,6 +228,8 @@ export interface TeamMessage {
   image_url?: string | null
   map_name?: ValorantMap | null
   match_id?: string | null
+  strat_type?: StratType | null
+  composition?: string | null
   author_id: string
   author_name: string
   author_role: UserRole
