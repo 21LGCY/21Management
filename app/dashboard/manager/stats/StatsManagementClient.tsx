@@ -163,99 +163,63 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
           <h1 className="text-3xl font-bold text-white mb-2">
             Statistics Management
           </h1>
-          <p className="text-gray-400">Track and manage {teamName} performance data</p>
+          <p className="text-gray-400">Track and analyze {teamName} performance data</p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link href="/dashboard/manager/stats/game/new">
-            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Plus className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-white">Record Match</p>
-                  <p className="text-sm text-gray-400">Add game with player stats</p>
-                </div>
-              </div>
-            </button>
-          </Link>
-
-          <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                <BarChart3 className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-white">Generate Report</p>
-                <p className="text-sm text-gray-400">Create analytics report</p>
-              </div>
-            </div>
-          </button>
-
-          <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition group">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                <Download className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-white">Export Data</p>
-                <p className="text-sm text-gray-400">Download statistics</p>
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Stats Overview - Same as Admin Match History */}
+        {/* Stats Overview - Enhanced Design */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Total Matches</p>
-                <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <div className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all hover:shadow-lg">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-gray-800/50 rounded-lg">
+                <Trophy className="w-6 h-6 text-gray-300" />
               </div>
-              <Trophy className="w-8 h-8 text-gray-400" />
             </div>
+            <p className="text-sm text-gray-400 mb-1">Total Matches</p>
+            <p className="text-3xl font-bold text-white">{stats.total}</p>
           </div>
 
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Wins</p>
-                <p className="text-2xl font-bold text-green-400">{stats.wins}</p>
+          <div className="bg-gradient-to-br from-green-500/10 to-dark border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-green-500/20 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-green-400" />
               </div>
-              <TrendingUp className="w-8 h-8 text-green-400" />
             </div>
+            <p className="text-sm text-green-300/70 mb-1">Wins</p>
+            <p className="text-3xl font-bold text-green-400">{stats.wins}</p>
           </div>
 
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Losses</p>
-                <p className="text-2xl font-bold text-red-400">{stats.losses}</p>
+          <div className="bg-gradient-to-br from-red-500/10 to-dark border border-red-500/30 rounded-xl p-6 hover:border-red-500/50 transition-all hover:shadow-lg hover:shadow-red-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-red-500/20 rounded-lg">
+                <TrendingDown className="w-6 h-6 text-red-400" />
               </div>
-              <TrendingDown className="w-8 h-8 text-red-400" />
             </div>
+            <p className="text-sm text-red-300/70 mb-1">Losses</p>
+            <p className="text-3xl font-bold text-red-400">{stats.losses}</p>
           </div>
 
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Draws</p>
-                <p className="text-2xl font-bold text-yellow-400">{stats.draws}</p>
+          <div className="bg-gradient-to-br from-yellow-500/10 to-dark border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/50 transition-all hover:shadow-lg hover:shadow-yellow-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-yellow-500/20 rounded-lg">
+                <Target className="w-6 h-6 text-yellow-400" />
               </div>
-              <Target className="w-8 h-8 text-yellow-400" />
             </div>
+            <p className="text-sm text-yellow-300/70 mb-1">Draws</p>
+            <p className="text-3xl font-bold text-yellow-400">{stats.draws}</p>
           </div>
 
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Win Rate</p>
-                <p className="text-2xl font-bold text-primary">{stats.winRate}%</p>
+          <div className="bg-gradient-to-br from-primary/20 to-dark border border-primary/40 rounded-xl p-6 hover:border-primary/60 transition-all hover:shadow-lg hover:shadow-primary/20">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-primary/30 rounded-lg">
+                <Award className="w-6 h-6 text-primary" />
               </div>
-              <TrendingUp className="w-8 h-8 text-primary" />
+            </div>
+            <p className="text-sm text-primary/70 mb-1">Win Rate</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-primary">{stats.winRate}%</p>
+              {stats.total > 0 && (
+                <span className="text-xs text-gray-400">of {stats.total}</span>
+              )}
             </div>
           </div>
         </div>

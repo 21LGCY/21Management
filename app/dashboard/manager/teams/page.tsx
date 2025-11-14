@@ -5,7 +5,7 @@ import ManagerTeamsClient from './ManagerTeamsClient'
 
 export default async function ManagerTeamsPage() {
   // Require manager role and get team access
-  const { user, teamId, team } = await requireManagerTeamAccess()
+  const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
   
   const supabase = await createClient()
 
@@ -30,7 +30,8 @@ export default async function ManagerTeamsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ManagerTeamsClient 
           teamId={teamId || ''} 
-          teamName={team?.name || ''} 
+          teamName={team?.name || ''}
+          teamCategory={teamCategory || '21GC'}
           playerCount={playerCount || 0}
           tryouts={tryouts || []}
         />
