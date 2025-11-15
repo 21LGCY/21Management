@@ -151,19 +151,27 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     setSuccess(false)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      // Create FormData for Cloudinary upload
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true })
+      // Upload to Cloudinary
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
 
-      if (uploadError) throw uploadError
+      const result = await response.json()
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to upload to Cloudinary')
+      }
+
+      const publicUrl = result.secure_url
 
       const { error: updateError } = await supabase
         .from('profiles')
