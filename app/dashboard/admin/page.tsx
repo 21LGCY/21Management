@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
-import StatCard from '@/components/StatCard'
 import { Users, Trophy, Calendar } from 'lucide-react'
 
 export default async function AdminDashboard() {
@@ -48,34 +47,53 @@ export default async function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, <span className="text-gradient">{user.username}</span>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Welcome back, <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">{user.username}</span>
           </h1>
-          <p className="text-gray-400">Administrator Dashboard - System Overview</p>
+          <p className="text-lg text-gray-400">Administrator Dashboard • System Overview</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Teams"
-            value={teamCount || 0}
-            icon={<Users className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Active Players"
-            value={playerCount || 0}
-            icon={<Users className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Tournaments"
-            value={tournamentCount || 0}
-            icon={<Trophy className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Matches"
-            value={matchCount || 0}
-            icon={<Calendar className="w-6 h-6" />}
-          />
+        {/* Stats Grid with Gradients */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gradient-to-br from-primary/20 to-dark border border-primary/40 rounded-xl p-6 hover:border-primary/60 transition-all hover:shadow-lg hover:shadow-primary/20">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-primary/30 rounded-lg">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+            <p className="text-sm text-primary/70 mb-1">Total Teams</p>
+            <p className="text-2xl font-bold text-primary">{teamCount || 0}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-500/10 to-dark border border-blue-500/30 rounded-xl p-6 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-blue-500/20 rounded-lg">
+                <Users className="w-6 h-6 text-blue-400" />
+              </div>
+            </div>
+            <p className="text-sm text-blue-300/70 mb-1">Active Players</p>
+            <p className="text-2xl font-bold text-blue-400">{playerCount || 0}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-500/10 to-dark border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/50 transition-all hover:shadow-lg hover:shadow-yellow-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-yellow-500/20 rounded-lg">
+                <Trophy className="w-6 h-6 text-yellow-400" />
+              </div>
+            </div>
+            <p className="text-sm text-yellow-300/70 mb-1">Tournaments</p>
+            <p className="text-2xl font-bold text-yellow-400">{tournamentCount || 0}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-500/10 to-dark border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-green-500/20 rounded-lg">
+                <Calendar className="w-6 h-6 text-green-400" />
+              </div>
+            </div>
+            <p className="text-sm text-green-300/70 mb-1">Matches</p>
+            <p className="text-2xl font-bold text-green-400">{matchCount || 0}</p>
+          </div>
         </div>
 
         {/* Content Grid */}

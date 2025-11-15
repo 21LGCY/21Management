@@ -1,7 +1,7 @@
 import { requireRole } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
+import NavbarWrapper from '@/components/NavbarWrapper'
 import MatchesListClient from './MatchesListClient'
 
 interface MatchesListPageProps {
@@ -28,7 +28,7 @@ export default async function MatchesListPage({ params }: MatchesListPageProps) 
 
   return (
     <div className="min-h-screen bg-dark">
-      <Navbar role={user.role} username={user.username} />
+      <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
       
       <main className="py-8">
         <MatchesListClient teamId={params.id} teamName={team.name} />

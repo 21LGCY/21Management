@@ -6,6 +6,8 @@ import { ArrowLeft, Upload, Loader2, User, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { deleteUserAvatar } from '@/lib/cloudinary/delete'
+import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 
 interface AvatarClientProps {
   userId: string
@@ -61,21 +63,27 @@ export default function AvatarClient({ userId, currentAvatar, role }: AvatarClie
     setSuccess(false)
 
     try {
-      // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      // Create FormData for Cloudinary upload
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true })
+      // Upload to Cloudinary
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
 
-      if (uploadError) throw uploadError
+      const result = await response.json()
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Failed to upload to Cloudinary')
+      }
+
+      const publicUrl = result.secure_url
 
       // Update profile with new avatar URL
       const { error: updateError } = await supabase
@@ -121,12 +129,25 @@ export default function AvatarClient({ userId, currentAvatar, role }: AvatarClie
     setSuccess(false)
 
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: null })
-        .eq('id', userId)
+      // Get current avatar URL before deletion
+      const currentAvatarUrl = avatarUrl
 
-      if (updateError) throw updateError
+      // Use server action to delete avatar and Cloudinary image
+      if (currentAvatarUrl) {
+        const result = await deleteUserAvatar(userId, currentAvatarUrl)
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to remove avatar')
+        }
+      } else {
+        // No avatar to delete, just update database
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: null })
+          .eq('id', userId)
+
+        if (updateError) throw updateError
+      }
 
       // Update the cookie to remove avatar URL
       const userCookie = document.cookie
@@ -180,7 +201,7 @@ export default function AvatarClient({ userId, currentAvatar, role }: AvatarClie
             <div className="mb-4">
               {displayAvatar ? (
                 <Image
-                  src={displayAvatar}
+                  src={optimizeAvatar(displayAvatar)}
                   alt="Avatar"
                   width={128}
                   height={128}

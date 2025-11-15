@@ -6,6 +6,8 @@ import { ArrowLeft, User, Save, Loader2, Lock, Eye, EyeOff, Upload, Trash2, Imag
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { deleteUserAvatar } from '@/lib/cloudinary/delete'
+import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 
 interface Profile {
   id: string
@@ -214,13 +216,27 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     setSuccess(false)
 
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: null })
-        .eq('id', userId)
+      // Get current avatar URL before deletion
+      const currentAvatarUrl = avatarUrl
 
-      if (updateError) throw updateError
+      // Use server action to delete avatar and Cloudinary image
+      if (currentAvatarUrl) {
+        const result = await deleteUserAvatar(userId, currentAvatarUrl)
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to remove avatar')
+        }
+      } else {
+        // No avatar to delete, just update database
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: null })
+          .eq('id', userId)
 
+        if (updateError) throw updateError
+      }
+
+      // Update cookie
       const userCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('esports_user='))
@@ -334,7 +350,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
               <div className="mb-4">
                 {displayAvatar ? (
                   <Image
-                    src={displayAvatar}
+                    src={optimizeAvatar(displayAvatar)}
                     alt="Avatar"
                     width={128}
                     height={128}

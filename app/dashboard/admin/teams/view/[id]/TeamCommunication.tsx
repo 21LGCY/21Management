@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { TeamMessage, CommunicationSection, UserRole, ValorantMap, StratType } from '@/lib/types/database'
 import { Send, Image as ImageIcon, Link as LinkIcon, Trash2, Loader2, Save } from 'lucide-react'
 import Image from 'next/image'
+import { deleteTeamMessageImage } from '@/lib/cloudinary/delete'
+import { optimizeChatImage } from '@/lib/cloudinary/optimize'
 
 interface TeamCommunicationProps {
   teamId: string
@@ -247,18 +249,22 @@ export default function TeamCommunication({
     if (!confirm('Delete this message?')) return
 
     try {
-      const { error } = await supabase
-        .from('team_messages')
-        .delete()
-        .eq('id', messageId)
-
-      if (error) throw error
+      setLoading(true)
       
+      // Use server action to delete message and Cloudinary image
+      const result = await deleteTeamMessageImage(messageId, userId)
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete message')
+      }
+
       // Refetch messages to ensure UI updates
       await fetchMessages()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting message:', error)
-      alert('Failed to delete message')
+      alert(error.message || 'Failed to delete message')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -369,7 +375,7 @@ export default function TeamCommunication({
                     {msg.image_url && (
                       <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
                         <Image
-                          src={msg.image_url}
+                          src={optimizeChatImage(msg.image_url)}
                           alt={msg.content}
                           width={400}
                           height={300}

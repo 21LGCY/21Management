@@ -1,5 +1,5 @@
 import { requireRole } from '@/lib/auth/server'
-import Navbar from '@/components/Navbar'
+import NavbarWrapper from '@/components/NavbarWrapper'
 import UserForm from '@/components/UserForm'
 
 export default async function EditUserPage({ params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export default async function EditUserPage({ params }: { params: { id: string } 
 
   return (
     <div className="min-h-screen bg-dark">
-      <Navbar role={user.role} username={user.username} />
+      <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">

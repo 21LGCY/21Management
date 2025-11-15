@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth/server'
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
+import NavbarWrapper from '@/components/NavbarWrapper'
 import ScheduleManagementClient from './ScheduleManagementClient'
 
 export default async function AdminSchedulePage() {
@@ -16,7 +16,7 @@ export default async function AdminSchedulePage() {
 
   return (
     <div className="min-h-screen bg-dark">
-      <Navbar role={user.role} username={user.username} />
+      <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

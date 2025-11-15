@@ -1,7 +1,7 @@
 import { requireRole } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/Navbar'
+import NavbarWrapper from '@/components/NavbarWrapper'
 import AddMatchClient from './AddMatchClient'
 
 interface NewMatchPageProps {
@@ -28,7 +28,7 @@ export default async function NewMatchPage({ params }: NewMatchPageProps) {
 
   return (
     <div className="min-h-screen bg-dark">
-      <Navbar role={user.role} username={user.username} />
+      <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
