@@ -138,18 +138,13 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
               {member.in_game_name || member.username}
             </h3>
             {member.nationality && (
-              <div className="relative group">
-                <Image
-                  src={`https://flagcdn.com/${member.nationality.toLowerCase()}.svg`}
-                  alt={member.nationality}
-                  width={20}
-                  height={15}
-                  className="object-contain"
-                />
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  {member.nationality}
-                </div>
-              </div>
+              <Image
+                src={`https://flagcdn.com/${member.nationality.toLowerCase()}.svg`}
+                alt={member.nationality}
+                width={20}
+                height={15}
+                className="object-contain"
+              />
             )}
           </div>
           <p className="text-xs text-gray-400 mb-2">{member.username}</p>
@@ -173,9 +168,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             )}
           </div>
 
-          {/* Rank - Only Image with Tooltip */}
+          {/* Rank - Only Image */}
           {member.rank && rankImage && (
-            <div className="relative group mb-3">
+            <div className="mb-3">
               <Image
                 src={rankImage}
                 alt={member.rank}
@@ -183,9 +178,6 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
                 height={32}
                 className="object-contain"
               />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                {member.rank}
-              </div>
             </div>
           )}
         </div>

@@ -104,6 +104,16 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   </span>
                 </Link>
                 <Link 
+                  href="/dashboard/admin/statistics"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group relative"
+                >
+                  <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  <span className="relative">
+                    Statistics
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
+                  </span>
+                </Link>
+                <Link 
                   href="/dashboard/admin/tryouts"
                   className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group relative"
                 >

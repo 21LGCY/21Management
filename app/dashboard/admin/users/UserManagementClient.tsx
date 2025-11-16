@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import { getTeamColors } from '@/lib/utils/teamColors'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -203,12 +204,24 @@ export default function UserManagementClient() {
             const rankImage = getRankImage(user.rank)
             const teamTag = (user as any).teams?.tag || null
             const nationality = getNationalityDisplay(user.nationality)
+            const teamColors = getTeamColors(teamTag)
             
             return (
               <Link
                 key={user.id}
                 href={`/dashboard/admin/users/view/${user.id}`}
-                className="block bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 group"
+                className={`block bg-gradient-to-br ${teamColors.gradient} border ${teamColors.border} rounded-xl ${teamColors.hoverBorder} transition-all group`}
+                style={{
+                  ...teamColors.style,
+                  boxShadow: '0 0 0 0 transparent',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = `0 10px 25px -5px ${teamColors.hoverShadow}, 0 8px 10px -6px ${teamColors.hoverShadow}`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
+                }}
               >
                 <div className="p-6 flex flex-col h-full">
                   <div className="space-y-4 flex-1">
@@ -254,7 +267,10 @@ export default function UserManagementClient() {
 
                       {/* Team|Role Badge and Rank - Top Right */}
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <span className={`px-3 py-1 text-xs border rounded-lg whitespace-nowrap font-semibold ${getRoleColor(user.role)}`}>
+                        <span 
+                          className={`px-3 py-1 text-xs border rounded-lg whitespace-nowrap font-semibold ${teamColors.badgeColors}`}
+                          style={teamColors.badgeStyle}
+                        >
                           {teamTag || 'No Team'} | {getRoleLabel(user.role)}
                         </span>
                         {user.rank && rankImage && (

@@ -6,8 +6,7 @@ import { Team, Match } from '@/lib/types/database'
 import { Plus, Edit, Trash2, Calendar, TrendingUp, Users, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import RecordMatchModal from './RecordMatchModal'
-import MatchManagementModal from './MatchManagementModal'
+import { getTeamColors } from '@/lib/utils/teamColors'
 
 export default function TeamManagementClient() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -15,8 +14,6 @@ export default function TeamManagementClient() {
   const [loading, setLoading] = useState(true)
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [showMatchModal, setShowMatchModal] = useState(false)
-  const [showRecordMatchModal, setShowRecordMatchModal] = useState(false)
-  const [showMatchManagementModal, setShowMatchManagementModal] = useState(false)
   
   const supabase = createClient()
 
@@ -124,43 +121,57 @@ export default function TeamManagementClient() {
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Teams</h2>
           <Link
             href="/dashboard/admin/teams/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             <span>Add Team</span>
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map((team) => (
-            <Link
-              key={team.id}
-              href={`/dashboard/admin/teams/view/${team.id}`}
-              className="group p-5 rounded-xl border bg-gradient-to-br from-gray-800/40 to-gray-900/40 border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
-            >
-              <div className="flex items-center gap-4 mb-2">
-                {team.logo_url ? (
-                  <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-primary/30 group-hover:border-primary/50 transition-all">
-                    <Image
-                      src={team.logo_url}
-                      alt={team.name}
-                      width={48}
-                      height={48}
-                      className="w-full h-full object-cover"
-                    />
+          {teams.map((team) => {
+            const teamColors = getTeamColors(team.tag)
+            return (
+              <Link
+                key={team.id}
+                href={`/dashboard/admin/teams/view/${team.id}`}
+                className={`group p-5 rounded-xl border bg-gradient-to-br ${teamColors.gradient} ${teamColors.border} ${teamColors.hoverBorder} transition-all cursor-pointer`}
+                style={{
+                  ...teamColors.style,
+                  boxShadow: '0 0 0 0 transparent',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = `0 10px 25px -5px ${teamColors.hoverShadow}, 0 8px 10px -6px ${teamColors.hoverShadow}`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
+                }}
+              >
+                <div className="flex items-center gap-4 mb-2">
+                  {team.logo_url ? (
+                    <div className="w-12 h-12 rounded-xl overflow-hidden">
+                      <Image
+                        src={team.logo_url}
+                        alt={team.name}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white transition text-lg">{team.name}</h3>
+                    <p className="text-sm text-gray-500">{team.game}</p>
                   </div>
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center border-2 border-gray-700 group-hover:border-primary/50 transition-all">
-                    <Users className="w-6 h-6 text-gray-400 group-hover:text-primary transition" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white group-hover:text-primary transition text-lg">{team.name}</h3>
-                  <p className="text-sm text-gray-500">{team.game}</p>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
       </div>
 
@@ -171,20 +182,20 @@ export default function TeamManagementClient() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Match History</h2>
             <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setShowMatchManagementModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all border border-gray-700 hover:border-gray-600"
+              <Link
+                href="/dashboard/admin/matches"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 text-gray-300 hover:text-white rounded-xl font-medium transition-all duration-300 border border-gray-600/50 hover:border-primary/50 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:brightness-125"
               >
                 <Trophy className="w-4 h-4" />
-                <span className="hidden sm:inline">Management</span>
-              </button>
-              <button
-                onClick={() => setShowRecordMatchModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
+                <span className="hidden sm:inline">View All</span>
+              </Link>
+              <Link
+                href="/dashboard/admin/matches/new"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
               >
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">Record Match</span>
-              </button>
+              </Link>
             </div>
           </div>
           <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">Match history will appear here</p>
@@ -196,7 +207,7 @@ export default function TeamManagementClient() {
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Planning</h2>
             <Link
               href="/dashboard/admin/teams/schedule"
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
             >
               <Calendar className="w-4 h-4" />
               <span className="hidden sm:inline">Schedule</span>
@@ -244,31 +255,6 @@ export default function TeamManagementClient() {
           </div>
         </div>
       </div>
-
-      {/* Record Match Modal */}
-      {showRecordMatchModal && (
-        <RecordMatchModal
-          teams={teams}
-          onClose={() => setShowRecordMatchModal(false)}
-          onSuccess={() => {
-            setShowRecordMatchModal(false)
-            fetchData()
-            fetchAllMatches()
-          }}
-        />
-      )}
-
-      {/* Match Management Modal */}
-      {showMatchManagementModal && (
-        <MatchManagementModal
-          teams={teams}
-          onClose={() => setShowMatchManagementModal(false)}
-          onSuccess={() => {
-            fetchData()
-            fetchAllMatches()
-          }}
-        />
-      )}
 
       {/* Modals would go here - simplified for now */}
       {showTeamModal && (

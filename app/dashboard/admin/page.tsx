@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
-import { Users, Trophy, Calendar } from 'lucide-react'
+import Link from 'next/link'
+import { Users, Trophy, Calendar, Shield, BarChart3, Search } from 'lucide-react'
 
 export default async function AdminDashboard() {
   // Require admin role
@@ -96,6 +97,65 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Link href="/dashboard/admin/users">
+            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-xl text-left transition-all group hover:shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-white group-hover:text-primary transition">Players</p>
+                  <p className="text-xs text-gray-400">Manage players</p>
+                </div>
+              </div>
+            </button>
+          </Link>
+
+          <Link href="/dashboard/admin/teams">
+            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-xl text-left transition-all group hover:shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-white group-hover:text-primary transition">Team Hub</p>
+                  <p className="text-xs text-gray-400">Strats & schedules</p>
+                </div>
+              </div>
+            </button>
+          </Link>
+
+          <Link href="/dashboard/admin/statistics">
+            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-xl text-left transition-all group hover:shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-white group-hover:text-primary transition">Statistics</p>
+                  <p className="text-xs text-gray-400">Performance data</p>
+                </div>
+              </div>
+            </button>
+          </Link>
+
+          <Link href="/dashboard/admin/tryouts">
+            <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-xl text-left transition-all group hover:shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
+                  <Search className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-white group-hover:text-primary transition">Tryouts</p>
+                  <p className="text-xs text-gray-400">Scouting management</p>
+                </div>
+              </div>
+            </button>
+          </Link>
+        </div>
+
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Teams List */}
@@ -160,9 +220,9 @@ export default async function AdminDashboard() {
               ) : (
                 <p className="text-gray-400 text-center py-4">No matches yet</p>
               )}
-            </div>
           </div>
         </div>
+      </div>
       </main>
     </div>
   )

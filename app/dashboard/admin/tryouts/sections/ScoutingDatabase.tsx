@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Search, ExternalLink, User as UserIcon } from 'luci
 import Link from 'next/link'
 import Image from 'next/image'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import { getTeamColors } from '@/lib/utils/teamColors'
 
 export default function ScoutingDatabase() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
@@ -204,9 +205,24 @@ export default function ScoutingDatabase() {
           {filteredTryouts.map((tryout) => {
             const rankImage = getRankImage(tryout.rank)
             const nationality = getNationalityDisplay(tryout.nationality)
+            const teamColors = getTeamColors(tryout.team_category)
             
             return (
-              <div key={tryout.id} className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 relative group">
+              <div 
+                key={tryout.id} 
+                className={`bg-gradient-to-br ${teamColors.gradient} border ${teamColors.border} rounded-xl ${teamColors.hoverBorder} transition-all relative group`}
+                style={{
+                  ...teamColors.style,
+                  boxShadow: '0 0 0 0 transparent',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = `0 10px 25px -5px ${teamColors.hoverShadow}, 0 8px 10px -6px ${teamColors.hoverShadow}`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
+                }}
+              >
                 <Link href={`/dashboard/admin/tryouts/scouts/view/${tryout.id}`} className="block p-5">
                   <div className="space-y-4">
                     {/* Header with Badge */}
@@ -256,12 +272,26 @@ export default function ScoutingDatabase() {
                     {/* Role Badges */}
                     <div className="flex flex-wrap gap-2">
                       {tryout.position && (
-                        <span className={`px-3 py-1 text-xs font-semibold border rounded-lg ${getRoleColor(tryout.position)}`}>
+                        <span 
+                          className="px-3 py-1 text-xs font-semibold border rounded-lg"
+                          style={{
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            color: 'rgb(196, 181, 253)',
+                            borderColor: 'rgba(139, 92, 246, 0.5)'
+                          }}
+                        >
                           {tryout.position}
                         </span>
                       )}
                       {tryout.is_igl && (
-                        <span className="px-3 py-1 text-xs rounded-lg font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                        <span 
+                          className="px-3 py-1 text-xs rounded-lg font-semibold border"
+                          style={{
+                            backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                            color: 'rgb(253, 224, 71)',
+                            borderColor: 'rgba(234, 179, 8, 0.5)'
+                          }}
+                        >
                           IGL
                         </span>
                       )}
