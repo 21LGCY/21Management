@@ -28,10 +28,10 @@ export default function BackButton({ fallbackHref, className = "", children }: B
   return (
     <button 
       onClick={handleBack}
-      className={`flex items-center gap-2 p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition ${className}`}
+      className={`inline-flex items-center gap-2 text-gray-400 hover:text-white transition group ${className}`}
     >
-      <ArrowLeft className="w-4 h-4" />
-      {children}
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+      <span>{children}</span>
     </button>
   )
 }

@@ -127,8 +127,9 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
               </div>
               <p className="text-sm text-primary/70 mb-1">Total Players</p>
               <p className="text-3xl font-bold text-primary">{playerCount}</p>
-              <Link href="/dashboard/manager/players" className="text-xs text-primary/70 hover:text-primary mt-2 inline-block">
-                View all →
+              <Link href="/dashboard/manager/players" className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-medium transition group">
+                <span>View all</span>
+                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
 
@@ -140,8 +141,9 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
               </div>
               <p className="text-sm text-green-300/70 mb-1">Active Tryouts</p>
               <p className="text-3xl font-bold text-green-400">{currentTryouts.length}</p>
-              <Link href="/dashboard/manager/teams/tryouts" className="text-xs text-green-300/70 hover:text-green-400 mt-2 inline-block">
-                Manage →
+              <Link href="/dashboard/manager/teams/tryouts" className="inline-flex items-center gap-1 text-xs text-green-300/70 hover:text-green-400 mt-2 font-medium transition group">
+                <span>Manage</span>
+                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
 
@@ -153,8 +155,9 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
               </div>
               <p className="text-sm text-blue-300/70 mb-1">Schedule</p>
               <p className="text-3xl font-bold text-blue-400">Week</p>
-              <Link href="/dashboard/manager/teams/schedule" className="text-xs text-blue-300/70 hover:text-blue-400 mt-2 inline-block">
-                View schedule →
+              <Link href="/dashboard/manager/teams/schedule" className="inline-flex items-center gap-1 text-xs text-blue-300/70 hover:text-blue-400 mt-2 font-medium transition group">
+                <span>View schedule</span>
+                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
 
@@ -166,8 +169,9 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
               </div>
               <p className="text-sm text-purple-300/70 mb-1">Team Performance</p>
               <p className="text-3xl font-bold text-purple-400">-</p>
-              <Link href="/dashboard/manager/stats" className="text-xs text-purple-300/70 hover:text-purple-400 mt-2 inline-block">
-                View stats →
+              <Link href="/dashboard/manager/stats" className="inline-flex items-center gap-1 text-xs text-purple-300/70 hover:text-purple-400 mt-2 font-medium transition group">
+                <span>View stats</span>
+                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
           </div>
@@ -175,13 +179,13 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/dashboard/manager/teams/schedule">
-              <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition-all group hover:shadow-lg">
+              <button className="w-full p-4 bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 hover:border-blue-500/50 rounded-xl text-left transition-all group hover:shadow-lg hover:shadow-blue-500/10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                    <Calendar className="w-5 h-5 text-primary" />
+                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition border border-blue-500/30">
+                    <Calendar className="w-5 h-5 text-blue-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-white group-hover:text-primary transition">Schedule</p>
+                    <p className="font-semibold text-white group-hover:text-blue-300 transition">Schedule</p>
                     <p className="text-sm text-gray-400">Manage team schedule</p>
                   </div>
                 </div>
@@ -189,13 +193,13 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             </Link>
 
             <Link href="/dashboard/manager/teams/tryouts">
-              <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition-all group hover:shadow-lg">
+              <button className="w-full p-4 bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 hover:border-green-500/50 rounded-xl text-left transition-all group hover:shadow-lg hover:shadow-green-500/10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                    <Search className="w-5 h-5 text-primary" />
+                  <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition border border-green-500/30">
+                    <Search className="w-5 h-5 text-green-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-white group-hover:text-primary transition">Manage Tryouts</p>
+                    <p className="font-semibold text-white group-hover:text-green-300 transition">Manage Tryouts</p>
                     <p className="text-sm text-gray-400">Scout new talent</p>
                   </div>
                 </div>
@@ -203,13 +207,13 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             </Link>
 
             <Link href="/dashboard/manager/players">
-              <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-lg text-left transition-all group hover:shadow-lg">
+              <button className="w-full p-4 bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 hover:border-primary/50 rounded-xl text-left transition-all group hover:shadow-lg hover:shadow-primary/10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
+                  <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition border border-primary/30">
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-white group-hover:text-primary transition">Player Roster</p>
+                    <p className="font-semibold text-white group-hover:text-primary transition">Player Roster</p>
                     <p className="text-sm text-gray-400">View team members</p>
                   </div>
                 </div>

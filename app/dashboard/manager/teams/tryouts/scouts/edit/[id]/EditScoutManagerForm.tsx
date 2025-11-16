@@ -260,10 +260,10 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
     <form onSubmit={handleSubmit} className="bg-dark-card border border-gray-800 rounded-lg p-6 space-y-6">
       <Link
         href={`/dashboard/manager/teams/tryouts/scouts/view/${scoutId}`}
-        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-4"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
       >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Scout Profile
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span>Back to Scout Profile</span>
       </Link>
 
       <div className="space-y-4">

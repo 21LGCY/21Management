@@ -175,7 +175,15 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
 
   return (
     <form onSubmit={handleSubmit} className="bg-dark-card border border-gray-800 rounded-lg p-6 space-y-6">
-      {/* Team Info Header */}
+      <Link
+        href="/dashboard/manager/teams/tryouts?tab=scouting"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span>Back to Scouting Database</span>
+      </Link>
+
+      {/* Team Info Header */
       {team && (
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
           <p className="text-white">

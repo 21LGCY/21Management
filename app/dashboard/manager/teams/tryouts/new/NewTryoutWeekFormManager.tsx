@@ -211,11 +211,12 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
     <div>
       {/* Header */}
       <div className="mb-8">
-        <Link href="/dashboard/manager/teams/tryouts">
-          <button className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white transition mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Tryouts
-          </button>
+        <Link
+          href="/dashboard/manager/teams/tryouts"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Tryouts</span>
         </Link>
         <h1 className="flex items-center gap-3 text-3xl font-bold text-white">
           <Calendar className="w-8 h-8 text-primary" />

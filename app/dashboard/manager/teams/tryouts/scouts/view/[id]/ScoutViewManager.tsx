@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Edit, Trash2, UserPlus, Calendar, ExternalLink, User as UserIcon, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getNationalityDisplay } from '@/lib/utils/nationality'
 
 interface ScoutViewManagerProps {
   scout: ProfileTryout
@@ -173,44 +174,44 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
         <div className="mb-4">
           <Link
             href="/dashboard/manager/teams/tryouts"
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Tryouts
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Tryouts</span>
           </Link>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
               {currentScout.in_game_name || currentScout.username}
             </h1>
             <p className="text-gray-400">
               {currentScout.username} • {currentScout.team_category}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {currentScout.status === 'accepted' && (
               <button
                 onClick={promoteToPlayer}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg transition-all shadow-lg hover:shadow-green-600/20 disabled:opacity-50"
               >
                 <UserPlus className="w-4 h-4" />
-                Add to Team
+                <span>Add to Team</span>
               </button>
             )}
             <Link href={`/dashboard/manager/teams/tryouts/scouts/edit/${currentScout.id}`}>
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20">
                 <Edit className="w-4 h-4" />
-                Edit
+                <span>Edit</span>
               </button>
             </Link>
             <button
               onClick={deleteScout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              <span>Delete</span>
             </button>
           </div>
         </div>
@@ -220,23 +221,26 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
         {/* Main Info Card */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Overview */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Profile Overview</h2>
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+              Profile Overview
+            </h2>
             
             <div className="flex items-start gap-6 mb-6">
-              <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center">
-                <UserIcon className="w-10 h-10 text-primary" />
+              <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-2xl flex items-center justify-center border-2 border-primary/30 shadow-lg">
+                <UserIcon className="w-12 h-12 text-primary" />
               </div>
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-400 text-sm">Username</p>
-                    <p className="text-white font-medium">{currentScout.username}</p>
+                    <p className="text-gray-500 text-sm mb-1">Username</p>
+                    <p className="text-white font-semibold text-lg">{currentScout.username}</p>
                   </div>
                   {currentScout.in_game_name && (
                     <div>
-                      <p className="text-gray-400 text-sm">In-Game Name</p>
-                      <p className="text-white font-medium">{currentScout.in_game_name}</p>
+                      <p className="text-gray-500 text-sm mb-1">In-Game Name</p>
+                      <p className="text-white font-semibold text-lg">{currentScout.in_game_name}</p>
                     </div>
                   )}
                 </div>
@@ -244,80 +248,87 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             </div>
 
             {/* Account Type */}
-            <div className="mb-4">
-              <p className="text-gray-400 text-sm mb-2">Account Type</p>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg font-medium bg-green-500/20 text-green-400">
+            <div className="mb-6">
+              <p className="text-gray-500 text-sm mb-3">Account Type</p>
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold border bg-green-500/20 text-green-400 border-green-500/50">
                 <UserIcon className="w-4 h-4" />
                 PLAYER
               </span>
             </div>
 
             {/* Position and IGL */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-gray-400 text-sm">Position</p>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-2">Position</p>
                 {currentScout.position ? (
-                  <span className={`inline-block px-2 py-1 text-xs border rounded ${getRoleColor(currentScout.position)}`}>
+                  <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getRoleColor(currentScout.position)}`}>
                     {currentScout.position}
                   </span>
                 ) : (
-                  <p className="text-white font-medium">Not set</p>
+                  <p className="text-white font-semibold">Not set</p>
                 )}
               </div>
-              <div>
-                <p className="text-gray-400 text-sm">Status</p>
-                <span className={`inline-block px-2 py-1 text-xs border rounded ${getStatusColor(currentScout.status)}`}>
-                  {getStatusLabel(currentScout.status)}
-                </span>
-                {currentScout.is_igl && (
-                  <span className="inline-block ml-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-medium">
-                    IGL
+              <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-2">Status</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getStatusColor(currentScout.status)}`}>
+                    {getStatusLabel(currentScout.status)}
                   </span>
-                )}
+                  {currentScout.is_igl && (
+                    <span className="inline-block px-3 py-1.5 bg-yellow-500/20 text-yellow-400 text-sm rounded-lg font-semibold border border-yellow-500/30">
+                      IGL
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Rank and Nationality */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-gray-400 text-sm">Rank</p>
-                <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-2">Rank</p>
+                <div className="flex items-center gap-3">
                   {getRankImage(currentScout.rank) && (
                     <Image
                       src={getRankImage(currentScout.rank)!}
                       alt={currentScout.rank || ''}
-                      width={24}
-                      height={24}
+                      width={28}
+                      height={28}
                       className="object-contain"
                     />
                   )}
-                  <p className="text-white font-medium">{currentScout.rank || 'Unranked'}</p>
+                  <p className="text-white font-semibold">{currentScout.rank || 'Unranked'}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-gray-400 text-sm">Nationality</p>
-                <div className="flex items-center gap-2">
-                  {currentScout.nationality && (
-                    <Image
-                      src={`https://flagcdn.com/${currentScout.nationality.toLowerCase()}.svg`}
-                      alt={currentScout.nationality}
-                      width={20}
-                      height={15}
-                      className="object-contain"
-                    />
-                  )}
-                  <p className="text-white font-medium">{currentScout.nationality || 'Not set'}</p>
-                </div>
+              <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-2">Nationality</p>
+                {(() => {
+                  const nationality = getNationalityDisplay(currentScout.nationality)
+                  return nationality ? (
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={nationality.flagUrl}
+                        alt={nationality.code}
+                        width={28}
+                        height={21}
+                        className="object-contain rounded-sm"
+                      />
+                      <p className="text-white font-semibold">{nationality.name}</p>
+                    </div>
+                  ) : (
+                    <p className="text-white font-semibold">Not set</p>
+                  )
+                })()}
               </div>
             </div>
 
             {/* Agent Pool */}
             {currentScout.champion_pool && currentScout.champion_pool.length > 0 && (
-              <div>
-                <p className="text-gray-400 text-sm mb-2">Agent Pool</p>
+              <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-3">Agent Pool</p>
                 <div className="flex flex-wrap gap-2">
                   {currentScout.champion_pool.map((agent: string) => (
-                    <span key={agent} className="px-3 py-1 bg-primary/20 text-primary text-sm rounded-lg">
+                    <span key={agent} className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary-dark/20 text-primary text-sm rounded-lg font-medium border border-primary/30">
                       {agent}
                     </span>
                   ))}
@@ -327,25 +338,28 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
           </div>
 
           {/* Management Info */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Management</h2>
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+              Management
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               {currentScout.managed_by && (
-                <div>
-                  <p className="text-gray-400 text-sm">Managed By</p>
-                  <p className="text-white font-medium">{currentScout.managed_by}</p>
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-500 text-sm mb-1">Managed By</p>
+                  <p className="text-white font-semibold">{currentScout.managed_by}</p>
                 </div>
               )}
               {currentScout.contacted_by && (
-                <div>
-                  <p className="text-gray-400 text-sm">Contacted By</p>
-                  <p className="text-white font-medium">{currentScout.contacted_by}</p>
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-500 text-sm mb-1">Contacted By</p>
+                  <p className="text-white font-semibold">{currentScout.contacted_by}</p>
                 </div>
               )}
               {currentScout.last_contact_date && (
-                <div>
-                  <p className="text-gray-400 text-sm">Last Contact Date</p>
-                  <div className="flex items-center gap-2 text-white font-medium">
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-500 text-sm mb-2">Last Contact Date</p>
+                  <div className="flex items-center gap-2 text-white font-semibold">
                     <Calendar className="w-4 h-4" />
                     {new Date(currentScout.last_contact_date).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -357,9 +371,9 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
               )}
             </div>
             {currentScout.notes && (
-              <div className="mt-4">
-                <p className="text-gray-400 text-sm mb-2">Notes</p>
-                <p className="text-white text-sm bg-dark border border-gray-800 rounded-lg p-3">
+              <div className="mt-4 bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-2">Notes</p>
+                <p className="text-white text-sm">
                   {currentScout.notes}
                 </p>
               </div>
@@ -370,26 +384,32 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Team Info */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Team</h3>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+              Team
+            </h3>
+            <div className="flex items-center gap-3 p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-lg flex items-center justify-center border border-primary/30">
                 <UserIcon className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-white font-medium">{currentScout.team_category}</p>
+                <p className="text-white font-semibold">{currentScout.team_category}</p>
                 <p className="text-gray-400 text-sm">Tryout Candidate</p>
               </div>
             </div>
           </div>
 
           {/* Account Info */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Account Info</h3>
-            <div className="space-y-3 text-sm">
-              <div>
-                <p className="text-gray-400">Created</p>
-                <p className="text-white font-medium">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+              Account Info
+            </h3>
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-1">Created</p>
+                <p className="text-white font-semibold">
                   {new Date(currentScout.created_at).toLocaleDateString('en-US', { 
                     year: 'numeric', 
                     month: 'long', 
@@ -397,27 +417,30 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
                   })}
                 </p>
               </div>
-              <div>
-                <p className="text-gray-400">Scout ID</p>
-                <p className="text-white font-mono text-xs truncate">{currentScout.id}</p>
+              <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
+                <p className="text-gray-500 text-sm mb-1">Scout ID</p>
+                <p className="text-white font-mono text-xs break-all">{currentScout.id}</p>
               </div>
             </div>
           </div>
 
           {/* External Links */}
           {(currentScout.valorant_tracker_url || currentScout.twitter_url || currentScout.links) && (
-            <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">External Links</h3>
+            <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+                External Links
+              </h3>
               <div className="space-y-3">
                 {currentScout.valorant_tracker_url && (
                   <a
                     href={currentScout.valorant_tracker_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-primary hover:text-primary-light transition"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-primary/50 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Valorant Tracker
+                    <ExternalLink className="w-4 h-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-gray-300 group-hover:text-white transition">Valorant Tracker</span>
                   </a>
                 )}
                 {currentScout.twitter_url && (
@@ -425,15 +448,15 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
                     href={currentScout.twitter_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-primary hover:text-primary-light transition"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-primary/50 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Twitter
+                    <ExternalLink className="w-4 h-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-gray-300 group-hover:text-white transition">Twitter</span>
                   </a>
                 )}
                 {currentScout.links && (
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Other Links</p>
+                  <div className="p-3 bg-gray-800/30 rounded-lg border border-gray-800/50">
+                    <p className="text-gray-500 text-sm mb-1">Other Links</p>
                     <p className="text-white text-sm">{currentScout.links}</p>
                   </div>
                 )}

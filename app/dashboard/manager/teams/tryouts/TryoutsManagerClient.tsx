@@ -50,18 +50,22 @@ export default function TryoutsManagerClient({ teamId, team, teamCategory }: Try
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                  group inline-flex items-center py-4 px-1 border-b-2 font-semibold text-sm transition-all
                   ${
                     isActive
                       ? 'border-primary text-primary'
-                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                   }
                 `}
               >
                 <Icon
                   className={`
-                    -ml-0.5 mr-2 h-5 w-5
-                    ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-gray-300'}
+                    -ml-0.5 mr-2 h-5 w-5 transition-all
+                    ${
+                      isActive 
+                        ? 'text-primary scale-110' 
+                        : 'text-gray-400 group-hover:text-gray-300 group-hover:scale-110'
+                    }
                   `}
                   aria-hidden="true"
                 />
