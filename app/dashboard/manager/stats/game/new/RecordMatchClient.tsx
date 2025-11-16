@@ -15,6 +15,7 @@ interface RecordMatchClientProps {
 interface PlayerStats {
   playerId: string
   playerName: string
+  championPool: string[]
   kills: number
   deaths: number
   assists: number
@@ -80,6 +81,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
       {
         playerId: '',
         playerName: '',
+        championPool: [],
         kills: 0,
         deaths: 0,
         assists: 0,
@@ -106,6 +108,13 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
       const player = players.find(p => p.id === value)
       if (player) {
         updated[index].playerName = player.username
+        updated[index].championPool = player.champion_pool || []
+        // Auto-select first agent if only one in pool
+        if (player.champion_pool && player.champion_pool.length === 1) {
+          updated[index].agentPlayed = player.champion_pool[0]
+        } else {
+          updated[index].agentPlayed = ''
+        }
       }
     }
     
@@ -416,14 +425,50 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Agent Played *
                       </label>
-                      <input
-                        type="text"
-                        value={stat.agentPlayed}
-                        onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                        placeholder="e.g., Jett, Sage"
-                        className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                        required
-                      />
+                      {stat.championPool && stat.championPool.length > 0 ? (
+                        <>
+                          <select
+                            value={stat.championPool.includes(stat.agentPlayed) ? stat.agentPlayed : 'other'}
+                            onChange={(e) => {
+                              if (e.target.value !== 'other') {
+                                updatePlayerStat(index, 'agentPlayed', e.target.value)
+                              }
+                            }}
+                            className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+                            required
+                          >
+                            <option value="">Select Agent</option>
+                            {stat.championPool.map(agent => (
+                              <option key={agent} value={agent}>
+                                {agent}
+                              </option>
+                            ))}
+                            <option value="other">Other (Custom)</option>
+                          </select>
+                          {!stat.championPool.includes(stat.agentPlayed) && (
+                            <input
+                              type="text"
+                              value={stat.agentPlayed}
+                              onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
+                              placeholder="Enter agent name"
+                              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none mt-2"
+                              required
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <input
+                          type="text"
+                          value={stat.agentPlayed}
+                          onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
+                          placeholder="e.g., Jett, Sage"
+                          className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
+                          required
+                        />
+                      )}
+                      {stat.playerId && stat.championPool.length === 0 && (
+                        <p className="text-xs text-yellow-400 mt-1">No agent pool set for this player</p>
+                      )}
                     </div>
 
                     <div>

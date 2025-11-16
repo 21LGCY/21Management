@@ -1,0 +1,48 @@
+import { createClient } from '@/lib/supabase/server'
+import { requireRole } from '@/lib/auth/server'
+import NavbarWrapper from '@/components/NavbarWrapper'
+import PlayerTeamsClient from './PlayerTeamsClient'
+
+export default async function PlayerTeamsPage() {
+  const user = await requireRole(['player'])
+  const supabase = await createClient()
+
+  // Get player data with team info
+  const { data: playerData } = await supabase
+    .from('profiles')
+    .select('*, teams(id, name, game, tag)')
+    .eq('id', user.user_id)
+    .single()
+
+  // Get all team players for roster display
+  const { data: teamPlayers } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'player')
+    .eq('team_id', playerData?.team_id || '')
+    .order('is_substitute', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  // Get staff members
+  const { data: staffMembers } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'manager')
+    .eq('team_id', playerData?.team_id || '')
+
+  return (
+    <div className="min-h-screen bg-dark">
+      <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PlayerTeamsClient 
+          teamId={playerData?.team_id || ''}
+          teamName={playerData?.teams?.name || ''}
+          currentPlayerId={user.user_id}
+          teamPlayers={teamPlayers || []}
+          staffMembers={staffMembers || []}
+        />
+      </main>
+    </div>
+  )
+}

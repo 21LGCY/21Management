@@ -19,6 +19,8 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
+  agent: string
+  championPool: string[]
 }
 
 type RecordStep = 'select-team' | 'match-details' | 'player-stats'
@@ -66,14 +68,19 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
       
       // Initialize player stats if empty
       if (playerStats.length === 0 && data && data.length > 0) {
-        setPlayerStats(data.slice(0, 5).map(p => ({
-          playerId: p.id,
-          playerName: p.in_game_name || p.username,
-          kills: 0,
-          deaths: 0,
-          assists: 0,
-          acs: 0
-        })))
+        setPlayerStats(data.slice(0, 5).map(p => {
+          const championPool = p.champion_pool || []
+          return {
+            playerId: p.id,
+            playerName: p.in_game_name || p.username,
+            kills: 0,
+            deaths: 0,
+            assists: 0,
+            acs: 0,
+            agent: championPool.length === 1 ? championPool[0] : '',
+            championPool: championPool
+          }
+        }))
       }
     } catch (error) {
       console.error('Error fetching players:', error)
@@ -91,6 +98,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
     }
 
     const nextPlayer = availablePlayers[0]
+    const championPool = nextPlayer.champion_pool || []
     setPlayerStats([
       ...playerStats,
       {
@@ -99,7 +107,9 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
         kills: 0,
         deaths: 0,
         assists: 0,
-        acs: 0
+        acs: 0,
+        agent: championPool.length === 1 ? championPool[0] : '',
+        championPool: championPool
       }
     ])
   }
@@ -112,10 +122,13 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
     const newStats = [...playerStats]
     if (field === 'playerId') {
       const player = players.find(p => p.id === value)
+      const championPool = player?.champion_pool || []
       newStats[index] = {
         ...newStats[index],
         playerId: value as string,
-        playerName: player ? (player.in_game_name || player.username) : ''
+        playerName: player ? (player.in_game_name || player.username) : '',
+        championPool: championPool,
+        agent: championPool.length === 1 ? championPool[0] : ''
       }
     } else {
       newStats[index] = {
@@ -168,6 +181,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             deaths: ps.deaths,
             assists: ps.assists,
             acs: ps.acs,
+            agent_played: ps.agent || null,
             headshot_percentage: 0,
             first_kills: 0,
             first_deaths: 0,
@@ -478,14 +492,48 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">ACS</label>
-                    <input
-                      type="number"
-                      value={stat.acs}
-                      onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)}
-                      min="0"
-                      className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                    />
+                    <label className="block text-xs font-medium text-gray-400 mb-2">Agent</label>
+                    {stat.championPool && stat.championPool.length > 0 ? (
+                      <>
+                        <select
+                          value={stat.championPool.includes(stat.agent || '') ? stat.agent : 'other'}
+                          onChange={(e) => {
+                            if (e.target.value !== 'other') {
+                              updatePlayerStat(index, 'agent', e.target.value)
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                        >
+                          <option value="">Select...</option>
+                          {stat.championPool.map(champion => (
+                            <option key={champion} value={champion}>{champion}</option>
+                          ))}
+                          <option value="other">Other (Custom)</option>
+                        </select>
+                        {!stat.championPool.includes(stat.agent || '') && (
+                          <input
+                            type="text"
+                            value={stat.agent || ''}
+                            onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
+                            placeholder="Enter agent name"
+                            className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none mt-2"
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          value={stat.agent || ''}
+                          onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
+                          placeholder="e.g., Jett"
+                          className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                        />
+                        {stat.playerId && (
+                          <p className="text-xs text-yellow-400 mt-1">No agent pool defined for this player</p>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   <div className="flex items-end">

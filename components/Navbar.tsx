@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { logout } from '@/lib/auth/client'
-import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp, Settings, User, Lock, Image as ImageIcon, ChevronDown } from 'lucide-react'
+import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp, Settings, User, Lock, Image as ImageIcon, ChevronDown, BarChart3 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -156,6 +156,32 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
                     Statistics
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
+                  </span>
+                </Link>
+              </div>
+            )}
+
+            {/* Player Navigation Links */}
+            {role === 'player' && (
+              <div className="hidden md:flex items-center space-x-6">
+                <Link 
+                  href="/dashboard/player/stats"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group relative"
+                >
+                  <BarChart3 className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  <span className="relative">
+                    Stats
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
+                  </span>
+                </Link>
+                <Link 
+                  href="/dashboard/player/teams"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group relative"
+                >
+                  <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  <span className="relative">
+                    Team
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -327,6 +353,28 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
                   Statistics
+                </Link>
+              </div>
+            )}
+
+            {/* Player Links in Mobile */}
+            {role === 'player' && (
+              <div className="space-y-2 pb-4 border-b border-gray-800">
+                <Link 
+                  href="/dashboard/player/stats"
+                  className="flex items-center gap-3 text-gray-300 hover:text-white transition-all py-2.5 px-3 rounded-lg hover:bg-gray-800 group"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <BarChart3 className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  Stats
+                </Link>
+                <Link 
+                  href="/dashboard/player/teams"
+                  className="flex items-center gap-3 text-gray-300 hover:text-white transition-all py-2.5 px-3 rounded-lg hover:bg-gray-800 group"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  Team
                 </Link>
               </div>
             )}
