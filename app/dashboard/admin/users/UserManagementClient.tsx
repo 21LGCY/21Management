@@ -7,6 +7,7 @@ import { Plus, Search, Users, User as UserIcon, Shield, Crown, ExternalLink } fr
 import Link from 'next/link'
 import Image from 'next/image'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
+import { getNationalityDisplay } from '@/lib/utils/nationality'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -126,21 +127,25 @@ export default function UserManagementClient() {
   return (
     <div className="space-y-6">
       {/* Add User Button and Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-gray-400 text-sm">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <p className="text-gray-400 text-sm font-semibold">
           Showing {filteredUsers.length} of {users.length} users
         </p>
         <Link
           href="/dashboard/admin/users/new"
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
         >
           <Plus className="w-4 h-4" />
-          Add User
+          <span>Add User</span>
         </Link>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+          <h3 className="text-lg font-semibold text-white">Search & Filter</h3>
+        </div>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -197,47 +202,47 @@ export default function UserManagementClient() {
           filteredUsers.map((user) => {
             const rankImage = getRankImage(user.rank)
             const teamTag = (user as any).teams?.tag || null
+            const nationality = getNationalityDisplay(user.nationality)
             
             return (
               <Link
                 key={user.id}
                 href={`/dashboard/admin/users/view/${user.id}`}
-                className="block bg-dark-card border border-gray-800 rounded-lg hover:border-gray-700 transition"
+                className="block bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 group"
               >
-                <div className="p-4 flex flex-col h-full">
-                  <div className="space-y-2 flex-1">
-                    {/* Header: Avatar + Name/IGN (left) + Team|Role Badge & Rank (right) */}
-                    <div className="flex items-start justify-between gap-3">
-                      {/* Left: Avatar + Name & IGN */}
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="p-6 flex flex-col h-full">
+                  <div className="space-y-4 flex-1">
+                    {/* Header with Badge */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Avatar */}
-                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border border-primary/30">
                           {user.avatar_url ? (
                             <Image
                               src={optimizeAvatar(user.avatar_url)}
                               alt={user.username}
-                              width={48}
-                              height={48}
+                              width={64}
+                              height={64}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <UserIcon className="w-6 h-6 text-primary" />
+                            <UserIcon className="w-8 h-8 text-primary" />
                           )}
                         </div>
                         
-                        {/* Name & IGN */}
+                        {/* Name & IGN with Flag */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <h3 className="text-lg font-bold text-white truncate">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-xl font-bold text-white truncate">
                               {user.in_game_name || user.username}
                             </h3>
-                            {user.nationality && (
+                            {nationality && (
                               <Image
-                                src={`https://flagcdn.com/${user.nationality.toLowerCase()}.svg`}
-                                alt={user.nationality}
-                                width={20}
-                                height={15}
-                                className="object-contain flex-shrink-0"
+                                src={nationality.flagUrl}
+                                alt={nationality.code}
+                                width={24}
+                                height={18}
+                                className="object-contain rounded-sm flex-shrink-0"
                               />
                             )}
                           </div>
@@ -247,15 +252,13 @@ export default function UserManagementClient() {
                         </div>
                       </div>
 
-                      {/* Right: Team|Role Badge & Rank - absolute positioning */}
-                      <div className="flex-shrink-0 relative">
-                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getRoleColor(user.role)}`}>
+                      {/* Team|Role Badge and Rank - Top Right */}
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className={`px-3 py-1 text-xs border rounded-lg whitespace-nowrap font-semibold ${getRoleColor(user.role)}`}>
                           {teamTag || 'No Team'} | {getRoleLabel(user.role)}
                         </span>
-                        
-                        {/* Rank Image - positioned below badge */}
                         {user.rank && rankImage && (
-                          <div className="absolute top-full right-0 mt-3 group/rank">
+                          <div className="group/rank relative">
                             <Image
                               src={rankImage}
                               alt={user.rank}
@@ -273,21 +276,21 @@ export default function UserManagementClient() {
 
                     {/* Player-specific Info */}
                     {user.role === 'player' && (
-                      <div className="space-y-2">
-                        {/* Role and Status Badges */}
-                        <div className="flex items-center gap-1 flex-wrap">
+                      <div className="space-y-3">
+                        {/* Role and Status */}
+                        <div className="flex items-center gap-2 flex-wrap">
                           {user.position && (
-                            <span className={`px-2 py-0.5 text-xs border rounded ${getPositionColor(user.position)}`}>
+                            <span className={`px-3 py-1 text-xs font-semibold border rounded-lg ${getPositionColor(user.position)}`}>
                               {user.position}
                             </span>
                           )}
                           {user.is_igl && (
-                            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded border border-yellow-500/30">
+                            <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-semibold border border-yellow-500/30">
                               IGL
                             </span>
                           )}
                           {user.is_substitute && (
-                            <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 text-xs rounded border border-orange-500/30">
+                            <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-lg font-semibold border border-orange-500/30">
                               SUB
                             </span>
                           )}
@@ -295,12 +298,20 @@ export default function UserManagementClient() {
 
                         {/* Agent Pool */}
                         {user.champion_pool && user.champion_pool.length > 0 && (
-                          <div>
-                            <p className="text-xs text-gray-400 mb-1">Main Agents</p>
-                            <p className="text-xs text-gray-300">
-                              {user.champion_pool.slice(0, 2).join(', ')}
-                              {user.champion_pool.length > 2 && ` +${user.champion_pool.length - 2}`}
-                            </p>
+                          <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
+                            <p className="text-xs text-gray-400 mb-2 font-medium">Agent Pool</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {user.champion_pool.slice(0, 3).map((agent: string) => (
+                                <span key={agent} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded font-medium border border-primary/20">
+                                  {agent}
+                                </span>
+                              ))}
+                              {user.champion_pool.length > 3 && (
+                                <span className="px-2 py-1 text-gray-400 text-xs">
+                                  +{user.champion_pool.length - 3}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -308,9 +319,9 @@ export default function UserManagementClient() {
 
                     {/* Manager-specific Info */}
                     {user.role === 'manager' && user.staff_role && (
-                      <div>
-                        <p className="text-xs text-gray-400">Role</p>
-                        <p className="text-sm text-white font-medium">{user.staff_role}</p>
+                      <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
+                        <p className="text-xs text-gray-400 mb-1 font-medium">Staff Role</p>
+                        <p className="text-sm text-white font-semibold">{user.staff_role}</p>
                       </div>
                     )}
                   </div>

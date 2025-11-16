@@ -6,6 +6,7 @@ import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/t
 import { Plus, Edit, Trash2, Search, ExternalLink, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getNationalityDisplay } from '@/lib/utils/nationality'
 
 export default function ScoutingDatabase() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
@@ -183,45 +184,45 @@ export default function ScoutingDatabase() {
 
           <Link
             href="/dashboard/admin/tryouts/scouts/new"
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition whitespace-nowrap"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 whitespace-nowrap font-semibold"
           >
             <Plus className="w-5 h-5" />
-            Add Scout
+            <span>Add Scout</span>
           </Link>
         </div>
       </div>
 
       {/* Player Cards Grid */}
       {filteredTryouts.length === 0 ? (
-        <div className="text-center py-12 bg-dark-card border border-gray-800 rounded-lg">
+        <div className="text-center py-12 bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl shadow-xl">
           <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-400 mb-2">No scouting profiles found</p>
+          <p className="text-gray-400 font-semibold mb-2">No scouting profiles found</p>
           <p className="text-gray-500 text-sm">Click "Add Scout" to create one</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTryouts.map((tryout) => {
             const rankImage = getRankImage(tryout.rank)
+            const nationality = getNationalityDisplay(tryout.nationality)
             
             return (
-              <div key={tryout.id} className="bg-dark-card border border-gray-800 rounded-lg hover:border-gray-700 transition relative group">
-                <Link href={`/dashboard/admin/tryouts/scouts/view/${tryout.id}`} className="block p-4">
-                  <div className="space-y-3">
-                    {/* Header: Name/IGN (left) + Rank & Status (right) */}
+              <div key={tryout.id} className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 relative group">
+                <Link href={`/dashboard/admin/tryouts/scouts/view/${tryout.id}`} className="block p-5">
+                  <div className="space-y-4">
+                    {/* Header with Badge */}
                     <div className="flex items-start justify-between gap-3">
-                      {/* Left: Name & IGN */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-lg font-bold text-white truncate">
                             {tryout.in_game_name || tryout.username}
                           </h3>
-                          {tryout.nationality && (
+                          {nationality && (
                             <Image
-                              src={`https://flagcdn.com/${tryout.nationality.toLowerCase()}.svg`}
-                              alt={tryout.nationality}
+                              src={nationality.flagUrl}
+                              alt={nationality.code}
                               width={20}
                               height={15}
-                              className="object-contain flex-shrink-0"
+                              className="object-contain rounded-sm flex-shrink-0"
                             />
                           )}
                         </div>
@@ -230,15 +231,13 @@ export default function ScoutingDatabase() {
                         )}
                       </div>
 
-                      {/* Right: Team|Status Badge & Rank - absolute positioning */}
-                      <div className="flex-shrink-0 relative">
-                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap ${getStatusColor(tryout.status)}`}>
+                      {/* Team|Status Badge and Rank - Top Right */}
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap font-semibold ${getStatusColor(tryout.status)}`}>
                           {tryout.team_category} | {getStatusLabel(tryout.status)}
                         </span>
-                        
-                        {/* Rank Image - positioned below badge */}
                         {tryout.rank && rankImage && (
-                          <div className="absolute top-full right-0 mt-3 group/rank">
+                          <div className="group/rank relative">
                             <Image
                               src={rankImage}
                               alt={tryout.rank}
@@ -255,14 +254,14 @@ export default function ScoutingDatabase() {
                     </div>
 
                     {/* Role Badges */}
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-2">
                       {tryout.position && (
-                        <span className={`px-2 py-0.5 text-xs border rounded ${getRoleColor(tryout.position)}`}>
+                        <span className={`px-3 py-1 text-xs font-semibold border rounded-lg ${getRoleColor(tryout.position)}`}>
                           {tryout.position}
                         </span>
                       )}
                       {tryout.is_igl && (
-                        <span className="px-2 py-0.5 text-xs rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                        <span className="px-3 py-1 text-xs rounded-lg font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
                           IGL
                         </span>
                       )}
@@ -270,12 +269,20 @@ export default function ScoutingDatabase() {
 
                     {/* Agent Pool */}
                     {tryout.champion_pool && tryout.champion_pool.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Main Agents</p>
-                        <p className="text-xs text-gray-300">
-                          {tryout.champion_pool.slice(0, 2).join(', ')}
-                          {tryout.champion_pool.length > 2 && ` +${tryout.champion_pool.length - 2}`}
-                        </p>
+                      <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
+                        <p className="text-xs text-gray-400 mb-2 font-medium">Agent Pool</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {tryout.champion_pool.slice(0, 3).map((agent: string) => (
+                            <span key={agent} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded font-medium border border-primary/20">
+                              {agent}
+                            </span>
+                          ))}
+                          {tryout.champion_pool.length > 3 && (
+                            <span className="px-2 py-1 text-gray-400 text-xs">
+                              +{tryout.champion_pool.length - 3}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
 

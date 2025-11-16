@@ -80,74 +80,74 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <Link href="/dashboard/admin/teams">
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition flex-shrink-0">
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
+            <button className="p-2 hover:bg-gray-800 rounded-lg transition flex-shrink-0 group">
+              <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:-translate-x-1 transition-transform" />
             </button>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold text-white truncate">{teamName} - Matches</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent truncate">{teamName} - Matches</h1>
             <p className="text-gray-400 mt-1">View and manage all match history</p>
           </div>
         </div>
 
         <Link
           href={`/dashboard/admin/teams/view/${teamId}/matches/new`}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition flex-shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add Match
+          <span>Add Match</span>
         </Link>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Total Matches</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">Total Matches</p>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
             </div>
             <Trophy className="w-8 h-8 text-gray-400" />
           </div>
         </div>
 
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-green-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Wins</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">Wins</p>
               <p className="text-2xl font-bold text-green-400">{stats.wins}</p>
             </div>
             <TrendingUp className="w-8 h-8 text-green-400" />
           </div>
         </div>
 
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-red-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Losses</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">Losses</p>
               <p className="text-2xl font-bold text-red-400">{stats.losses}</p>
             </div>
             <TrendingDown className="w-8 h-8 text-red-400" />
           </div>
         </div>
 
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-yellow-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Draws</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">Draws</p>
               <p className="text-2xl font-bold text-yellow-400">{stats.draws}</p>
             </div>
             <Target className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
 
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-primary/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Win Rate</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">Win Rate</p>
               <p className="text-2xl font-bold text-primary">{stats.winRate}%</p>
             </div>
             <TrendingUp className="w-8 h-8 text-primary" />
@@ -156,43 +156,43 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-3 flex-wrap">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all ${
             filter === 'all'
-              ? 'bg-primary text-white'
-              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/20'
+              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
           All
         </button>
         <button
           onClick={() => setFilter('win')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all ${
             filter === 'win'
-              ? 'bg-green-500 text-white'
-              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg shadow-green-500/20'
+              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
           Wins
         </button>
         <button
           onClick={() => setFilter('loss')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all ${
             filter === 'loss'
-              ? 'bg-red-500 text-white'
-              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/20'
+              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
           Losses
         </button>
         <button
           onClick={() => setFilter('draw')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-5 py-2.5 rounded-lg font-semibold transition-all ${
             filter === 'draw'
-              ? 'bg-yellow-500 text-white'
-              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-lg shadow-yellow-500/20'
+              : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
           Draws
@@ -205,7 +205,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
           filteredMatches.map((match) => (
             <div
               key={match.id}
-              className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition"
+              className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 hover:border-gray-700 hover:shadow-lg transition-all group"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -288,14 +288,14 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
             </div>
           ))
         ) : (
-          <div className="text-center py-12 bg-dark-card border border-gray-800 rounded-lg">
+          <div className="text-center py-12 bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl shadow-xl">
             <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg mb-2">
+            <p className="text-gray-400 text-lg font-semibold mb-2">
               {matches.length === 0 
                 ? 'No matches recorded yet' 
                 : `No ${filter} matches found`}
             </p>
-            <p className="text-gray-500 mb-4">
+            <p className="text-gray-500 mb-6">
               {matches.length === 0
                 ? 'Start tracking team performance by adding the first match'
                 : 'Try selecting a different filter'}
@@ -303,10 +303,10 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
             {matches.length === 0 && (
               <Link
                 href={`/dashboard/admin/teams/view/${teamId}/matches/new`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
               >
                 <Plus className="w-4 h-4" />
-                Add First Match
+                <span>Add First Match</span>
               </Link>
             )}
           </div>

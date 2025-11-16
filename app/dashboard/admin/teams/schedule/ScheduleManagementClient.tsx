@@ -389,8 +389,9 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
   return (
     <div className="space-y-6">
       {/* Team Selector */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <label className="block text-sm font-medium text-gray-400 mb-2">
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <label className="block text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+          <div className="w-1 h-4 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
           Select Team
         </label>
         <select
@@ -399,7 +400,7 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
             setSelectedTeamId(e.target.value)
             resetForm()
           }}
-          className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-4 py-2.5 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary transition"
         >
           <option value="">Choose a team...</option>
           {teams.map((team) => (
@@ -411,7 +412,7 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
       </div>
 
       {!selectedTeamId ? (
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-12">
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-12 shadow-xl">
           <div className="text-center text-gray-400">
             <Calendar className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg">Select a team to view and manage their schedule</p>
@@ -446,9 +447,10 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
       ) : (
         <>
           {/* Activity Type Selector */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 <h3 className="text-lg font-semibold text-white">Activity Types</h3>
                 <div className="group relative">
                   <Info className="w-4 h-4 text-gray-400 hover:text-primary cursor-help transition" />
@@ -459,7 +461,7 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
               </div>
               <button
                 onClick={() => setIsDeleteMode(!isDeleteMode)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition ${isDeleteMode ? 'bg-red-600 text-white' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all font-semibold ${isDeleteMode ? 'bg-gradient-to-r from-red-900/30 to-red-800/30 text-red-400 border border-red-800/50' : 'bg-gray-700/50 text-white hover:bg-gray-700'}`}
                 title="Toggle delete mode (drag to remove)"
               >
                 <Trash2 className="w-4 h-4" />
@@ -476,8 +478,8 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
                       setSelectedActivityType(type.id)
                       setActivityForm({ ...activityForm, type: type.id })
                     }}
-                    className={`p-3 border rounded-lg transition ${type.color} ${
-                      selectedActivityType === type.id ? 'ring-2 ring-primary' : ''
+                    className={`p-4 border rounded-xl transition-all hover:scale-105 ${type.color} ${
+                      selectedActivityType === type.id ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
                     }`}
                   >
                     <Icon className="w-5 h-5 mx-auto mb-1" />
@@ -490,8 +492,9 @@ export default function ScheduleManagementClient({ teams }: ScheduleManagementCl
 
           {/* Activity Form */}
           {isCreating && (
-            <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 {editingActivity ? 'Edit Activity' : 'Create Activity'}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

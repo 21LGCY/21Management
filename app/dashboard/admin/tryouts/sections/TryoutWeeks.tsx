@@ -16,23 +16,22 @@ type TryoutWeekWithStats = TryoutWeek & {
 }
 
 export default function TryoutWeeks() {
-  const [tryoutWeeks, setTryoutWeeks] = useState<TryoutWeekWithStats[]>([])
+  const [allTryoutWeeks, setAllTryoutWeeks] = useState<TryoutWeekWithStats[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTeam, setSelectedTeam] = useState<TeamCategory>('21L')
   const supabase = createClient()
 
   useEffect(() => {
     fetchTryoutWeeks()
-  }, [selectedTeam])
+  }, [])
 
   const fetchTryoutWeeks = async () => {
     setLoading(true)
     try {
-      // Fetch tryout weeks for selected team
+      // Fetch ALL tryout weeks at once
       const { data: weeks, error: weeksError } = await supabase
         .from('tryout_weeks')
         .select('*')
-        .eq('team_category', selectedTeam)
         .order('week_start', { ascending: false })
 
       if (weeksError) throw weeksError
@@ -67,9 +66,9 @@ export default function TryoutWeeks() {
           }
         })
 
-        setTryoutWeeks(weeksWithStats)
+        setAllTryoutWeeks(weeksWithStats)
       } else {
-        setTryoutWeeks([])
+        setAllTryoutWeeks([])
       }
     } catch (error) {
       console.error('Error fetching tryout weeks:', error)
@@ -77,6 +76,9 @@ export default function TryoutWeeks() {
       setLoading(false)
     }
   }
+
+  // Filter weeks client-side based on selected team
+  const tryoutWeeks = allTryoutWeeks.filter(week => week.team_category === selectedTeam)
 
   const hasResponded = (availability: PlayerAvailability): boolean => {
     const slots = availability.time_slots || {}
@@ -132,23 +134,23 @@ export default function TryoutWeeks() {
           <p className="text-gray-400 mt-1">Manage tryout sessions and track player availability</p>
         </div>
         <Link href="/dashboard/admin/tryouts/new">
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+          <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 font-semibold">
             <Plus className="w-4 h-4" />
-            Create Tryout Week
+            <span>Create Tryout Week</span>
           </button>
         </Link>
       </div>
 
       {/* Team Selector */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         {(['21L', '21GC', '21ACA'] as TeamCategory[]).map((team) => (
           <button
             key={team}
             onClick={() => setSelectedTeam(team)}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
               selectedTeam === team
-                ? 'bg-primary text-white shadow-lg shadow-primary/50'
-                : 'bg-dark-card border border-gray-800 text-gray-300 hover:bg-dark-hover'
+                ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/20'
+                : 'bg-dark-card border border-gray-800 text-gray-300 hover:bg-gray-800/50'
             }`}
           >
             {getTeamLabel(team)}
@@ -158,14 +160,14 @@ export default function TryoutWeeks() {
 
       {/* Tryout Weeks List */}
       {tryoutWeeks.length === 0 ? (
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-12 text-center shadow-xl">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">No Sessions</h3>
           <p className="text-gray-400 mb-6">Create a tryout week for {getTeamLabel(selectedTeam)}</p>
           <Link href="/dashboard/admin/tryouts/new">
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition mx-auto">
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all mx-auto shadow-lg hover:shadow-primary/20 font-semibold">
               <Plus className="w-4 h-4" />
-              Create
+              <span>Create</span>
             </button>
           </Link>
         </div>
@@ -175,7 +177,7 @@ export default function TryoutWeeks() {
             <Link
               key={week.id}
               href={`/dashboard/admin/tryouts/${week.id}`}
-              className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:bg-dark-hover transition-all cursor-pointer block"
+              className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 cursor-pointer block group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>

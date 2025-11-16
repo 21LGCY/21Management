@@ -251,7 +251,7 @@ export default function ZonesInterface() {
           {zoneStats.map((stat) => (
             <div
               key={stat.zone}
-              className="bg-dark-card border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition"
+              className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -320,8 +320,11 @@ export default function ZonesInterface() {
       )}
 
       {/* Zone Legend */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-white mb-4">VALORANT Zone Definitions</h3>
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
+          VALORANT Zone Definitions
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           {Object.entries(VALORANT_ZONES).map(([zone, countries]) => (
             <div key={zone} className="text-gray-400">

@@ -119,15 +119,15 @@ export default function TeamManagementClient() {
   return (
     <div className="space-y-6">
       {/* Teams List */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-white">Teams</h2>
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Teams</h2>
           <Link
             href="/dashboard/admin/teams/new"
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
           >
             <Plus className="w-4 h-4" />
-            Add Team
+            <span>Add Team</span>
           </Link>
         </div>
 
@@ -136,25 +136,27 @@ export default function TeamManagementClient() {
             <Link
               key={team.id}
               href={`/dashboard/admin/teams/view/${team.id}`}
-              className="p-4 rounded-lg border bg-dark border-gray-800 hover:border-gray-700 transition cursor-pointer"
+              className="group p-5 rounded-xl border bg-gradient-to-br from-gray-800/40 to-gray-900/40 border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-4 mb-2">
                 {team.logo_url ? (
-                  <Image
-                    src={team.logo_url}
-                    alt={team.name}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover w-10 h-10"
-                  />
+                  <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-primary/30 group-hover:border-primary/50 transition-all">
+                    <Image
+                      src={team.logo_url}
+                      alt={team.name}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-gray-400" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center border-2 border-gray-700 group-hover:border-primary/50 transition-all">
+                    <Users className="w-6 h-6 text-gray-400 group-hover:text-primary transition" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-white">{team.name}</h3>
-                  <p className="text-sm text-gray-400">{team.game}</p>
+                  <h3 className="font-semibold text-white group-hover:text-primary transition text-lg">{team.name}</h3>
+                  <p className="text-sm text-gray-500">{team.game}</p>
                 </div>
               </div>
             </Link>
@@ -165,74 +167,74 @@ export default function TeamManagementClient() {
       {/* Planning Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Match History */}
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">Match History</h2>
-            <div className="flex gap-2">
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Match History</h2>
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setShowMatchManagementModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg transition-all border border-gray-700 hover:border-gray-600"
               >
                 <Trophy className="w-4 h-4" />
-                Match Management
+                <span className="hidden sm:inline">Management</span>
               </button>
               <button
                 onClick={() => setShowRecordMatchModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
               >
                 <Trophy className="w-4 h-4" />
-                Record Match
+                <span className="hidden sm:inline">Record Match</span>
               </button>
             </div>
           </div>
-          <p className="text-center text-gray-400 py-8">Match history will appear here</p>
+          <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">Match history will appear here</p>
         </div>
 
         {/* Planning */}
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">Planning</h2>
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Planning</h2>
             <Link
               href="/dashboard/admin/teams/schedule"
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
             >
               <Calendar className="w-4 h-4" />
-              Schedule Management
+              <span className="hidden sm:inline">Schedule</span>
             </Link>
           </div>
 
           <div className="space-y-3">
             {matches.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">No matches scheduled</p>
+              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">No matches scheduled</p>
             ) : (
               matches.map((match) => (
                 <div
                   key={match.id}
-                  className="flex items-center justify-between p-4 bg-dark rounded-lg border border-gray-800 hover:border-gray-700 transition"
+                  className="group flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="font-medium text-white">
+                    <div className="flex items-center gap-3 mb-1 flex-wrap">
+                      <p className="font-semibold text-white">
                         {teams.find(t => t.id === match.team_id)?.name} vs {match.opponent}
                       </p>
                       {match.result && (
-                        <span className={`px-2 py-0.5 text-xs rounded ${
-                          match.result === 'win' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
-                          match.result === 'loss' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                          'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                        <span className={`px-2.5 py-1 text-xs rounded-lg font-semibold border ${
+                          match.result === 'win' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                          match.result === 'loss' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                          'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
                         }`}>
                           {match.result.toUpperCase()}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {new Date(match.scheduled_at).toLocaleString()}
                       {match.score && ` • ${match.score}`}
                     </p>
                   </div>
                   <button
                     onClick={() => deleteMatch(match.id)}
-                    className="p-2 text-red-400 hover:bg-red-400/10 rounded transition"
+                    className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

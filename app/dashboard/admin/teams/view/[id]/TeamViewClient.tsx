@@ -112,7 +112,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       <Link 
         key={member.id} 
         href={`/dashboard/admin/users/view/${member.id}`}
-        className="bg-dark border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition flex flex-col cursor-pointer"
+        className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-4 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 flex flex-col cursor-pointer group"
       >
         <div className="flex flex-col items-center text-center">
           {/* Avatar */}
@@ -229,36 +229,36 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-6">
           <div>
             <div className="flex items-center gap-4 mb-2">
               <Link
                 href="/dashboard/admin/teams"
-                className="text-gray-400 hover:text-white transition"
+                className="text-gray-400 hover:text-white transition group"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
               </Link>
-              <h1 className="text-3xl font-bold text-white">{team.name}</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{team.name}</h1>
             </div>
             <p className="text-gray-400 ml-10">{team.game}</p>
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Link
             href={`/dashboard/admin/teams/${teamId}`}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
           >
             <Edit className="w-4 h-4" />
-            Edit
+            <span>Edit</span>
           </Link>
           <button
             onClick={deleteTeam}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
           >
             <Trash2 className="w-4 h-4" />
-            Delete
+            <span>Delete</span>
           </button>
         </div>
       </div>
@@ -268,9 +268,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
         <nav className="flex gap-4">
           <button
             onClick={() => setActiveTab('roster')}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all font-semibold ${
               activeTab === 'roster'
-                ? 'border-primary text-primary'
+                ? 'border-primary text-primary shadow-lg shadow-primary/20'
                 : 'border-transparent text-gray-400 hover:text-white'
             }`}
           >
@@ -279,9 +279,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
           </button>
           <button
             onClick={() => setActiveTab('strat_map')}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all font-semibold ${
               activeTab === 'strat_map'
-                ? 'border-primary text-primary'
+                ? 'border-primary text-primary shadow-lg shadow-primary/20'
                 : 'border-transparent text-gray-400 hover:text-white'
             }`}
           >
@@ -290,9 +290,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
           </button>
           <button
             onClick={() => setActiveTab('review_praccs')}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium ${
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all font-semibold ${
               activeTab === 'review_praccs'
-                ? 'border-primary text-primary'
+                ? 'border-primary text-primary shadow-lg shadow-primary/20'
                 : 'border-transparent text-gray-400 hover:text-white'
             }`}
           >
@@ -306,9 +306,10 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       {activeTab === 'roster' && (
         <div className="space-y-6">
           {/* Main Roster */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 <Users className="w-5 h-5 text-primary" />
                 <h2 className="text-xl font-semibold text-white">Main Roster</h2>
               </div>
@@ -323,8 +324,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
           </div>
 
           {/* Substitutes */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
               <Shield className="w-5 h-5 text-blue-400" />
               <h2 className="text-xl font-semibold text-white">Substitutes</h2>
             </div>
@@ -338,8 +340,9 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
           </div>
 
           {/* Staff */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1 h-6 bg-gradient-to-b from-green-400 to-green-600 rounded-full"></div>
               <UserIcon className="w-5 h-5 text-green-400" />
               <h2 className="text-xl font-semibold text-white">Staff</h2>
             </div>
