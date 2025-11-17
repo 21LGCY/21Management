@@ -182,6 +182,9 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Player
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Agent
+                  </th>
                   <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Kills
                   </th>
@@ -228,6 +231,11 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
                               <p className="text-xs text-gray-500">{player.position || 'Player'}</p>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 bg-gray-700 text-gray-300 text-sm rounded">
+                            {stat.agent_played || 'Unknown'}
+                          </span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="text-green-400 font-semibold text-lg">{stat.kills}</span>

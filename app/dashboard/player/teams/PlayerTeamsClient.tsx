@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Map, MessageSquare, Users, Shield, Star, Trophy, Clock, Activity } from 'lucide-react'
+import { Calendar, Map, MessageSquare, Users, Star, Trophy, Clock, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import StratMapSelection from '@/app/dashboard/manager/teams/sections/StratMapSelection'
@@ -70,70 +70,97 @@ export default function PlayerTeamsClient({
   const mainRoster = teamPlayers.filter(p => !p.is_substitute)
   const substitutes = teamPlayers.filter(p => p.is_substitute)
 
-  const PlayerCard = ({ player, isCurrentPlayer }: { player: Player, isCurrentPlayer: boolean }) => (
-    <div 
-      className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-        isCurrentPlayer 
-          ? 'bg-gradient-to-br from-primary/20 to-primary/5 border-primary/50 shadow-lg shadow-primary/10' 
-          : 'bg-dark border-gray-800 hover:border-gray-700'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          {player.avatar_url ? (
-            <img 
-              src={player.avatar_url} 
-              alt={player.in_game_name || player.username}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isCurrentPlayer ? 'bg-primary/30' : 'bg-gray-700'
-            }`}>
-              <Users className={`w-5 h-5 ${isCurrentPlayer ? 'text-primary' : 'text-gray-400'}`} />
-            </div>
-          )}
-          {isCurrentPlayer && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-              <Star className="w-3 h-3 text-white" fill="currentColor" />
-            </div>
-          )}
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <p className={`font-medium ${isCurrentPlayer ? 'text-primary' : 'text-white'}`}>
-              {player.in_game_name || player.username}
-            </p>
-            {player.is_igl && (
-              <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded font-medium">
-                IGL
-              </span>
+  const getRankImage = (rank?: string) => {
+    if (!rank) return null
+    const rankMap: { [key: string]: string } = {
+      'Ascendant 1': '/images/asc_1_rank.webp',
+      'Ascendant 2': '/images/asc_2_rank.webp',
+      'Ascendant 3': '/images/asc_3_rank.webp',
+      'Immortal 1': '/images/immo_1_rank.webp',
+      'Immortal 2': '/images/immo_2_rank.webp',
+      'Immortal 3': '/images/immo_3_rank.webp',
+      'Radiant': '/images/rad_rank.webp'
+    }
+    return rankMap[rank] || null
+  }
+
+  const PlayerCard = ({ player, isCurrentPlayer }: { player: Player, isCurrentPlayer: boolean }) => {
+    const rankImage = getRankImage(player.rank)
+    
+    return (
+      <div 
+        className={`group flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+          isCurrentPlayer 
+            ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/40 shadow-lg shadow-primary/10' 
+            : 'bg-dark/50 border-gray-800 hover:border-gray-700 hover:bg-dark/70'
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            {player.avatar_url ? (
+              <img 
+                src={player.avatar_url} 
+                alt={player.in_game_name || player.username}
+                className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-700/50"
+              />
+            ) : (
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ring-2 ring-gray-700/50 ${
+                isCurrentPlayer ? 'bg-primary/30' : 'bg-gray-700'
+              }`}>
+                <Users className={`w-6 h-6 ${isCurrentPlayer ? 'text-primary' : 'text-gray-400'}`} />
+              </div>
             )}
             {isCurrentPlayer && (
-              <span className="px-2 py-0.5 bg-primary/30 text-primary text-xs rounded font-medium">
-                You
-              </span>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center ring-2 ring-dark-card">
+                <Star className="w-3 h-3 text-white" fill="currentColor" />
+              </div>
             )}
           </div>
-          <p className="text-sm text-gray-400">{player.full_name}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <p className={`font-bold text-base truncate ${
+                isCurrentPlayer ? 'text-primary' : 'text-white'
+              }`}>
+                {player.in_game_name || player.username}
+              </p>
+              {player.is_igl && (
+                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-md font-bold border border-yellow-500/30 flex-shrink-0">
+                  IGL
+                </span>
+              )}
+              {isCurrentPlayer && (
+                <span className="px-2 py-0.5 bg-primary/30 text-primary text-xs rounded-md font-bold border border-primary/30 flex-shrink-0">
+                  You
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-400 truncate">{player.full_name}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 flex-shrink-0 ml-3">
+          {player.position && (
+            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
+              isCurrentPlayer 
+                ? 'bg-primary/20 text-primary border border-primary/30' 
+                : 'bg-gray-800 text-gray-300 border border-gray-700'
+            }`}>
+              {player.position}
+            </span>
+          )}
+          {rankImage && (
+            <div className="flex items-center gap-2 bg-gray-900/50 px-2.5 py-1.5 rounded-lg border border-gray-800">
+              <img 
+                src={rankImage} 
+                alt={player.rank} 
+                className="w-6 h-6 object-contain"
+              />
+              <span className="text-xs font-semibold text-gray-300 hidden sm:inline">{player.rank}</span>
+            </div>
+          )}
         </div>
       </div>
-      <div className="text-right">
-        {player.position && (
-          <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
-            isCurrentPlayer 
-              ? 'bg-primary/20 text-primary' 
-              : 'bg-gray-700 text-gray-300'
-          }`}>
-            {player.position}
-          </span>
-        )}
-        {player.rank && (
-          <p className="text-xs text-gray-400 mt-1">{player.rank}</p>
-        )}
-      </div>
-    </div>
-  )
+    )
+  }
 
   const getDayActivities = (day: string) => {
     return scheduleActivities.filter(a => a.day_of_week === day.toLowerCase())
@@ -206,16 +233,18 @@ export default function PlayerTeamsClient({
       {/* Tab Content */}
       {activeTab === 'roster' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Main Roster */}
-          <div className="bg-dark-card border border-gray-800 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Shield className="w-6 h-6 text-green-400" />
-              <div>
-                <h2 className="text-xl font-semibold text-white">Main Roster</h2>
-                <p className="text-sm text-gray-400">{mainRoster.length} players</p>
+          {/* Main Roster - Takes full width on mobile, half on desktop */}
+          <div className="lg:col-span-2 bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-white">Main Roster</h2>
+                <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-sm font-semibold">
+                  {mainRoster.length} Players
+                </span>
               </div>
+              <p className="text-sm text-gray-500">Active team members</p>
             </div>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {mainRoster.length > 0 ? (
                 mainRoster.map(player => (
                   <PlayerCard 
@@ -225,82 +254,86 @@ export default function PlayerTeamsClient({
                   />
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <Shield className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-400">No main roster players</p>
+                <div className="col-span-full text-center py-12">
+                  <Users className="w-12 h-12 text-gray-600 mx-auto mb-3 opacity-50" />
+                  <p className="text-gray-500 font-medium">No main roster players</p>
+                  <p className="text-gray-600 text-sm mt-1">Players will appear here once added</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Substitutes & Staff */}
-          <div className="space-y-6">
-            {/* Substitutes */}
-            <div className="bg-dark-card border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Users className="w-6 h-6 text-orange-400" />
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Substitutes</h2>
-                  <p className="text-sm text-gray-400">{substitutes.length} players</p>
-                </div>
+          {/* Substitutes */}
+          <div className="bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-white">Substitutes</h2>
+                <span className="px-3 py-1.5 bg-orange-500/10 text-orange-400 rounded-lg text-sm font-semibold">
+                  {substitutes.length} Players
+                </span>
               </div>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {substitutes.length > 0 ? (
-                  substitutes.map(player => (
-                    <PlayerCard 
-                      key={player.id} 
-                      player={player} 
-                      isCurrentPlayer={player.id === currentPlayerId}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-400">No substitute players</p>
-                  </div>
-                )}
-              </div>
+              <p className="text-sm text-gray-500">Backup team members</p>
             </div>
-
-            {/* Staff */}
-            <div className="bg-dark-card border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Activity className="w-6 h-6 text-purple-400" />
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Staff</h2>
-                  <p className="text-sm text-gray-400">{staffMembers.length} members</p>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {substitutes.length > 0 ? (
+                substitutes.map(player => (
+                  <PlayerCard 
+                    key={player.id} 
+                    player={player} 
+                    isCurrentPlayer={player.id === currentPlayerId}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-10">
+                  <Users className="w-12 h-12 text-gray-600 mx-auto mb-2 opacity-50" />
+                  <p className="text-gray-500 text-sm font-medium">No substitute players</p>
+                  <p className="text-gray-600 text-xs mt-1">Subs will appear here once added</p>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Staff */}
+          <div className="bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-white">Staff</h2>
+                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-lg text-sm font-semibold">
+                  {staffMembers.length} Members
+                </span>
               </div>
-              <div className="space-y-2">
-                {staffMembers.length > 0 ? (
-                  staffMembers.map(staff => (
-                    <div 
-                      key={staff.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-dark border-gray-800 hover:border-gray-700 transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                          <Activity className="w-5 h-5 text-purple-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">{staff.username}</p>
-                          <p className="text-sm text-gray-400">{staff.full_name}</p>
-                        </div>
+              <p className="text-sm text-gray-500">Coaching and management team</p>
+            </div>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
+              {staffMembers.length > 0 ? (
+                staffMembers.map(staff => (
+                  <div 
+                    key={staff.id}
+                    className="group flex items-center justify-between p-4 rounded-xl border bg-dark/50 border-gray-800 hover:border-gray-700 hover:bg-dark/70 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors ring-2 ring-gray-700/50">
+                        <Briefcase className="w-7 h-7 text-purple-400" />
                       </div>
-                      <div className="text-right">
-                        <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-lg text-xs font-medium">
-                          {staff.staff_role || 'Manager'}
-                        </span>
+                      <div>
+                        <p className="font-bold text-white text-base">{staff.username}</p>
+                        <p className="text-sm text-gray-400">{staff.full_name}</p>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Activity className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-400">No staff members</p>
+                    <div className="text-right">
+                      <span className="px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/30">
+                        {staff.staff_role || 'Manager'}
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="text-center py-10">
+                  <Briefcase className="w-12 h-12 text-gray-600 mx-auto mb-2 opacity-50" />
+                  <p className="text-gray-500 text-sm font-medium">No staff members</p>
+                  <p className="text-gray-600 text-xs mt-1">Staff will appear here once added</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
