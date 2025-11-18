@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { team_id, type, title, description, day_of_week, time_slot, duration } = body
+    const { team_id, type, title, description, day_of_week, time_slot, duration, activity_date } = body
 
     // Validate required fields
     if (!team_id || !type || !title || day_of_week === undefined || !time_slot || !duration) {
@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
         day_of_week,
         time_slot,
         duration,
+        activity_date: activity_date || null,
         created_by: user.user_id
       })
       .select()

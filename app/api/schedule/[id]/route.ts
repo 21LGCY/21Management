@@ -28,7 +28,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { type, title, description, day_of_week, time_slot, duration } = body
+    const { type, title, description, day_of_week, time_slot, duration, activity_date } = body
 
     // Validate required fields
     if (!type || !title || day_of_week === undefined || !time_slot || !duration) {
@@ -70,6 +70,7 @@ export async function PUT(
         day_of_week,
         time_slot,
         duration,
+        activity_date: activity_date || null,
         updated_at: new Date().toISOString()
       })
       .eq('id', params.id)

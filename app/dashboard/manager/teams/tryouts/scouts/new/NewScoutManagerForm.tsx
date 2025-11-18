@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus } from '@/lib/types/database'
@@ -64,9 +64,16 @@ const EUROPEAN_COUNTRIES = [
   { code: 'VA', name: 'Vatican City' },
 ]
 
+interface Team {
+  id: string
+  name: string
+  category: TeamCategory
+  organization_id?: string
+}
+
 interface NewScoutManagerFormProps {
   teamId: string | null
-  team: any | null
+  team: Team | null
   teamCategory: TeamCategory | null
   managerId: string
 }
@@ -74,9 +81,12 @@ interface NewScoutManagerFormProps {
 export default function NewScoutManagerForm({ teamId, team, teamCategory, managerId }: NewScoutManagerFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const agentDropdownRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
   const [showAgentDropdown, setShowAgentDropdown] = useState(false)
-  const [managerUsername, setManagerUsername] = useState('')
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; username: string }>>([])
+  const [managerUsers, setManagerUsers] = useState<Array<{ id: string; username: string }>>([])
+  const [currentUsername, setCurrentUsername] = useState('')
   const [formData, setFormData] = useState({
     username: '',
     team_category: teamCategory || '21L' as TeamCategory,
@@ -89,16 +99,43 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
     valorant_tracker_url: '',
     twitter_url: '',
     status: 'not_contacted' as TryoutStatus,
+    managed_by: '',
+    contacted_by: '',
     contacted_by_date: '',
     notes: '',
     links: '',
   })
 
   useEffect(() => {
-    fetchManagerUsername()
+    fetchUsers()
+    fetchCurrentUsername()
   }, [managerId])
 
-  const fetchManagerUsername = async () => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (agentDropdownRef.current && !agentDropdownRef.current.contains(event.target as Node)) {
+        setShowAgentDropdown(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowAgentDropdown(false)
+      }
+    }
+
+    if (showAgentDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showAgentDropdown])
+
+  const fetchCurrentUsername = async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -107,9 +144,37 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
         .single()
 
       if (error) throw error
-      setManagerUsername(data.username || '')
+      setCurrentUsername(data.username || '')
+      // Auto-set managed_by to current manager
+      setFormData(prev => ({ ...prev, managed_by: data.username || '' }))
     } catch (error) {
-      console.error('Error fetching manager username:', error)
+      console.error('Error fetching current username:', error)
+    }
+  }
+
+  const fetchUsers = async () => {
+    try {
+      // Fetch admin users
+      const { data: admins, error: adminError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('role', 'admin')
+        .order('username')
+
+      if (adminError) throw adminError
+      setAdminUsers(admins || [])
+
+      // Fetch manager users
+      const { data: managers, error: managerError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('role', 'manager')
+        .order('username')
+
+      if (managerError) throw managerError
+      setManagerUsers(managers || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
     }
   }
 
@@ -132,16 +197,15 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
           valorant_tracker_url: formData.valorant_tracker_url || null,
           twitter_url: formData.twitter_url || null,
           status: formData.status,
-          managed_by: managerUsername,
-          contacted_by: formData.status !== 'not_contacted' ? managerUsername : null,
-          last_contact_date: formData.status !== 'not_contacted' && formData.contacted_by_date ? formData.contacted_by_date : null,
+          managed_by: formData.managed_by || null,
+          contacted_by: formData.contacted_by || null,
+          last_contact_date: formData.contacted_by_date || null,
           notes: formData.notes || null,
           links: formData.links || null,
         }])
 
       if (error) throw error
 
-      alert('Scout profile created successfully!')
       router.push('/dashboard/manager/teams/tryouts?tab=scouting')
       router.refresh()
     } catch (error) {
@@ -177,25 +241,11 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
     <form onSubmit={handleSubmit} className="bg-dark-card border border-gray-800 rounded-lg p-6 space-y-6">
       <Link
         href="/dashboard/manager/teams/tryouts?tab=scouting"
-        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-4"
       >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        <span>Back to Scouting Database</span>
+        <ArrowLeft className="w-4 h-4" />
+        Back to Scouting Database
       </Link>
-
-      {/* Team Info Header */
-      {team && (
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
-          <p className="text-white">
-            Creating scout profile for: <span className="font-semibold text-primary">{team.name}</span>
-            {teamCategory && (
-              <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
-                {teamCategory}
-              </span>
-            )}
-          </p>
-        </div>
-      )}
 
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Basic Information</h2>
@@ -217,15 +267,22 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team Category
+              Team <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              disabled
-              value={teamCategory || 'N/A'}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-400 font-sans cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mt-1">Automatically set based on your team</p>
+            <select
+              required
+              value={formData.team_category}
+              onChange={(e) => setFormData({ ...formData, team_category: e.target.value as TeamCategory })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              disabled={!!teamCategory}
+            >
+              <option value="21L">21L</option>
+              <option value="21GC">21GC</option>
+              <option value="21ACA">21 ACA</option>
+            </select>
+            {teamCategory && (
+              <p className="text-xs text-gray-500 mt-1">Set based on your team assignment</p>
+            )}
           </div>
 
           <div>
@@ -274,6 +331,7 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
               <option value="Initiator">Initiator</option>
               <option value="Sentinel">Sentinel</option>
               <option value="Flex">Flex</option>
+              <option value="Staff">Staff</option>
             </select>
           </div>
 
@@ -333,7 +391,7 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
           )}
 
           {/* Agent Selector Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={agentDropdownRef}>
             <button
               type="button"
               onClick={() => setShowAgentDropdown(!showAgentDropdown)}
@@ -410,9 +468,9 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Status & Notes</h2>
+        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Management</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
             <select
@@ -427,22 +485,73 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
               <option value="substitute">Substitute</option>
               <option value="rejected">Rejected</option>
               <option value="left">Left</option>
+              <option value="player">Player</option>
             </select>
           </div>
 
-          {/* Conditional Contact Date Field */}
-          {formData.status !== 'not_contacted' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Contact Date</label>
-              <input
-                type="date"
-                value={formData.contacted_by_date}
-                onChange={(e) => setFormData({ ...formData, contacted_by_date: e.target.value })}
-                className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Managed By</label>
+            <select
+              value={formData.managed_by}
+              onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+            >
+              <option value="">None</option>
+              <optgroup label="Admins">
+                {adminUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Managers">
+                {managerUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Contacted By</label>
+            <select
+              value={formData.contacted_by}
+              onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+            >
+              <option value="">None</option>
+              <optgroup label="Admins">
+                {adminUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Managers">
+                {managerUsers.map((user) => (
+                  <option key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
         </div>
+
+        {/* Conditional Contact Date Field */}
+        {formData.contacted_by && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Contact Date</label>
+            <input
+              type="date"
+              value={formData.contacted_by_date}
+              onChange={(e) => setFormData({ ...formData, contacted_by_date: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+            />
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
@@ -451,31 +560,21 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             rows={4}
             className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            placeholder="Internal notes about this player..."
+            placeholder="Internal notes..."
           />
-        </div>
-
-        {/* Manager Info */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-          <p className="text-sm text-gray-300">
-            <span className="font-semibold">Managed by:</span> {managerUsername || 'Loading...'}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            You will be automatically set as the manager and contact person if status is not "Not Contacted"
-          </p>
         </div>
       </div>
 
       <div className="flex justify-end gap-4 pt-4 border-t border-gray-800">
         <Link
-          href="/dashboard/manager/teams/tryouts"
+          href="/dashboard/manager/teams/tryouts?tab=scouting"
           className="px-6 py-2 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-800 transition"
         >
           Cancel
         </Link>
         <button
           type="submit"
-          disabled={loading || !teamCategory}
+          disabled={loading}
           className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
         >
           {loading ? 'Creating...' : 'Create Scout Profile'}

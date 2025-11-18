@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Map, MessageSquare, Users, Star, Trophy, Clock, Briefcase } from 'lucide-react'
+import { Calendar, Map, MessageSquare, Users, Star, Trophy, Clock, Briefcase, ArrowRight, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import StratMapSelection from '@/app/dashboard/manager/teams/sections/StratMapSelection'
@@ -28,7 +28,7 @@ interface PlayerTeamsClientProps {
   staffMembers: Player[]
 }
 
-type TabType = 'schedule' | 'roster' | 'strat_map' | 'review_praccs'
+type TabType = 'overview' | 'roster' | 'strat_map' | 'review_praccs'
 
 export default function PlayerTeamsClient({ 
   teamId, 
@@ -37,38 +37,116 @@ export default function PlayerTeamsClient({
   teamPlayers,
   staffMembers
 }: PlayerTeamsClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('roster')
-  const [scheduleActivities, setScheduleActivities] = useState<any[]>([])
-  const [loadingSchedule, setLoadingSchedule] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
+  const [upcomingActivities, setUpcomingActivities] = useState<any[]>([])
+  const [loadingActivities, setLoadingActivities] = useState(true)
+  const [selectedActivity, setSelectedActivity] = useState<any>(null)
+  const [showActivityModal, setShowActivityModal] = useState(false)
   
   const supabase = createClient()
 
+  // Fetch upcoming activities for preview
   useEffect(() => {
-    if (activeTab === 'schedule') {
-      fetchSchedule()
-    }
-  }, [activeTab, teamId])
+    fetchUpcomingActivities()
+  }, [teamId])
 
-  const fetchSchedule = async () => {
+  const fetchUpcomingActivities = async () => {
     try {
+      setLoadingActivities(true)
+      
+      // Get current date and time
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const currentDay = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+      
+      // Get next 3 weeks of dates
+      const dateRange: string[] = []
+      for (let i = 0; i < 21; i++) {
+        const date = new Date(today)
+        date.setDate(today.getDate() + i)
+        dateRange.push(date.toISOString().split('T')[0])
+      }
+
+      // Fetch all activities for the team
       const { data, error } = await supabase
         .from('schedule_activities')
         .select('*')
         .eq('team_id', teamId)
-        .order('day_of_week')
-        .order('start_hour')
 
-      if (error) throw error
-      setScheduleActivities(data || [])
+      if (error) {
+        console.error('Error fetching activities:', error)
+        throw error
+      }
+      
+      console.log('Fetched activities:', data)
+      
+      // Filter and sort activities
+      const upcomingActivities = (data || [])
+        .filter(activity => {
+          // If activity has specific date, check if it's in the next 3 weeks
+          if (activity.activity_date) {
+            return dateRange.includes(activity.activity_date)
+          }
+          // For recurring activities, include all
+          return true
+        })
+        .sort((a, b) => {
+          // Sort by date if available, otherwise by day of week
+          if (a.activity_date && b.activity_date) {
+            return a.activity_date.localeCompare(b.activity_date)
+          }
+          if (a.activity_date) return -1
+          if (b.activity_date) return 1
+          return a.day_of_week - b.day_of_week
+        })
+        .slice(0, 3)
+      
+      console.log('Upcoming activities:', upcomingActivities)
+      setUpcomingActivities(upcomingActivities)
     } catch (error) {
-      console.error('Error fetching schedule:', error)
+      console.error('Error fetching activities:', error)
     } finally {
-      setLoadingSchedule(false)
+      setLoadingActivities(false)
     }
   }
 
   const mainRoster = teamPlayers.filter(p => !p.is_substitute)
   const substitutes = teamPlayers.filter(p => p.is_substitute)
+
+  const getDayName = (dayNumber: number): string => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    return days[dayNumber]
+  }
+
+  const formatDateShort = (dateStr: string): string => {
+    const date = new Date(dateStr)
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+    return date.toLocaleDateString('en-US', options)
+  }
+
+  const getActivityIcon = (type: string) => {
+    const icons: { [key: string]: any } = {
+      practice: Trophy,
+      individual_training: Users,
+      group_training: Users,
+      official_match: Trophy,
+      tournament: Trophy,
+      meeting: MessageSquare
+    }
+    return icons[type] || Calendar
+  }
+
+  const getActivityColor = (type: string) => {
+    const colors: { [key: string]: string } = {
+      practice: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      individual_training: 'bg-green-500/20 text-green-400 border-green-500/30',
+      group_training: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      official_match: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      tournament: 'bg-red-500/20 text-red-400 border-red-500/30',
+      meeting: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+    }
+    return colors[type] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+  }
 
   const getRankImage = (rank?: string) => {
     if (!rank) return null
@@ -84,7 +162,18 @@ export default function PlayerTeamsClient({
     return rankMap[rank] || null
   }
 
-  const PlayerCard = ({ player, isCurrentPlayer }: { player: Player, isCurrentPlayer: boolean }) => {
+  const openActivityDetails = (activity: any) => {
+    setSelectedActivity(activity)
+    setShowActivityModal(true)
+  }
+
+  const closeActivityModal = () => {
+    setShowActivityModal(false)
+    setTimeout(() => setSelectedActivity(null), 300)
+  }
+
+  // Player Card Component
+  const renderPlayerCard = (player: Player, isCurrentPlayer: boolean) => {
     const rankImage = getRankImage(player.rank)
     
     return (
@@ -162,14 +251,6 @@ export default function PlayerTeamsClient({
     )
   }
 
-  const getDayActivities = (day: string) => {
-    return scheduleActivities.filter(a => a.day_of_week === day.toLowerCase())
-  }
-
-  const formatTime = (hour: number) => {
-    return `${hour}:00`
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -184,6 +265,17 @@ export default function PlayerTeamsClient({
       <div className="border-b border-gray-800">
         <nav className="flex gap-2 overflow-x-auto">
           <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium whitespace-nowrap ${
+              activeTab === 'overview'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" />
+            Overview
+          </button>
+          <button
             onClick={() => setActiveTab('roster')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium whitespace-nowrap ${
               activeTab === 'roster'
@@ -193,17 +285,6 @@ export default function PlayerTeamsClient({
           >
             <Users className="w-4 h-4" />
             Roster
-          </button>
-          <button
-            onClick={() => setActiveTab('schedule')}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition font-medium whitespace-nowrap ${
-              activeTab === 'schedule'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-400 hover:text-white'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            Schedule
           </button>
           <button
             onClick={() => setActiveTab('strat_map')}
@@ -231,6 +312,140 @@ export default function PlayerTeamsClient({
       </div>
 
       {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {/* Schedule Preview Section */}
+          <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
+                <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+              </div>
+              <Link 
+                href="/dashboard/player/teams/schedule"
+                className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20 flex items-center gap-2"
+              >
+                Manage Schedule
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {loadingActivities ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : upcomingActivities.length > 0 ? (
+              <div className="space-y-3">
+                {upcomingActivities.map((activity) => {
+                  const ActivityIcon = getActivityIcon(activity.type)
+                  const activityColor = getActivityColor(activity.type)
+                  
+                  return (
+                    <div
+                      key={activity.id}
+                      onClick={() => openActivityDetails(activity)}
+                      className="p-4 bg-dark rounded-lg border border-gray-800 hover:border-gray-700 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="mt-1">
+                            <ActivityIcon className={`w-5 h-5 ${activityColor.includes('text-blue') ? 'text-blue-400' : activityColor.includes('text-green') ? 'text-green-400' : activityColor.includes('text-purple') ? 'text-purple-400' : activityColor.includes('text-yellow') ? 'text-yellow-400' : activityColor.includes('text-red') ? 'text-red-400' : 'text-indigo-400'}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium text-white truncate group-hover:text-primary transition-colors">{activity.title}</h3>
+                              <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded flex-shrink-0">
+                                {activity.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </span>
+                            </div>
+                            {activity.description && (
+                              <p className="text-sm text-gray-400 mb-2 line-clamp-1">{activity.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span>
+                                  {activity.activity_date 
+                                    ? formatDateShort(activity.activity_date)
+                                    : getDayName(activity.day_of_week)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                <span>{activity.time_slot}</span>
+                                {activity.duration > 1 && (
+                                  <span className="text-xs">({activity.duration}h)</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">No activities scheduled</p>
+                <Link href="/dashboard/player/teams/schedule">
+                  <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+                    View Schedule
+                  </button>
+                </Link>
+              </div>
+            )}
+
+            {upcomingActivities.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-800">
+                <Link href="/dashboard/player/teams/schedule">
+                  <button className="w-full text-center text-sm text-gray-400 hover:text-primary transition-colors">
+                    View full schedule →
+                  </button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Quick Team Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-400" />
+                </div>
+                <span className="text-3xl font-bold text-blue-400">{mainRoster.length}</span>
+              </div>
+              <h3 className="text-white font-semibold mb-1">Main Roster</h3>
+              <p className="text-gray-400 text-sm">Active players</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/30 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-orange-400" />
+                </div>
+                <span className="text-3xl font-bold text-orange-400">{substitutes.length}</span>
+              </div>
+              <h3 className="text-white font-semibold mb-1">Substitutes</h3>
+              <p className="text-gray-400 text-sm">Backup players</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-purple-400" />
+                </div>
+                <span className="text-3xl font-bold text-purple-400">{staffMembers.length}</span>
+              </div>
+              <h3 className="text-white font-semibold mb-1">Staff</h3>
+              <p className="text-gray-400 text-sm">Coaches & managers</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {activeTab === 'roster' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Main Roster - Takes full width on mobile, half on desktop */}
@@ -247,11 +462,9 @@ export default function PlayerTeamsClient({
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {mainRoster.length > 0 ? (
                 mainRoster.map(player => (
-                  <PlayerCard 
-                    key={player.id} 
-                    player={player} 
-                    isCurrentPlayer={player.id === currentPlayerId}
-                  />
+                  <div key={player.id}>
+                    {renderPlayerCard(player, player.id === currentPlayerId)}
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
@@ -277,11 +490,9 @@ export default function PlayerTeamsClient({
             <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
               {substitutes.length > 0 ? (
                 substitutes.map(player => (
-                  <PlayerCard 
-                    key={player.id} 
-                    player={player} 
-                    isCurrentPlayer={player.id === currentPlayerId}
-                  />
+                  <div key={player.id}>
+                    {renderPlayerCard(player, player.id === currentPlayerId)}
+                  </div>
                 ))
               ) : (
                 <div className="text-center py-10">
@@ -339,67 +550,99 @@ export default function PlayerTeamsClient({
         </div>
       )}
 
-      {activeTab === 'schedule' && (
-        <div className="bg-dark-card border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Calendar className="w-6 h-6 text-primary" />
-            <div>
-              <h2 className="text-2xl font-bold text-white">Team Schedule</h2>
-              <p className="text-gray-400 text-sm">Weekly team activities and practice sessions</p>
-            </div>
-          </div>
-
-          {loadingSchedule ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : scheduleActivities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => {
-                const dayActivities = getDayActivities(day)
-                return (
-                  <div key={day} className="bg-dark border border-gray-800 rounded-lg p-4">
-                    <h3 className="font-semibold text-white mb-3">{day}</h3>
-                    {dayActivities.length > 0 ? (
-                      <div className="space-y-2">
-                        {dayActivities.map((activity, idx) => (
-                          <div key={idx} className="bg-primary/10 border border-primary/30 rounded p-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Clock className="w-3 h-3 text-primary" />
-                              <span className="text-xs text-primary font-medium">
-                                {formatTime(activity.start_hour)} - {formatTime(activity.end_hour)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-white font-medium">{activity.activity_type}</p>
-                            {activity.description && (
-                              <p className="text-xs text-gray-400 mt-1">{activity.description}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">No activities</p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 mb-2">No schedule available</p>
-              <p className="text-gray-500 text-sm">Your team schedule will appear here</p>
-            </div>
-          )}
-        </div>
-      )}
-
       {activeTab === 'strat_map' && (
         <StratMapSelection teamId={teamId} />
       )}
 
       {activeTab === 'review_praccs' && (
         <PraccsReviewSelection teamId={teamId} />
+      )}
+
+      {/* Activity Details Modal */}
+      {showActivityModal && selectedActivity && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeActivityModal}
+        >
+          <div 
+            className="bg-dark-card border border-gray-700 rounded-xl max-w-lg w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const ActivityIcon = getActivityIcon(selectedActivity.type)
+              const activityColor = getActivityColor(selectedActivity.type)
+              
+              return (
+                <>
+                  {/* Modal Header */}
+                  <div className="p-6 border-b border-gray-800">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${activityColor.includes('text-blue') ? 'bg-blue-500/20' : activityColor.includes('text-green') ? 'bg-green-500/20' : activityColor.includes('text-purple') ? 'bg-purple-500/20' : activityColor.includes('text-yellow') ? 'bg-yellow-500/20' : activityColor.includes('text-red') ? 'bg-red-500/20' : 'bg-indigo-500/20'}`}>
+                          <ActivityIcon className={`w-6 h-6 ${activityColor.includes('text-blue') ? 'text-blue-400' : activityColor.includes('text-green') ? 'text-green-400' : activityColor.includes('text-purple') ? 'text-purple-400' : activityColor.includes('text-yellow') ? 'text-yellow-400' : activityColor.includes('text-red') ? 'text-red-400' : 'text-indigo-400'}`} />
+                        </div>
+                        <div className="flex-1">
+                          <h2 className="text-xl font-semibold text-white mb-2">{selectedActivity.title}</h2>
+                          <span className="inline-block px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm">
+                            {selectedActivity.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={closeActivityModal}
+                        className="text-gray-400 hover:text-white transition-colors ml-4"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Modal Body */}
+                  <div className="p-6 space-y-4">
+                    {/* Time and Date Info */}
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {selectedActivity.activity_date 
+                            ? formatDateShort(selectedActivity.activity_date)
+                            : getDayName(selectedActivity.day_of_week)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>{selectedActivity.time_slot}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4" />
+                        <span>{selectedActivity.duration} {selectedActivity.duration === 1 ? 'hour' : 'hours'}</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    {selectedActivity.description && (
+                      <div className="pt-4 border-t border-gray-800">
+                        <p className="text-gray-300 leading-relaxed">{selectedActivity.description}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="p-6 border-t border-gray-800">
+                    <button
+                      onClick={closeActivityModal}
+                      className="w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors font-medium"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </div>
       )}
     </div>
   )

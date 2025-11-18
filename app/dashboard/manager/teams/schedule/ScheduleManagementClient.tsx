@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, Gamepad2, Plus, Edit, Trash2, Save, User } from 'lucide-react'
+import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, Gamepad2, Plus, Edit, Trash2, Save, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ScheduleActivity, PlayerWeeklyAvailability, TimeSlots, DayOfWeek } from '@/lib/types/database'
 
 // Activity types with colors and icons
@@ -68,6 +68,39 @@ const generateTimeSlots = () => {
 const timeSlots = generateTimeSlots()
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+// Helper to get Monday of a specific week (offset weeks from current week)
+const getMondayOfWeek = (weekOffset: number = 0): Date => {
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+  const monday = new Date(today)
+  monday.setDate(diff + (weekOffset * 7))
+  monday.setHours(0, 0, 0, 0)
+  return monday
+}
+
+// Helper to format date as "Mon DD"
+const formatDateShort = (date: Date): string => {
+  const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  return date.toLocaleDateString('en-US', options)
+}
+
+// Helper to get date string in YYYY-MM-DD format
+const getDateString = (date: Date): string => {
+  return date.toISOString().split('T')[0]
+}
+
+// Helper to get all dates for a week starting from Monday
+const getWeekDates = (mondayDate: Date): Date[] => {
+  const dates: Date[] = []
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(mondayDate)
+    date.setDate(mondayDate.getDate() + i)
+    dates.push(date)
+  }
+  return dates
+}
+
 // Helper function to convert day name to number
 const getDayNumber = (dayName: string): number => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -96,19 +129,32 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     title: '',
     description: '',
     day: '',
+    date: '', // New: specific date
     timeSlot: '',
     duration: 1
   })
   const [editingActivity, setEditingActivity] = useState<ScheduleActivity | null>(null)
   
+  // Week navigation state (0 = current week, 1 = next week, 2 = week after)
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
+  const [weekDates, setWeekDates] = useState<Date[]>([])
+  const [mondayDate, setMondayDate] = useState<Date>(getMondayOfWeek(0))
+  
   // Drag selection state
   const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState<{day: string, timeSlot: string} | null>(null)
-  const [dragCurrent, setDragCurrent] = useState<{day: string, timeSlot: string} | null>(null)
+  const [dragStart, setDragStart] = useState<{day: string, timeSlot: string, date: string} | null>(null)
+  const [dragCurrent, setDragCurrent] = useState<{day: string, timeSlot: string, date: string} | null>(null)
   const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set())
   const [showBulkActionModal, setShowBulkActionModal] = useState(false)
   const [isDeleteMode, setIsDeleteMode] = useState(false)
   const [activitiesToDelete, setActivitiesToDelete] = useState<Set<string>>(new Set())
+
+  // Update week dates when offset changes
+  useEffect(() => {
+    const monday = getMondayOfWeek(currentWeekOffset)
+    setMondayDate(monday)
+    setWeekDates(getWeekDates(monday))
+  }, [currentWeekOffset])
 
   // Load activities from database
   useEffect(() => {
@@ -176,39 +222,39 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
   }, [isDragging])
 
   // Helper function to create slot key
-  const getSlotKey = (day: string, timeSlot: string) => `${day}-${timeSlot}`
+  const getSlotKey = (day: string, timeSlot: string, date: string) => `${date}-${day}-${timeSlot}`
 
   // Drag functionality
-  const handleMouseDown = (day: string, timeSlot: string, e: React.MouseEvent) => {
+  const handleMouseDown = (day: string, timeSlot: string, date: string, e: React.MouseEvent) => {
     e.preventDefault()
     
     if (isDeleteMode) {
       // Delete mode: start selecting activities to delete
-      const activity = getActivityForSlot(day, timeSlot)
+      const activity = getActivityForSlot(day, timeSlot, date)
       if (!activity) return
       
       setIsDragging(true)
-      setDragStart({ day, timeSlot })
-      setDragCurrent({ day, timeSlot })
+      setDragStart({ day, timeSlot, date })
+      setDragCurrent({ day, timeSlot, date })
       setActivitiesToDelete(new Set([activity.id]))
     } else {
       // Creation mode: start selecting empty slots
       if (!selectedActivityType) return
       
-      const existingActivity = getActivityForSlot(day, timeSlot)
+      const existingActivity = getActivityForSlot(day, timeSlot, date)
       if (existingActivity) return
 
       setIsDragging(true)
-      setDragStart({ day, timeSlot })
-      setDragCurrent({ day, timeSlot })
-      setSelectedSlots(new Set([getSlotKey(day, timeSlot)]))
+      setDragStart({ day, timeSlot, date })
+      setDragCurrent({ day, timeSlot, date })
+      setSelectedSlots(new Set([getSlotKey(day, timeSlot, date)]))
     }
   }
 
-  const handleMouseEnter = (day: string, timeSlot: string) => {
+  const handleMouseEnter = (day: string, timeSlot: string, date: string) => {
     if (!isDragging || !dragStart) return
 
-    setDragCurrent({ day, timeSlot })
+    setDragCurrent({ day, timeSlot, date })
     
     // Calculate selected area
     const dayStartIndex = daysOfWeek.indexOf(dragStart.day)
@@ -222,14 +268,15 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     const maxTime = Math.max(timeStartIndex, timeEndIndex)
 
     if (isDeleteMode) {
-      // Delete mode: select activities to delete
+      // Delete mode: select activities to delete (only same week)
       const newActivitiesToDelete = new Set<string>()
       
       for (let d = minDay; d <= maxDay; d++) {
         for (let t = minTime; t <= maxTime; t++) {
           const currentDay = daysOfWeek[d]
           const currentTime = timeSlots[t]
-          const activity = getActivityForSlot(currentDay, currentTime)
+          const currentDate = weekDates[d] ? getDateString(weekDates[d]) : date
+          const activity = getActivityForSlot(currentDay, currentTime, currentDate)
           
           if (activity) {
             newActivitiesToDelete.add(activity.id)
@@ -239,7 +286,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
       
       setActivitiesToDelete(newActivitiesToDelete)
     } else {
-      // Creation mode: select empty slots
+      // Creation mode: select empty slots (only same week)
       if (!selectedActivityType) return
       
       const newSelectedSlots = new Set<string>()
@@ -248,10 +295,11 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
         for (let t = minTime; t <= maxTime; t++) {
           const currentDay = daysOfWeek[d]
           const currentTime = timeSlots[t]
-          const activity = getActivityForSlot(currentDay, currentTime)
+          const currentDate = weekDates[d] ? getDateString(weekDates[d]) : date
+          const activity = getActivityForSlot(currentDay, currentTime, currentDate)
           
           if (!activity) {
-            newSelectedSlots.add(getSlotKey(currentDay, currentTime))
+            newSelectedSlots.add(getSlotKey(currentDay, currentTime, currentDate))
           }
         }
       }
@@ -318,7 +366,12 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     
     try {
       const promises = Array.from(selectedSlots).map(slotKey => {
-        const [day, timeSlot] = slotKey.split('-')
+        // Parse slot key: date-day-timeSlot
+        const parts = slotKey.split('-')
+        const date = `${parts[0]}-${parts[1]}-${parts[2]}` // YYYY-MM-DD
+        const day = parts[3]
+        const timeSlot = parts.slice(4).join('-') // Handle time slots with colons
+        
         return fetch('/api/schedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -329,7 +382,8 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
             description: newActivity.description,
             day_of_week: getDayNumber(day),
             time_slot: timeSlot,
-            duration: 1 // Each slot is always 1 hour
+            duration: 1, // Each slot is always 1 hour
+            activity_date: date // Include the specific date
           })
         })
       })
@@ -360,6 +414,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
       title: '',
       description: '',
       day: '',
+      date: '',
       timeSlot: '',
       duration: 1
     })
@@ -371,7 +426,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     setEditingActivity(null)
   }
 
-  const handleTimeSlotClick = (day: string, timeSlot: string) => {
+  const handleTimeSlotClick = (day: string, timeSlot: string, date: string) => {
     // If dragging, do nothing - handled by mouse events
     if (isDragging) return
     
@@ -381,6 +436,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
         title: '',
         description: '',
         day,
+        date,
         timeSlot,
         duration: 1
       })
@@ -408,7 +464,8 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
             description: newActivity.description,
             day_of_week: getDayNumber(newActivity.day),
             time_slot: newActivity.timeSlot,
-            duration: newActivity.duration
+            duration: newActivity.duration,
+            activity_date: newActivity.date // Include the specific date
           })
         })
 
@@ -442,7 +499,8 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
             description: editingActivity.description,
             day_of_week: editingActivity.day_of_week,
             time_slot: editingActivity.time_slot,
-            duration: editingActivity.duration
+            duration: editingActivity.duration,
+            activity_date: editingActivity.activity_date
           })
         })
 
@@ -482,9 +540,17 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     }
   }
 
-  const getActivityForSlot = (day: string, timeSlot: string) => {
+  const getActivityForSlot = (day: string, timeSlot: string, date: string) => {
     const dayNumber = getDayNumber(day)
-    return activities.find(a => a.day_of_week === dayNumber && a.time_slot === timeSlot)
+    // Match by specific date, day of week, and time slot
+    return activities.find(a => {
+      // If activity has a specific date, match by exact date
+      if (a.activity_date) {
+        return a.activity_date === date && a.time_slot === timeSlot
+      }
+      // Otherwise, match by day of week (recurring weekly activity)
+      return a.day_of_week === dayNumber && a.time_slot === timeSlot
+    })
   }
 
   const getActivityType = (type: string) => {
@@ -498,13 +564,17 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     // Convert day name to lowercase to match database format (monday, tuesday, etc.)
     const dayKey = day.toLowerCase() as DayOfWeek
     // Extract hour from time slot (e.g., "15:00" -> "15")
-    const hour = timeSlot.split(':')[0]
+    const hour = parseInt(timeSlot.split(':')[0], 10)
     
     let count = 0
     playerAvailability.forEach(availability => {
       const timeSlots = availability.time_slots as TimeSlots
-      if (timeSlots[dayKey] && timeSlots[dayKey][hour] === true) {
-        count++
+      const daySlots = timeSlots[dayKey]
+      if (daySlots && typeof daySlots === 'object') {
+        const hourSlot = (daySlots as any)[hour]
+        if (hourSlot === true) {
+          count++
+        }
       }
     })
     
@@ -576,7 +646,42 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
           </div>
         )}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-white">Weekly Schedule</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold text-white">Weekly Schedule</h2>
+            
+            {/* Week Navigation */}
+            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+                disabled={currentWeekOffset === 0}
+                className="p-2 hover:bg-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Previous week"
+              >
+                <ChevronLeft className="w-4 h-4 text-white" />
+              </button>
+              
+              <div className="px-3 py-1 min-w-[200px] text-center">
+                <p className="text-sm font-medium text-white">
+                  {currentWeekOffset === 0 ? 'Current Week' : 
+                   currentWeekOffset === 1 ? 'Next Week' : 
+                   `Week ${currentWeekOffset + 1}`}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {formatDateShort(mondayDate)} - {formatDateShort(new Date(mondayDate.getTime() + 6 * 24 * 60 * 60 * 1000))}
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setCurrentWeekOffset(Math.min(2, currentWeekOffset + 1))}
+                disabled={currentWeekOffset >= 2}
+                className="p-2 hover:bg-gray-700 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Next week"
+              >
+                <ChevronRight className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+          
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Clock className="w-4 h-4" />
@@ -604,14 +709,20 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
         <div className="overflow-x-auto">
           <div className="min-w-[800px]">
-            {/* Header */}
+            {/* Header with dates */}
             <div className="grid grid-cols-8 gap-1 mb-2">
               <div className="p-2"></div>
-              {daysOfWeek.map(day => (
-                <div key={day} className="p-2 text-center">
-                  <p className="font-medium text-white text-sm">{day}</p>
-                </div>
-              ))}
+              {daysOfWeek.map((day, index) => {
+                const date = weekDates[index]
+                return (
+                  <div key={day} className="p-2 text-center">
+                    <p className="font-medium text-white text-sm">{day}</p>
+                    {date && (
+                      <p className="text-xs text-gray-400 mt-1">{formatDateShort(date)}</p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
             {/* Time slots */}
@@ -624,20 +735,22 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
                   </div>
                   
                   {/* Day slots */}
-                  {daysOfWeek.map(day => {
-                    const activity = getActivityForSlot(day, timeSlot)
+                  {daysOfWeek.map((day, dayIndex) => {
+                    const date = weekDates[dayIndex]
+                    const dateStr = date ? getDateString(date) : ''
+                    const activity = getActivityForSlot(day, timeSlot, dateStr)
                     const activityType = activity ? getActivityType(activity.type) : null
-                    const slotKey = getSlotKey(day, timeSlot)
+                    const slotKey = getSlotKey(day, timeSlot, dateStr)
                     const isSelected = selectedSlots.has(slotKey)
                     const isMarkedForDeletion = activity && activitiesToDelete.has(activity.id)
                     
                     return (
                       <div
-                        key={`${day}-${timeSlot}`}
-                        onMouseDown={(e) => handleMouseDown(day, timeSlot, e)}
-                        onMouseEnter={() => handleMouseEnter(day, timeSlot)}
+                        key={`${day}-${timeSlot}-${dateStr}`}
+                        onMouseDown={(e) => handleMouseDown(day, timeSlot, dateStr, e)}
+                        onMouseEnter={() => handleMouseEnter(day, timeSlot, dateStr)}
                         onMouseUp={handleMouseUp}
-                        onClick={() => !activity && !isDeleteMode && handleTimeSlotClick(day, timeSlot)}
+                        onClick={() => !activity && !isDeleteMode && handleTimeSlotClick(day, timeSlot, dateStr)}
                         className={`p-3 min-h-[80px] border rounded cursor-pointer transition-all group relative ${
                           activity
                             ? isMarkedForDeletion
@@ -751,6 +864,11 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
             <h3 className="text-lg font-semibold text-white mb-4">
               Add Activity - {newActivity.day} at {newActivity.timeSlot}
             </h3>
+            {newActivity.date && (
+              <p className="text-sm text-gray-400 mb-4">
+                Date: {formatDateShort(new Date(newActivity.date))}
+              </p>
+            )}
             
             <div className="space-y-4">
               <div>
@@ -964,17 +1082,27 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
                   <div className="grid grid-cols-1 gap-1 text-sm">
                     {Array.from(selectedSlots)
                       .map(slotKey => {
-                        const [day, timeSlot] = slotKey.split('-')
-                        return { day, timeSlot, key: slotKey }
+                        // Parse: date-day-timeSlot
+                        const parts = slotKey.split('-')
+                        const date = `${parts[0]}-${parts[1]}-${parts[2]}` // YYYY-MM-DD
+                        const day = parts[3]
+                        const timeSlot = parts.slice(4).join('-')
+                        const dateObj = new Date(date)
+                        return { day, timeSlot, date: dateObj, key: slotKey }
                       })
                       .sort((a, b) => {
+                        const dateCompare = a.date.getTime() - b.date.getTime()
+                        if (dateCompare !== 0) return dateCompare
                         const dayCompare = daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day)
                         if (dayCompare !== 0) return dayCompare
                         return timeSlots.indexOf(a.timeSlot) - timeSlots.indexOf(b.timeSlot)
                       })
-                      .map(({ day, timeSlot, key }) => (
+                      .map(({ day, timeSlot, date, key }) => (
                         <div key={key} className="flex justify-between items-center p-2 bg-gray-700 rounded">
-                          <span className="text-white font-medium">{day}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-medium">{day}</span>
+                            <span className="text-xs text-gray-400">({formatDateShort(date)})</span>
+                          </div>
                           <span className="text-gray-300">{timeSlot}</span>
                         </div>
                       ))

@@ -214,6 +214,7 @@ export interface ScheduleActivity {
   day_of_week: number // 0 = Sunday, 1 = Monday, etc.
   time_slot: string // e.g., "1:00 PM"
   duration: number // in hours
+  activity_date?: string // Specific date (YYYY-MM-DD) - if set, activity is for this date only
   created_by: string
   created_at: string
   updated_at: string
