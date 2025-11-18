@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, Gamepad2, Plus, Edit, Trash2, Save } from 'lucide-react'
-import { ScheduleActivity } from '@/lib/types/database'
+import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, Gamepad2, Plus, Edit, Trash2, Save, User } from 'lucide-react'
+import { ScheduleActivity, PlayerWeeklyAvailability, TimeSlots, DayOfWeek } from '@/lib/types/database'
 
 // Activity types with colors and icons
 const activityTypes = [
@@ -87,6 +87,7 @@ interface ScheduleManagementProps {
 
 export default function ScheduleManagementClient({ team, user }: ScheduleManagementProps) {
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
+  const [playerAvailability, setPlayerAvailability] = useState<PlayerWeeklyAvailability[]>([])
   const [selectedActivityType, setSelectedActivityType] = useState<string | null>(null)
   const [isCreatingActivity, setIsCreatingActivity] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -130,6 +131,33 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
     if (team.id) {
       fetchActivities()
+    }
+  }, [team.id])
+
+  // Fetch player availability for current week
+  useEffect(() => {
+    const fetchPlayerAvailability = async () => {
+      try {
+        // Get current week's Monday
+        const today = new Date()
+        const dayOfWeek = today.getDay()
+        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+        const monday = new Date(today)
+        monday.setDate(diff)
+        const weekStart = monday.toISOString().split('T')[0]
+
+        const response = await fetch(`/api/player-availability?team_id=${team.id}&week_start=${weekStart}`)
+        if (response.ok) {
+          const data = await response.json()
+          setPlayerAvailability(data.availabilities || [])
+        }
+      } catch (error) {
+        console.error('Error fetching player availability:', error)
+      }
+    }
+
+    if (team.id) {
+      fetchPlayerAvailability()
     }
   }, [team.id])
 
@@ -463,6 +491,26 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     return activityTypes.find(t => t.id === type)
   }
 
+  // Count available players for a specific day and time slot
+  const getAvailablePlayersCount = (day: string, timeSlot: string): number => {
+    if (playerAvailability.length === 0) return 0
+    
+    // Convert day name to lowercase to match database format (monday, tuesday, etc.)
+    const dayKey = day.toLowerCase() as DayOfWeek
+    // Extract hour from time slot (e.g., "15:00" -> "15")
+    const hour = timeSlot.split(':')[0]
+    
+    let count = 0
+    playerAvailability.forEach(availability => {
+      const timeSlots = availability.time_slots as TimeSlots
+      if (timeSlots[dayKey] && timeSlots[dayKey][hour] === true) {
+        count++
+      }
+    })
+    
+    return count
+  }
+
   return (
     <div className="space-y-6">
       {/* Activity Type Cards */}
@@ -671,6 +719,21 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
                             <Plus className="w-6 h-6 text-primary/50" />
                           </div>
                         )}
+
+                        {/* Player availability indicator */}
+                        {(() => {
+                          const availableCount = getAvailablePlayersCount(day, timeSlot)
+                          if (availableCount > 0) {
+                            return (
+                              <div className="absolute bottom-1 left-1 flex items-center gap-1 bg-blue-500/80 text-white px-1.5 py-0.5 rounded text-xs font-medium"
+                                   title={`${availableCount} player${availableCount > 1 ? 's' : ''} available`}>
+                                <User className="w-3 h-3" />
+                                <span>{availableCount}</span>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     )
                   })}

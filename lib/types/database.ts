@@ -219,6 +219,36 @@ export interface ScheduleActivity {
   updated_at: string
 }
 
+// Player Weekly Availability - For tracking player availability each week
+export interface PlayerWeeklyAvailability {
+  id: string
+  player_id: string
+  team_id: string
+  week_start: string // ISO date string (Monday)
+  week_end: string // ISO date string (Sunday)
+  time_slots: TimeSlots // Hourly availability per day
+  notes?: string
+  submitted_at?: string
+  created_at: string
+  updated_at: string
+  // Joined data
+  player?: UserProfile
+}
+
+// Schedule Activity Response - Player responses to scheduled activities
+export interface ScheduleActivityResponse {
+  id: string
+  activity_id: string
+  player_id: string
+  status: 'available' | 'unavailable' | 'maybe'
+  notes?: string
+  created_at: string
+  updated_at: string
+  // Joined data
+  player?: UserProfile
+  activity?: ScheduleActivity
+}
+
 export interface TeamMessage {
   id: string
   team_id: string

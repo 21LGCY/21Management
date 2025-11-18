@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { logout } from '@/lib/auth/client'
-import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp, Settings, User, Lock, Image as ImageIcon, ChevronDown, BarChart3 } from 'lucide-react'
+import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp, Settings, User, Lock, Image as ImageIcon, ChevronDown, BarChart3, Calendar } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -182,6 +182,16 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
                     Team
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
+                  </span>
+                </Link>
+                <Link 
+                  href="/dashboard/player/availability"
+                  className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group relative"
+                >
+                  <Calendar className="w-4 h-4 group-hover:text-primary transition-colors" />
+                  <span className="relative">
+                    Availability
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>

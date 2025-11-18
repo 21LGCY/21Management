@@ -38,7 +38,9 @@ const formatTimeRange = (hour: number): string => {
 }
 
 const getDateForDay = (weekStart: string, dayIndex: number): string => {
-  const date = new Date(weekStart)
+  // Parse the date string correctly to avoid timezone issues
+  const [year, month, day] = weekStart.split('-').map(Number)
+  const date = new Date(year, month - 1, day) // month is 0-indexed in JS Date
   date.setDate(date.getDate() + dayIndex)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }

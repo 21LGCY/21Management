@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import StatCard from '@/components/StatCard'
-import { Trophy, Calendar, Target, TrendingUp, Users, Activity } from 'lucide-react'
+import { Trophy, Calendar, Target, TrendingUp, Users, Activity, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function PlayerDashboard() {
@@ -107,7 +107,7 @@ export default async function PlayerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link href="/dashboard/player/stats">
             <button className="w-full p-4 bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 hover:border-purple-500/50 rounded-xl text-left transition-all group hover:shadow-lg hover:shadow-purple-500/10">
               <div className="flex items-center gap-3">
@@ -131,6 +131,20 @@ export default async function PlayerDashboard() {
                 <div>
                   <p className="font-semibold text-white group-hover:text-blue-300 transition">Team Hub</p>
                   <p className="text-sm text-gray-400">Roster, schedule & strategies</p>
+                </div>
+              </div>
+            </button>
+          </Link>
+
+          <Link href="/dashboard/player/availability">
+            <button className="w-full p-4 bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 hover:border-green-500/50 rounded-xl text-left transition-all group hover:shadow-lg hover:shadow-green-500/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition border border-green-500/30">
+                  <Clock className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white group-hover:text-green-300 transition">My Availability</p>
+                  <p className="text-sm text-gray-400">Manage weekly schedule</p>
                 </div>
               </div>
             </button>
