@@ -13,33 +13,42 @@ interface PlayerAvailabilityFormProps {
   userRole?: string // Add role to determine access restrictions
 }
 
-// Helper to get Monday of current week
+// Helper to get Monday of current week in Europe/Paris timezone
 const getMonday = (date: Date): Date => {
-  const day = date.getDay()
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(date)
-  monday.setDate(monday.getDate() + diff)
-  monday.setHours(0, 0, 0, 0)
+  // Get the date parts in Europe/Paris timezone
+  const formatter = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  const parts = formatter.format(date).split('-') // YYYY-MM-DD
+  
+  // Create date in UTC to avoid timezone shifts
+  const parisDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])))
+  
+  const day = parisDate.getUTCDay()
+  const diff = day === 0 ? -6 : 1 - day // Calculate days to subtract to get to Monday
+  const monday = new Date(parisDate)
+  monday.setUTCDate(parisDate.getUTCDate() + diff)
   return monday
 }
 
 // Helper to get Sunday of current week
 const getSunday = (monday: Date): Date => {
   const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  sunday.setHours(23, 59, 59, 999)
+  sunday.setUTCDate(monday.getUTCDate() + 6)
   return sunday
 }
 
 // Helper to check if a week is accessible for players (current week + 3 future weeks = 4 weeks total)
 const isWeekAccessibleForPlayer = (weekStart: Date): boolean => {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
   const currentMonday = getMonday(today)
   
   // Allow current week + 3 future weeks (4 weeks total)
   const maxWeek = new Date(currentMonday)
-  maxWeek.setDate(maxWeek.getDate() + 21) // 3 weeks ahead
+  maxWeek.setUTCDate(maxWeek.getUTCDate() + 21) // 3 weeks ahead
   
   return weekStart >= currentMonday && weekStart <= maxWeek
 }
@@ -47,7 +56,6 @@ const isWeekAccessibleForPlayer = (weekStart: Date): boolean => {
 // Helper to check if a week is in the past
 const isWeekInPast = (weekStart: Date): boolean => {
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
   const currentMonday = getMonday(today)
   
   return weekStart < currentMonday
@@ -61,8 +69,13 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getMonday(new Date()))
-  const [currentWeekEnd, setCurrentWeekEnd] = useState<Date>(getSunday(getMonday(new Date())))
+  // Initialize with current week in Paris timezone
+  const getInitialWeek = () => {
+    return getMonday(new Date())
+  }
+  
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getInitialWeek())
+  const [currentWeekEnd, setCurrentWeekEnd] = useState<Date>(getSunday(getInitialWeek()))
 
   useEffect(() => {
     fetchAvailability()
@@ -145,9 +158,9 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   const changeWeek = (direction: 'prev' | 'next') => {
     const newMonday = new Date(currentWeekStart)
     if (direction === 'prev') {
-      newMonday.setDate(newMonday.getDate() - 7)
+      newMonday.setUTCDate(newMonday.getUTCDate() - 7)
     } else {
-      newMonday.setDate(newMonday.getDate() + 7)
+      newMonday.setUTCDate(newMonday.getUTCDate() + 7)
     }
     
     // For players, restrict access to current + 2 future weeks
@@ -162,8 +175,17 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   }
 
   const formatWeekRange = (): string => {
-    const startStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const endStr = currentWeekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const startStr = currentWeekStart.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      timeZone: 'UTC'
+    })
+    const endStr = currentWeekEnd.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      timeZone: 'UTC'
+    })
     return `${startStr} - ${endStr}`
   }
   
