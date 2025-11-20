@@ -24,7 +24,7 @@ export default function StratMapClient({
 }: StratMapClientProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [loading, setLoading] = useState(true)
-  const [stratType, setStratType] = useState<StratType | 'all'>('all')
+  const [stratType, setStratType] = useState<StratType>('attack')
   const [selectedAgents, setSelectedAgents] = useState<string[]>([])
   const [showAgentMenu, setShowAgentMenu] = useState(false)
   
@@ -95,15 +95,13 @@ export default function StratMapClient({
         message_type: 'text',
         content: compositionText.trim(),
         map_name: mapName,
+        strat_type: null, // Composition is shared between attack and defense
         author_id: userId,
         author_name: userName,
         author_role: userRole
       }
 
       // Add optional fields only if they exist
-      if (stratType !== 'all') {
-        insertData.strat_type = stratType
-      }
       if (composition) {
         insertData.composition = composition
       }
@@ -200,16 +198,6 @@ export default function StratMapClient({
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => setStratType('all')}
-                className={`px-4 py-2 rounded-lg border transition ${
-                  stratType === 'all'
-                    ? 'bg-primary border-primary text-white'
-                    : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
-                }`}
-              >
-                Toutes
-              </button>
-              <button
                 onClick={() => setStratType('attack')}
                 className={`px-4 py-2 rounded-lg border transition ${
                   stratType === 'attack'
@@ -274,38 +262,6 @@ export default function StratMapClient({
             </p>
           </div>
         </div>
-
-        {/* Active Filters Display */}
-        {(stratType !== 'all' || selectedAgents.length > 0) && (
-          <div className="mt-4 pt-4 border-t border-gray-800">
-            <p className="text-sm text-gray-400 mb-2">Active Filters:</p>
-            <div className="flex flex-wrap gap-2">
-              {stratType !== 'all' && (
-                <span className={`px-3 py-1 rounded-full text-xs border ${
-                  stratType === 'attack'
-                    ? 'bg-red-500/20 border-red-500 text-red-400'
-                    : 'bg-blue-500/20 border-blue-500 text-blue-400'
-                }`}>
-                  {stratType === 'attack' ? 'Attack' : 'Defense'}
-                </span>
-              )}
-              {selectedAgents.length > 0 && (
-                <span className="px-3 py-1 bg-primary/20 border border-primary text-primary rounded-full text-xs">
-                  Composition: {composition}
-                </span>
-              )}
-              <button
-                onClick={() => {
-                  setStratType('all')
-                  setSelectedAgents([])
-                }}
-                className="px-3 py-1 text-xs text-gray-400 hover:text-white transition"
-              >
-                Reset Filters
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Communication Component */}

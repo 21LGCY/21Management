@@ -16,7 +16,7 @@ interface TeamCommunicationProps {
   userRole: UserRole
   mapName?: ValorantMap // Optional: only for strat_map section
   matchId?: string // Optional: only for review_praccs section
-  stratTypeFilter?: StratType | 'all' // Optional: filter by strategy type
+  stratTypeFilter?: StratType // Optional: filter by strategy type
   compositionFilter?: string // Optional: filter by team composition
   onSaveComposition?: () => void // Optional: callback to trigger composition save
 }
@@ -29,7 +29,7 @@ export default function TeamCommunication({
   userRole,
   mapName,
   matchId,
-  stratTypeFilter = 'all',
+  stratTypeFilter,
   compositionFilter = '',
   onSaveComposition
 }: TeamCommunicationProps) {
@@ -110,19 +110,11 @@ export default function TeamCommunication({
       // Apply client-side filters
       let filteredData = data || []
       
-      if (stratTypeFilter && stratTypeFilter !== 'all') {
-        // Filter by strategy type, but always show composition messages
+      if (stratTypeFilter) {
+        // Filter by strategy type: show messages with matching strat_type OR messages with no strat_type set
         filteredData = filteredData.filter(msg => 
           msg.strat_type === stratTypeFilter || 
-          msg.content.includes('**Team Composition**')
-        )
-      }
-      
-      if (compositionFilter) {
-        const compositionLower = compositionFilter.toLowerCase()
-        filteredData = filteredData.filter(msg => 
-          msg.composition?.toLowerCase().includes(compositionLower) ||
-          msg.content.toLowerCase().includes(compositionLower)
+          !msg.strat_type
         )
       }
       
@@ -149,7 +141,7 @@ export default function TeamCommunication({
           content: message.trim(),
           map_name: section === 'strat_map' ? mapName : null,
           match_id: section === 'review_praccs' ? matchId : null,
-          strat_type: section === 'strat_map' && stratTypeFilter !== 'all' ? stratTypeFilter : null,
+          strat_type: section === 'strat_map' && stratTypeFilter ? stratTypeFilter : null,
           composition: section === 'strat_map' && compositionFilter ? compositionFilter : null,
           author_id: userId,
           author_name: userName,
@@ -223,7 +215,7 @@ export default function TeamCommunication({
           image_url: imageUrl,
           map_name: section === 'strat_map' ? mapName : null,
           match_id: section === 'review_praccs' ? matchId : null,
-          strat_type: section === 'strat_map' && stratTypeFilter !== 'all' ? stratTypeFilter : null,
+          strat_type: section === 'strat_map' && stratTypeFilter ? stratTypeFilter : null,
           composition: section === 'strat_map' && compositionFilter ? compositionFilter : null,
           author_id: userId,
           author_name: userName,
@@ -329,76 +321,74 @@ export default function TeamCommunication({
             <p className="text-gray-400">No messages yet. Start the conversation!</p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className="flex gap-3 group">
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-1 flex-wrap">
-                  <span className={`font-medium ${getRoleColor(msg.author_role)}`}>
-                    {msg.author_name}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(msg.created_at).toLocaleString()}
-                  </span>
-                  {/* Strategy Type Badge - only show if not a composition message */}
-                  {msg.strat_type && !msg.content.includes('**Team Composition**') && (
-                    <span className={`px-2 py-0.5 text-xs rounded-full border ${
-                      msg.strat_type === 'attack'
-                        ? 'bg-red-500/20 border-red-500 text-red-400'
-                        : 'bg-blue-500/20 border-blue-500 text-blue-400'
-                    }`}>
-                      {msg.strat_type === 'attack' ? 'Attack' : 'Defense'}
+          messages.map((msg) => {
+            // Determine if current user can delete this message
+            const canDelete = 
+              userRole === 'admin' || // Admin can delete all
+              msg.author_id === userId || // User can delete their own
+              (userRole === 'manager' && msg.author_role === 'player') // Manager can delete player messages only
+            
+            return (
+              <div key={msg.id} className="flex gap-3 group">
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                    <span className={`font-medium ${getRoleColor(msg.author_role)}`}>
+                      {msg.author_name}
                     </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(msg.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  
+                  {msg.message_type === 'text' ? (
+                    <div className="bg-dark border border-gray-800 rounded-lg p-3">
+                      {isUrl(msg.content) ? (
+                        <a 
+                          href={msg.content} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline flex items-center gap-2"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                          {msg.content}
+                        </a>
+                      ) : (
+                        <div className="text-gray-300 break-words">
+                          {renderFormattedText(msg.content)}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-dark border border-gray-800 rounded-lg p-3">
+                      <p className="text-sm text-gray-400 mb-2">{msg.content}</p>
+                      {msg.image_url && (
+                        <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                          <Image
+                            src={optimizeChatImage(msg.image_url)}
+                            alt={msg.content}
+                            width={400}
+                            height={300}
+                            className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition"
+                            unoptimized
+                          />
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
                 
-                {msg.message_type === 'text' ? (
-                  <div className="bg-dark border border-gray-800 rounded-lg p-3">
-                    {isUrl(msg.content) ? (
-                      <a 
-                        href={msg.content} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-2"
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                        {msg.content}
-                      </a>
-                    ) : (
-                      <div className="text-gray-300 break-words">
-                        {renderFormattedText(msg.content)}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-dark border border-gray-800 rounded-lg p-3">
-                    <p className="text-sm text-gray-400 mb-2">{msg.content}</p>
-                    {msg.image_url && (
-                      <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
-                        <Image
-                          src={optimizeChatImage(msg.image_url)}
-                          alt={msg.content}
-                          width={400}
-                          height={300}
-                          className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition"
-                          unoptimized
-                        />
-                      </a>
-                    )}
-                  </div>
+                {canDelete && (
+                  <button
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    className="opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-300 self-start mt-6"
+                    title="Delete message"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-              
-              {(msg.author_id === userId || userRole === 'admin') && (
-                <button
-                  onClick={() => handleDeleteMessage(msg.id)}
-                  className="opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-300 self-start mt-6"
-                  title="Delete message"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          ))
+            )
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

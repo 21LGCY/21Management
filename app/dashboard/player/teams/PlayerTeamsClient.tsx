@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { Calendar, Map, MessageSquare, Users, Star, Trophy, Clock, Briefcase, ArrowRight, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import StratMapSelection from '@/app/dashboard/manager/teams/sections/StratMapSelection'
-import PraccsReviewSelection from '@/app/dashboard/manager/teams/sections/PraccsReviewSelection'
+import StratMapSelection from './sections/StratMapSelection'
+import PraccsReviewSelection from './sections/PraccsReviewSelection'
 
 interface Player {
   id: string
