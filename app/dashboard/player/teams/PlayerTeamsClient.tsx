@@ -325,7 +325,7 @@ export default function PlayerTeamsClient({
                 href="/dashboard/player/teams/schedule"
                 className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20 flex items-center gap-2"
               >
-                Manage Schedule
+                View Schedule
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

@@ -1,17 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Users, Target, Trophy, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 // Activity types with their icons and colors
 const activityTypes = {
-  practice: { name: 'Practice', icon: Dumbbell, color: 'text-blue-400' },
-  individual_training: { name: 'Individual Training', icon: Target, color: 'text-green-400' },
+  practice: { name: 'Practice', icon: Trophy, color: 'text-blue-400' },
+  individual_training: { name: 'Individual Training', icon: Users, color: 'text-green-400' },
   group_training: { name: 'Group Training', icon: Users, color: 'text-purple-400' },
   official_match: { name: 'Official Match', icon: Trophy, color: 'text-yellow-400' },
   tournament: { name: 'Tournament', icon: Trophy, color: 'text-red-400' },
-  meeting: { name: 'Team Meeting', icon: BookOpen, color: 'text-indigo-400' }
+  meeting: { name: 'Team Meeting', icon: MessageSquare, color: 'text-indigo-400' }
 }
 
 // Helper function to convert day number to name
@@ -69,26 +69,33 @@ export default function SchedulePreview({ teamId }: SchedulePreviewProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+      <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-white">Weekly Schedule</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
+            <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+          </div>
         </div>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+    <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white">Weekly Schedule</h2>
-        <Link href="/dashboard/manager/teams/schedule">
-          <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm flex items-center gap-2">
-            Manage Schedule
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div>
+          <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
+          <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+        </div>
+        <Link 
+          href="/dashboard/manager/teams/schedule"
+          className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20 flex items-center gap-2"
+        >
+          Manage Schedule
+          <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
       
@@ -101,7 +108,7 @@ export default function SchedulePreview({ teamId }: SchedulePreviewProps) {
             return (
               <div
                 key={activity.id}
-                className="p-4 bg-dark rounded-lg border border-gray-800 hover:border-gray-700 transition-colors"
+                className="p-4 bg-dark rounded-lg border border-gray-800 hover:border-gray-700 transition-all cursor-pointer group"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
@@ -110,8 +117,8 @@ export default function SchedulePreview({ teamId }: SchedulePreviewProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-white truncate">{activity.title}</h3>
-                        <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded">
+                        <h3 className="font-medium text-white truncate group-hover:text-primary transition-colors">{activity.title}</h3>
+                        <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded flex-shrink-0">
                           {activityType?.name || activity.type}
                         </span>
                       </div>

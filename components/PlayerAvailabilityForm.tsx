@@ -15,7 +15,7 @@ interface PlayerAvailabilityFormProps {
 
 // Helper to get Monday of current week in Europe/Paris timezone
 const getMonday = (date: Date): Date => {
-  // Get the date parts in Europe/Paris timezone
+  // Get the date parts in Europe/Paris timezone (same as manager)
   const formatter = new Intl.DateTimeFormat('en-CA', { 
     timeZone: 'Europe/Paris',
     year: 'numeric',
@@ -31,6 +31,7 @@ const getMonday = (date: Date): Date => {
   const diff = day === 0 ? -6 : 1 - day // Calculate days to subtract to get to Monday
   const monday = new Date(parisDate)
   monday.setUTCDate(parisDate.getUTCDate() + diff)
+  
   return monday
 }
 

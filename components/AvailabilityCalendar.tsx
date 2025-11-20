@@ -38,11 +38,11 @@ const formatTimeRange = (hour: number): string => {
 }
 
 const getDateForDay = (weekStart: string, dayIndex: number): string => {
-  // Parse the date string correctly to avoid timezone issues
+  // Parse the date string correctly to avoid timezone issues - use UTC like manager
   const [year, month, day] = weekStart.split('-').map(Number)
-  const date = new Date(year, month - 1, day) // month is 0-indexed in JS Date
-  date.setDate(date.getDate() + dayIndex)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const date = new Date(Date.UTC(year, month - 1, day))
+  date.setUTCDate(date.getUTCDate() + dayIndex)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 export default function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false }: AvailabilityCalendarProps) {

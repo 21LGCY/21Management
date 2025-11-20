@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import Link from 'next/link'
-import { Users, Trophy, Calendar, Shield, BarChart3, Search } from 'lucide-react'
+import { Users, Trophy, Calendar, Shield, BarChart3, Search, Clock, Target, Award, TrendingUp, Map, Activity } from 'lucide-react'
 
 export default async function AdminDashboard() {
   // Require admin role
@@ -25,16 +25,28 @@ export default async function AdminDashboard() {
     .from('tournaments')
     .select('*', { count: 'exact', head: true })
 
-  const { count: matchCount } = await supabase
-    .from('matches')
-    .select('*', { count: 'exact', head: true })
-
-  // Get recent activity
-  const { data: recentMatches } = await supabase
+  // Get upcoming matches across all teams
+  const { data: upcomingMatches } = await supabase
     .from('matches')
     .select('*, teams(name)')
-    .order('scheduled_at', { ascending: false })
+    .gte('scheduled_at', new Date().toISOString())
+    .order('scheduled_at', { ascending: true })
     .limit(5)
+
+  // Get tournaments
+  const { data: tournaments } = await supabase
+    .from('tournaments')
+    .select('*')
+    .order('start_date', { ascending: false })
+    .limit(5)
+
+  // Get players across all teams
+  const { data: players } = await supabase
+    .from('profiles')
+    .select('*, teams(name)')
+    .eq('role', 'player')
+    .order('created_at', { ascending: false })
+    .limit(10)
 
   const { data: teams } = await supabase
     .from('teams')
@@ -76,6 +88,16 @@ export default async function AdminDashboard() {
             <p className="text-2xl font-bold text-blue-400">{playerCount || 0}</p>
           </div>
 
+          <div className="bg-gradient-to-br from-green-500/10 to-dark border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-3 bg-green-500/20 rounded-lg">
+                <Calendar className="w-6 h-6 text-green-400" />
+              </div>
+            </div>
+            <p className="text-sm text-green-300/70 mb-1">Upcoming Matches</p>
+            <p className="text-2xl font-bold text-green-400">{upcomingMatches?.length || 0}</p>
+          </div>
+
           <div className="bg-gradient-to-br from-yellow-500/10 to-dark border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/50 transition-all hover:shadow-lg hover:shadow-yellow-500/10">
             <div className="flex items-start justify-between mb-3">
               <div className="p-3 bg-yellow-500/20 rounded-lg">
@@ -84,16 +106,6 @@ export default async function AdminDashboard() {
             </div>
             <p className="text-sm text-yellow-300/70 mb-1">Tournaments</p>
             <p className="text-2xl font-bold text-yellow-400">{tournamentCount || 0}</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-500/10 to-dark border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-3 bg-green-500/20 rounded-lg">
-                <Calendar className="w-6 h-6 text-green-400" />
-              </div>
-            </div>
-            <p className="text-sm text-green-300/70 mb-1">Matches</p>
-            <p className="text-2xl font-bold text-green-400">{matchCount || 0}</p>
           </div>
         </div>
 
@@ -117,7 +129,7 @@ export default async function AdminDashboard() {
             <button className="w-full p-4 bg-dark-card border border-gray-800 hover:border-primary rounded-xl text-left transition-all group hover:shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition">
-                  <Shield className="w-5 h-5 text-primary" />
+                  <Map className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium text-white group-hover:text-primary transition">Team Hub</p>
@@ -157,72 +169,149 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Teams List */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-white">Teams</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Upcoming Matches */}
+          <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-1">Upcoming Matches</h2>
+                <p className="text-sm text-gray-400">Scheduled games across all teams</p>
+              </div>
+              <Calendar className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-3">
-              {teams && teams.length > 0 ? (
-                teams.map((team) => (
+              {upcomingMatches && upcomingMatches.length > 0 ? (
+                upcomingMatches.map((match) => (
                   <div
-                    key={team.id}
-                    className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800"
+                    key={match.id}
+                    className="p-4 bg-gradient-to-br from-dark to-dark-card rounded-xl border border-gray-800 hover:border-primary transition-all group hover:shadow-lg"
                   >
-                    <div>
-                      <p className="font-medium text-white">{team.name}</p>
-                      <p className="text-sm text-gray-400">{team.game}</p>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <p className="font-semibold text-white group-hover:text-primary transition">
+                          {match.teams?.name} vs {match.opponent}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <p className="text-sm text-gray-400">
+                            {new Date(match.scheduled_at).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 bg-primary/20 text-primary text-xs rounded-lg font-medium">
+                        Scheduled
+                      </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-center py-4">No teams yet</p>
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-400">No upcoming matches</p>
+                  <p className="text-sm text-gray-500 mt-1">Schedule your next game</p>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Recent Matches */}
-          <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-white">Recent Matches</h2>
+          {/* Players List */}
+          <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-1">Recent Players</h2>
+                <p className="text-sm text-gray-400">{playerCount || 0} active players</p>
+              </div>
+              <Link href="/dashboard/admin/users">
+                <button className="text-primary hover:text-primary-dark text-sm font-medium">
+                  View All →
+                </button>
+              </Link>
             </div>
-            <div className="space-y-3">
-              {recentMatches && recentMatches.length > 0 ? (
-                recentMatches.map((match) => (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {players && players.length > 0 ? (
+                players.slice(0, 5).map((player) => (
                   <div
-                    key={match.id}
-                    className="p-3 bg-dark rounded-lg border border-gray-800"
+                    key={player.id}
+                    className="flex items-center justify-between p-3 bg-gradient-to-br from-dark to-dark-card rounded-lg border border-gray-800 hover:border-primary/50 transition-all"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-white">
-                        {match.teams?.name} vs {match.opponent}
-                      </p>
-                      {match.result && (
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            match.result === 'win'
-                              ? 'bg-green-500/20 text-green-400'
-                              : match.result === 'loss'
-                              ? 'bg-red-500/20 text-red-400'
-                              : 'bg-gray-500/20 text-gray-400'
-                          }`}
-                        >
-                          {match.result}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Users className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{player.in_game_name || player.username}</p>
+                        <p className="text-sm text-gray-400">
+                          {player.teams?.name || 'No Team'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      {player.position && (
+                        <span className="px-3 py-1 bg-primary/20 text-primary text-xs rounded-lg font-medium">
+                          {player.position}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">
-                      {new Date(match.scheduled_at).toLocaleDateString()}
-                    </p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-center py-4">No matches yet</p>
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-400">No players yet</p>
+                  <p className="text-sm text-gray-500 mt-1">Add players to your teams</p>
+                </div>
               )}
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Teams Overview */}
+        <div className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-1">Teams Overview</h2>
+              <p className="text-sm text-gray-400">All registered teams</p>
+            </div>
+            <Link href="/dashboard/admin/teams">
+              <button className="text-primary hover:text-primary-dark text-sm font-medium">
+                Manage Teams →
+              </button>
+            </Link>
+          </div>
+          {teams && teams.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {teams.slice(0, 6).map((team) => (
+                <div
+                  key={team.id}
+                  className="p-6 bg-gradient-to-br from-dark to-dark-card border border-gray-800 rounded-xl hover:border-primary/50 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">{team.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-gray-400" />
+                        <p className="text-gray-400 text-sm">{team.game}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-gray-400 mt-4">
+                    <Clock className="w-4 h-4" />
+                    <span>Created {new Date(team.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trophy className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-400 text-lg mb-2 font-medium">No teams yet</p>
+              <p className="text-gray-500">Create your first team to get started</p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

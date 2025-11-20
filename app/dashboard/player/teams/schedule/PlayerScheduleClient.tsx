@@ -38,13 +38,12 @@ const activityTypes: { [key: string]: { icon: any; color: string; name: string }
   }
 }
 
-// Generate time slots from 1:00 PM to 12:00 AM
+// Generate time slots from 3:00 PM to 11:00 PM (matching player availability)
 const generateTimeSlots = () => {
   const slots = []
-  for (let hour = 1; hour < 12; hour++) {
+  for (let hour = 3; hour < 12; hour++) {
     slots.push(`${hour}:00 PM`)
   }
-  slots.push('12:00 AM')
   return slots
 }
 
@@ -69,20 +68,37 @@ interface ScheduleActivity {
 // Helper functions for date calculations
 const getMondayOfWeek = (weekOffset: number = 0): Date => {
   const now = new Date()
-  const currentDay = now.getDay()
-  const diff = currentDay === 0 ? -6 : 1 - currentDay
-  const monday = new Date(now)
-  monday.setDate(now.getDate() + diff + (weekOffset * 7))
-  monday.setHours(0, 0, 0, 0)
+  
+  // Get the date parts in Europe/Paris timezone
+  const formatter = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  const parts = formatter.format(now).split('-') // YYYY-MM-DD
+  
+  // Create date in UTC to avoid timezone shifts
+  const parisDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])))
+  
+  const day = parisDate.getUTCDay()
+  const diff = day === 0 ? -6 : 1 - day // Calculate days to subtract to get to Monday
+  const monday = new Date(parisDate)
+  monday.setUTCDate(parisDate.getUTCDate() + diff + (weekOffset * 7))
+  
   return monday
 }
 
 const formatDateShort = (date: Date): string => {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 const getDateString = (date: Date): string => {
-  return date.toISOString().split('T')[0]
+  // Format as YYYY-MM-DD in UTC
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 const getWeekDates = (weekOffset: number): string[] => {
@@ -90,7 +106,7 @@ const getWeekDates = (weekOffset: number): string[] => {
   const dates = []
   for (let i = 0; i < 7; i++) {
     const date = new Date(monday)
-    date.setDate(monday.getDate() + i)
+    date.setUTCDate(monday.getUTCDate() + i)
     dates.push(getDateString(date))
   }
   return dates
@@ -217,7 +233,12 @@ export default function PlayerScheduleClient({ teamId, teamName }: PlayerSchedul
             <div className="text-center">
               <div className="text-sm text-gray-400 mb-1">Current Week</div>
               <div className="text-lg font-semibold text-white">
-                {formatDateShort(getMondayOfWeek(currentWeekOffset))} - {formatDateShort(new Date(getMondayOfWeek(currentWeekOffset).getTime() + 6 * 24 * 60 * 60 * 1000))}
+                {(() => {
+                  const monday = getMondayOfWeek(currentWeekOffset)
+                  const sunday = new Date(monday)
+                  sunday.setUTCDate(monday.getUTCDate() + 6)
+                  return `${formatDateShort(monday)} - ${formatDateShort(sunday)}`
+                })()}
               </div>
             </div>
             {currentWeekOffset > 0 && (
@@ -256,14 +277,20 @@ export default function PlayerScheduleClient({ teamId, teamName }: PlayerSchedul
                   <span className="text-sm font-semibold">Time</span>
                 </div>
               </div>
-              {daysOfWeek.map((day, index) => (
-                <div key={day} className="p-3 text-center border-l border-gray-700">
-                  <div className="text-sm font-semibold text-white">{day}</div>
-                  <div className="text-xs text-gray-300 mt-1">
-                    {formatDateShort(new Date(weekDates[index]))}
+              {daysOfWeek.map((day, index) => {
+                // Parse the date string as UTC to avoid timezone shifts
+                const [year, month, dayNum] = weekDates[index].split('-').map(Number)
+                const date = new Date(Date.UTC(year, month - 1, dayNum))
+                
+                return (
+                  <div key={day} className="p-3 text-center border-l border-gray-700">
+                    <div className="text-sm font-semibold text-white">{day}</div>
+                    <div className="text-xs text-gray-300 mt-1">
+                      {formatDateShort(date)}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* Time Slots */}
