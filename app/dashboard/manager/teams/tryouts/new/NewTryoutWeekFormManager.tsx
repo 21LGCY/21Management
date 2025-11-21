@@ -168,9 +168,9 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       case 'not_contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
       case 'contacted': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
       case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-      case 'accepted': return 'bg-green-500/20 text-green-300 border-green-500/30'
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
+      case 'player': return 'bg-primary/20 text-primary border-primary/30'
       default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
     }
   }
@@ -180,7 +180,6 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       case 'not_contacted': return 'Not Contacted'
       case 'contacted': return 'Contacted'
       case 'in_tryouts': return 'In Tryouts'
-      case 'accepted': return 'Accepted'
       case 'substitute': return 'Substitute'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
@@ -348,7 +347,6 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                 <option value="contacted">Contacted</option>
                 <option value="not_contacted">Not Contacted</option>
                 <option value="substitute">Substitute</option>
-                <option value="accepted">Accepted</option>
               </select>
             </div>
           </div>

@@ -129,25 +129,25 @@ export default function ZonesInterface() {
 
   const getStatusColor = (status: TryoutStatus) => {
     switch (status) {
-      case 'accepted': return 'bg-green-500/20 text-green-300'
       case 'substitute': return 'bg-purple-500/20 text-purple-300'
       case 'in_tryouts': return 'bg-blue-500/20 text-blue-300'
       case 'contacted': return 'bg-yellow-500/20 text-yellow-300'
       case 'not_contacted': return 'bg-slate-500/20 text-slate-300'
       case 'rejected': return 'bg-red-500/20 text-red-300'
       case 'left': return 'bg-gray-500/20 text-gray-300'
+      case 'player': return 'bg-green-500/20 text-green-300'
     }
   }
 
   const getStatusLabel = (status: TryoutStatus) => {
     switch (status) {
-      case 'accepted': return 'accepted'
       case 'substitute': return 'substitute'
       case 'in_tryouts': return 'Tryout'
       case 'contacted': return 'Contacted'
       case 'not_contacted': return 'not_contacted'
       case 'rejected': return 'rejected'
       case 'left': return 'left'
+      case 'player': return 'Player'
     }
   }
 
@@ -212,13 +212,13 @@ export default function ZonesInterface() {
             className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
           >
             <option value="all">All Status</option>
-            <option value="Not Contacted">Not Contacted</option>
-            <option value="Contacted/Pending">Contacted</option>
-            <option value="In Tryouts">In Tryouts</option>
-            <option value="Player">Player</option>
-            <option value="Substitute">Substitute</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Left">Left</option>
+            <option value="not_contacted">Not Contacted</option>
+            <option value="contacted">Contacted</option>
+            <option value="in_tryouts">In Tryouts</option>
+            <option value="substitute">Substitute</option>
+            <option value="rejected">Rejected</option>
+            <option value="left">Left</option>
+            <option value="player">Player</option>
           </select>
 
           {/* Role Filter */}

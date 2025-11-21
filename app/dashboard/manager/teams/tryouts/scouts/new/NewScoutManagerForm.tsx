@@ -481,7 +481,6 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
               <option value="not_contacted">Not Contacted</option>
               <option value="contacted">Contacted</option>
               <option value="in_tryouts">In Tryouts</option>
-              <option value="accepted">Accepted</option>
               <option value="substitute">Substitute</option>
               <option value="rejected">Rejected</option>
               <option value="left">Left</option>
@@ -490,7 +489,7 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Managed By</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
             <select
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}

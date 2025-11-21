@@ -42,14 +42,14 @@ const getSunday = (monday: Date): Date => {
   return sunday
 }
 
-// Helper to check if a week is accessible for players (current week + 3 future weeks = 4 weeks total)
+// Helper to check if a week is accessible for players (current week + 2 future weeks = 3 weeks total)
 const isWeekAccessibleForPlayer = (weekStart: Date): boolean => {
   const today = new Date()
   const currentMonday = getMonday(today)
   
-  // Allow current week + 3 future weeks (4 weeks total)
+  // Allow current week + 2 future weeks (3 weeks total)
   const maxWeek = new Date(currentMonday)
-  maxWeek.setUTCDate(maxWeek.getUTCDate() + 21) // 3 weeks ahead
+  maxWeek.setUTCDate(maxWeek.getUTCDate() + 14) // 2 weeks ahead
   
   return weekStart >= currentMonday && weekStart <= maxWeek
 }
@@ -66,6 +66,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   const [timeSlots, setTimeSlots] = useState<TimeSlots>({})
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(true)
+  const [fetching, setFetching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,7 +84,12 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   }, [playerId, teamId, currentWeekStart])
 
   const fetchAvailability = async () => {
-    setLoading(true)
+    // Only show loading spinner on initial load, not on week changes
+    if (loading) {
+      setLoading(true)
+    } else {
+      setFetching(true)
+    }
     try {
       const weekStartStr = currentWeekStart.toISOString().split('T')[0]
       const response = await fetch(
@@ -107,6 +113,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       setError('Failed to load your availability')
     } finally {
       setLoading(false)
+      setFetching(false)
     }
   }
 
@@ -206,7 +213,14 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Subtle loading overlay during week changes */}
+      {fetching && (
+        <div className="absolute inset-0 bg-dark-card/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -252,7 +266,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
                 {isReadOnly 
                   ? 'This week is in the past and cannot be edited. You can view it for reference.'
                   : userRole === 'player'
-                  ? 'Click and drag to select the time slots when you are available. You can fill availability for the current week and up to 3 weeks ahead.'
+                  ? 'Click and drag to select the time slots when you are available. You can fill availability for the current week and up to 2 weeks ahead.'
                   : 'Click and drag to select the time slots when you are available. Your manager will use this to schedule team activities.'
                 }
               </p>
@@ -265,6 +279,8 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       {!isReadOnly && (
         <QuickFillButtons 
           onFill={setTimeSlots}
+          onSave={handleSave}
+          saving={saving}
         />
       )}
 
@@ -275,21 +291,6 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
           timeSlots={timeSlots}
           onChange={setTimeSlots}
           readOnly={isReadOnly}
-        />
-      </div>
-
-      {/* Notes */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Additional Notes (Optional)
-        </label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          disabled={isReadOnly}
-          placeholder="Any additional information about your availability..."
-          className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-          rows={3}
         />
       </div>
 
@@ -313,28 +314,6 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
         </div>
       )}
 
-      {/* Submit Button - Hide for read-only */}
-      {!isReadOnly && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-3 bg-gradient-to-r from-primary via-purple-600 to-primary-dark hover:shadow-lg hover:shadow-primary/50 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Availability
-              </>
-            )}
-          </button>
-        </div>
-      )}
     </div>
   )
 }

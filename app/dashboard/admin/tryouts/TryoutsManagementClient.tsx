@@ -68,10 +68,10 @@ export default function TryoutsManagementClient() {
       case 'not_contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
       case 'contacted': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
       case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-      case 'accepted': return 'bg-green-500/20 text-green-300 border-green-500/30'
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
       case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      case 'player': return 'bg-primary/20 text-primary border-primary/30'
     }
   }
 
@@ -92,9 +92,9 @@ export default function TryoutsManagementClient() {
       notContacted: tryouts.filter(t => t.status === 'not_contacted').length,
       contacted: tryouts.filter(t => t.status === 'contacted').length,
       inTryouts: tryouts.filter(t => t.status === 'in_tryouts').length,
-      accepted: tryouts.filter(t => t.status === 'accepted').length,
       substitute: tryouts.filter(t => t.status === 'substitute').length,
       rejected: tryouts.filter(t => t.status === 'rejected').length,
+      player: tryouts.filter(t => t.status === 'player').length,
     }
   }
 
@@ -124,7 +124,7 @@ export default function TryoutsManagementClient() {
         </div>
         <div className="bg-dark-card border border-green-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-1">Players</p>
-          <p className="text-2xl font-bold text-green-300">{stats.accepted}</p>
+          <p className="text-2xl font-bold text-green-300">{stats.player}</p>
         </div>
         <div className="bg-dark-card border border-purple-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-1">Substitutes</p>

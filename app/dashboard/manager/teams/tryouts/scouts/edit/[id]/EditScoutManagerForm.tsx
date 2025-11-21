@@ -482,7 +482,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
         {isAdminManaged && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
             <p className="text-yellow-400 text-sm">
-              <strong>Note:</strong> This scout is managed by an administrator. Status, Managed By, and Contacted By fields are locked and cannot be changed.
+              <strong>Note:</strong> This scout is managed by an administrator. Status, Added By, and Contacted By fields are locked and cannot be changed.
             </p>
           </div>
         )}
@@ -503,7 +503,6 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
               <option value="not_contacted">Not Contacted</option>
               <option value="contacted">Contacted</option>
               <option value="in_tryouts">In Tryouts</option>
-              <option value="accepted">Accepted</option>
               <option value="substitute">Substitute</option>
               <option value="rejected">Rejected</option>
               <option value="left">Left</option>
@@ -515,7 +514,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Managed By</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
             <select
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}

@@ -30,7 +30,6 @@ export type TryoutStatus =
   | 'not_contacted'
   | 'contacted'
   | 'in_tryouts'
-  | 'accepted'
   | 'substitute'
   | 'rejected'
   | 'left'

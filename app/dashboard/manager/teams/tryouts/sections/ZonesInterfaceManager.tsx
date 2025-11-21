@@ -125,7 +125,6 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       case 'contacted': return 'bg-blue-500/20 text-blue-300'
       case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300'
       case 'player': return 'bg-green-500/20 text-green-300'
-      case 'accepted': return 'bg-green-500/20 text-green-300'
       case 'substitute': return 'bg-purple-500/20 text-purple-300'
       case 'rejected': return 'bg-red-500/20 text-red-300'
       case 'left': return 'bg-orange-500/20 text-orange-300'
@@ -139,7 +138,6 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       case 'contacted': return 'Pending'
       case 'in_tryouts': return 'Trying Out'
       case 'player': return 'Player'
-      case 'accepted': return 'Accepted'
       case 'substitute': return 'Sub'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
@@ -214,7 +212,6 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
             <option value="contacted">Contacted</option>
             <option value="in_tryouts">In Tryouts</option>
             <option value="player">Player</option>
-            <option value="accepted">Accepted</option>
             <option value="substitute">Substitute</option>
             <option value="rejected">Rejected</option>
             <option value="left">Left</option>

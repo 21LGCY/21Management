@@ -35,7 +35,6 @@ const getStatusColor = (status: TryoutStatus) => {
     case 'not_contacted': return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
     case 'contacted': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
     case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-    case 'accepted': return 'bg-green-500/20 text-green-300 border-green-500/30'
     case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
     case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
     case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
@@ -48,7 +47,6 @@ const getStatusLabel = (status: TryoutStatus) => {
     case 'not_contacted': return 'Not Contacted'
     case 'contacted': return 'Contacted'
     case 'in_tryouts': return 'In Tryouts'
-    case 'accepted': return 'Accepted'
     case 'substitute': return 'Substitute'
     case 'rejected': return 'Rejected'
     case 'left': return 'Left'
@@ -203,15 +201,6 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               </div>
             </div>
 
-            {/* Account Type */}
-            <div className="mb-6">
-              <p className="text-gray-500 text-sm mb-3">Account Type</p>
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold border bg-green-500/20 text-green-400 border-green-500/50">
-                <UserIcon className="w-4 h-4" />
-                PLAYER
-              </span>
-            </div>
-
             {/* Position and IGL */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
@@ -299,41 +288,55 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
               Management
             </h2>
-            <div className="grid grid-cols-2 gap-4">
-              {scout.managed_by && (
+            <div className="space-y-4">
+              {/* Notes First */}
+              {scout.notes && (
                 <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                  <p className="text-gray-500 text-sm mb-1">Managed By</p>
-                  <p className="text-white font-semibold">{scout.managed_by}</p>
+                  <p className="text-gray-500 text-sm mb-2">Notes</p>
+                  <p className="text-white text-sm">
+                    {scout.notes}
+                  </p>
                 </div>
               )}
-              {scout.contacted_by && (
-                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                  <p className="text-gray-500 text-sm mb-1">Contacted By</p>
-                  <p className="text-white font-semibold">{scout.contacted_by}</p>
-                </div>
-              )}
-              {scout.last_contact_date && (
-                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                  <p className="text-gray-500 text-sm mb-2">Last Contact Date</p>
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(scout.last_contact_date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+              
+              {/* Added By and Contacted By on same line */}
+              <div className="grid grid-cols-2 gap-4">
+                {scout.managed_by && (
+                  <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                    <p className="text-gray-500 text-sm mb-1">Added By</p>
+                    <p className="text-white font-semibold">{scout.managed_by}</p>
                   </div>
-                </div>
-              )}
-            </div>
-            {scout.notes && (
-              <div className="mt-4 bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Notes</p>
-                <p className="text-white text-sm">
-                  {scout.notes}
-                </p>
+                )}
+                
+                {/* Contact Information */}
+                {(scout.contacted_by || scout.last_contact_date) && (
+                  <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                    <p className="text-gray-500 text-sm mb-3">Contact Information</p>
+                    <div className="space-y-2">
+                      {scout.contacted_by && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400 text-xs">Contacted By:</span>
+                          <span className="text-white text-sm font-semibold">{scout.contacted_by}</span>
+                        </div>
+                      )}
+                      {scout.last_contact_date && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400 text-xs">Date:</span>
+                          <div className="flex items-center gap-2 text-white text-sm font-semibold">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {new Date(scout.last_contact_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
 
