@@ -44,9 +44,12 @@ export default function TeamManagementClient() {
         .from('matches')
         .select('*, teams(*)')
         .order('scheduled_at', { ascending: false })
-        .limit(10)
+        .limit(20)
 
       if (error) throw error
+      console.log('Fetched matches:', data)
+      console.log('Matches with results:', data?.filter(m => m.result))
+      console.log('Upcoming matches:', data?.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()))
       setMatches(data || [])
     } catch (error) {
       console.error('Error fetching matches:', error)
@@ -198,7 +201,45 @@ export default function TeamManagementClient() {
               </Link>
             </div>
           </div>
-          <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">Match history will appear here</p>
+          <div className="space-y-3">
+            {matches.filter(m => m.result).length === 0 ? (
+              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">No match history yet</p>
+            ) : (
+              matches.filter(m => m.result).slice(0, 5).map((match) => (
+                <div
+                  key={match.id}
+                  className="group flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1 flex-wrap">
+                      <p className="font-semibold text-white">
+                        {match.teams?.name || teams.find(t => t.id === match.team_id)?.name} vs {match.opponent}
+                      </p>
+                      {match.result && (
+                        <span className={`px-2.5 py-1 text-xs rounded-lg font-semibold border ${
+                          match.result === 'win' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                          match.result === 'loss' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                          'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        }`}>
+                          {match.result.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {new Date(match.scheduled_at).toLocaleDateString()}
+                      {match.score && ` • ${match.score}`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteMatch(match.id)}
+                    className="p-2 text-red-400 hover:bg-red-400/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Planning */}
@@ -215,10 +256,10 @@ export default function TeamManagementClient() {
           </div>
 
           <div className="space-y-3">
-            {matches.length === 0 ? (
+            {matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).length === 0 ? (
               <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">No matches scheduled</p>
             ) : (
-              matches.map((match) => (
+              matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).slice(0, 5).map((match) => (
                 <div
                   key={match.id}
                   className="group flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
@@ -226,21 +267,14 @@ export default function TeamManagementClient() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1 flex-wrap">
                       <p className="font-semibold text-white">
-                        {teams.find(t => t.id === match.team_id)?.name} vs {match.opponent}
+                        {match.teams?.name || teams.find(t => t.id === match.team_id)?.name} vs {match.opponent}
                       </p>
-                      {match.result && (
-                        <span className={`px-2.5 py-1 text-xs rounded-lg font-semibold border ${
-                          match.result === 'win' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                          match.result === 'loss' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                          'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                        }`}>
-                          {match.result.toUpperCase()}
-                        </span>
-                      )}
+                      <span className="px-2.5 py-1 text-xs rounded-lg font-semibold border bg-blue-500/20 text-blue-400 border-blue-500/30">
+                        SCHEDULED
+                      </span>
                     </div>
                     <p className="text-sm text-gray-500">
                       {new Date(match.scheduled_at).toLocaleString()}
-                      {match.score && ` • ${match.score}`}
                     </p>
                   </div>
                   <button

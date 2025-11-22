@@ -264,54 +264,6 @@ export default async function AdminDashboard() {
             </div>
           </div>
         </div>
-
-        {/* Teams Overview */}
-        <div className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-white mb-1">Teams Overview</h2>
-              <p className="text-sm text-gray-400">All registered teams</p>
-            </div>
-            <Link href="/dashboard/admin/teams">
-              <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                Manage Teams →
-              </button>
-            </Link>
-          </div>
-          {teams && teams.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {teams.slice(0, 6).map((team) => (
-                <div
-                  key={team.id}
-                  className="p-6 bg-gradient-to-br from-dark to-dark-card border border-gray-800 rounded-xl hover:border-primary/50 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-white mb-1">{team.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-gray-400" />
-                        <p className="text-gray-400 text-sm">{team.game}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-gray-400 mt-4">
-                    <Clock className="w-4 h-4" />
-                    <span>Created {new Date(team.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-8 h-8 text-gray-400" />
-              </div>
-              <p className="text-gray-400 text-lg mb-2 font-medium">No teams yet</p>
-              <p className="text-gray-500">Create your first team to get started</p>
-            </div>
-          )}
-        </div>
       </main>
     </div>
   )

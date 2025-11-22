@@ -301,122 +301,173 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
                 className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 relative group cursor-pointer flex flex-col"
                 onClick={() => handleCardClick(tryout.id)}
               >
-                <div className="flex flex-col flex-1 p-5">
+                <div className="flex flex-col flex-1 p-6">
                   <div className="flex-1 flex flex-col">
-                    {/* Header - Username and Badge on same line */}
-                    <div className="flex items-start justify-between gap-3 mb-1">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-bold text-white truncate">
-                            {tryout.in_game_name || tryout.username}
-                          </h3>
-                          {nationality && (
-                            <Image
-                              src={nationality.flagUrl}
-                              alt={nationality.code}
-                              width={20}
-                              height={15}
-                              className="object-contain rounded-sm flex-shrink-0"
-                            />
+                    {/* Player Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Avatar Placeholder */}
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary/30 to-primary/10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-primary/20 flex-shrink-0">
+                          <UserIcon className="w-7 h-7 text-primary" />
+                        </div>
+                        
+                        {/* Name & IGN */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
+                              {tryout.in_game_name || tryout.username}
+                            </h3>
+                            {nationality && (
+                              <Image
+                                src={nationality.flagUrl}
+                                alt={nationality.code}
+                                width={20}
+                                height={15}
+                                className="object-contain rounded-sm flex-shrink-0"
+                              />
+                            )}
+                          </div>
+                          {tryout.in_game_name && (
+                            <p className="text-sm text-gray-400">@{tryout.username}</p>
                           )}
                         </div>
-                        {tryout.in_game_name && (
-                          <p className="text-sm text-gray-400">@{tryout.username}</p>
-                        )}
                       </div>
 
-                      {/* Team|Status Badge and Rank - Top Right */}
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <span className={`px-2 py-1 text-xs border rounded whitespace-nowrap font-semibold ${getStatusColor(tryout.status)}`}>
+                      {/* Team|Status Badge - Top Right */}
+                      <div className="flex-shrink-0">
+                        <span className={`px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold ${getStatusColor(tryout.status)}`}>
                           {teamCategory} | {getStatusLabel(tryout.status)}
                         </span>
-                        {tryout.rank && rankImage && (
-                          <div className="group/rank relative">
-                            <Image
-                              src={rankImage}
-                              alt={tryout.rank}
-                              width={45}
-                              height={45}
-                              className="object-contain drop-shadow-lg"
-                            />
-                            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                              {tryout.rank}
-                            </div>
-                          </div>
+                      </div>
+                    </div>
+
+                    {/* Player Info */}
+                    <div className="space-y-4">
+
+                      {/* Role Badges */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {tryout.position && (
+                          <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getRoleColor(tryout.position)}`}>
+                            {tryout.position}
+                          </span>
+                        )}
+                        {tryout.is_igl && (
+                          <span className="px-3 py-1.5 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-400 text-xs rounded-lg font-semibold border border-yellow-500/30">
+                            IGL
+                          </span>
                         )}
                       </div>
-                    </div>
 
-                    {/* Role Badges - Right after username */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {tryout.position && (
-                        <span className={`px-3 py-1 text-xs font-semibold border rounded-lg ${getRoleColor(tryout.position)}`}>
-                          {tryout.position}
-                        </span>
-                      )}
-                      {tryout.is_igl && (
-                        <span className="px-3 py-1 text-xs rounded-lg font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-                          IGL
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Notes Section - Only if notes exist */}
-                    {tryout.notes && (
-                      <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50 mb-3">
-                        <p className="text-xs text-gray-400 mb-1 font-medium">Notes</p>
-                        <p className="text-xs text-gray-300 line-clamp-2">
-                          {tryout.notes}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Agent Pool */}
-                    {tryout.champion_pool && tryout.champion_pool.length > 0 && (
-                      <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50 mb-3">
-                        <p className="text-xs text-gray-400 mb-2 font-medium">Agent Pool</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {tryout.champion_pool.slice(0, 3).map((agent: string) => (
-                            <span key={agent} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded font-medium border border-primary/20">
-                              {agent}
-                            </span>
-                          ))}
-                          {tryout.champion_pool.length > 3 && (
-                            <span className="px-2 py-1 text-gray-400 text-xs">
-                              +{tryout.champion_pool.length - 3}
-                            </span>
+                      {/* Rank and Nationality Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/rank relative">
+                          {rankImage ? (
+                            <>
+                              <Image
+                                src={rankImage}
+                                alt={tryout.rank || 'Unranked'}
+                                width={32}
+                                height={32}
+                                className="object-contain"
+                              />
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                {tryout.rank}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 text-xs">N/A</span>
+                          )}
+                        </div>
+                        <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/nation relative">
+                          {nationality ? (
+                            <>
+                              <Image
+                                src={nationality.flagUrl}
+                                alt={nationality.code}
+                                width={32}
+                                height={24}
+                                className="rounded object-cover"
+                              />
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/nation:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                {nationality.name}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 text-xs">N/A</span>
                           )}
                         </div>
                       </div>
-                    )}
 
-                    {/* Spacer to push management info to bottom */}
-                    <div className="flex-1"></div>
+                      {/* Consolidated Info Section */}
+                      {(tryout.notes || (tryout.champion_pool && tryout.champion_pool.length > 0) || true) && (
+                        <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
+                          {/* Notes */}
+                          {tryout.notes && (
+                            <div>
+                              <p className="text-gray-400 text-xs mb-1.5 font-medium">Notes</p>
+                              <p className="text-xs text-gray-300 line-clamp-2">
+                                {tryout.notes}
+                              </p>
+                            </div>
+                          )}
 
-                    {/* Management Info Section - At bottom */}
-                    <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">Added By:</span>
-                          <span className="text-xs text-gray-200 font-medium">
-                            {tryout.managed_by || 'N/A'}
-                          </span>
+                          {/* Divider */}
+                          {tryout.notes && (tryout.champion_pool && tryout.champion_pool.length > 0) && (
+                            <div className="my-3 border-t border-gray-700/50"></div>
+                          )}
+
+                          {/* Agent Pool */}
+                          {tryout.champion_pool && tryout.champion_pool.length > 0 && (
+                            <div>
+                              <p className="text-gray-400 text-xs mb-2 font-medium">Main Agents</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {tryout.champion_pool.slice(0, 3).map((agent: string) => (
+                                  <span key={agent} className="px-2.5 py-1 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs rounded-md font-medium border border-gray-700">
+                                    {agent}
+                                  </span>
+                                ))}
+                                {tryout.champion_pool.length > 3 && (
+                                  <span className="px-2.5 py-1 bg-primary/20 text-primary text-xs rounded-md font-medium border border-primary/30">
+                                    +{tryout.champion_pool.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Divider */}
+                          {(tryout.notes || (tryout.champion_pool && tryout.champion_pool.length > 0)) && (
+                            <div className="my-3 border-t border-gray-700/50"></div>
+                          )}
+
+                          {/* Management Info */}
+                          <div>
+                            <p className="text-gray-400 text-xs mb-2 font-medium">Management Info</p>
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-400">Added By:</span>
+                                <span className="text-xs text-gray-200 font-medium">
+                                  {tryout.managed_by || 'N/A'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-400">Contacted By:</span>
+                                <span className="text-xs text-gray-200 font-medium">
+                                  {tryout.contacted_by || 'N/A'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-400">Last Contact:</span>
+                                <span className="text-xs text-gray-200 font-medium">
+                                  {tryout.last_contact_date 
+                                    ? new Date(tryout.last_contact_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                    : 'Not yet contacted'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">Contacted By:</span>
-                          <span className="text-xs text-gray-200 font-medium">
-                            {tryout.contacted_by || 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-400">Last Contact:</span>
-                          <span className="text-xs text-gray-200 font-medium">
-                            {tryout.last_contact_date 
-                              ? new Date(tryout.last_contact_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                              : 'Not yet contacted'}
-                          </span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -206,11 +206,19 @@ export default function UserManagementClient() {
             const nationality = getNationalityDisplay(user.nationality)
             const teamColors = getTeamColors(teamTag)
             
+            // Adjust opacity for team borders - reduce from /50 to /30
+            const adjustedBorder = teamTag 
+              ? teamColors.border.replace('/50', '/30')
+              : 'border-gray-800'
+            const adjustedHoverBorder = teamTag 
+              ? teamColors.hoverBorder.replace('/70', '/50')
+              : 'hover:border-primary'
+            
             return (
               <Link
                 key={user.id}
                 href={`/dashboard/admin/users/view/${user.id}`}
-                className={`block bg-gradient-to-br ${teamColors.gradient} border ${teamColors.border} rounded-xl ${teamColors.hoverBorder} transition-all group`}
+                className={`block bg-gradient-to-br ${teamColors.gradient} border ${adjustedBorder} rounded-xl ${adjustedHoverBorder} transition-all group`}
                 style={{
                   ...teamColors.style,
                   boxShadow: '0 0 0 0 transparent',
@@ -223,120 +231,143 @@ export default function UserManagementClient() {
                   e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
                 }}
               >
-                <div className="p-6 flex flex-col h-full">
-                  <div className="space-y-4 flex-1">
-                    {/* Header with Badge */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-start gap-4 flex-1 min-w-0">
-                        {/* Avatar */}
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border border-primary/30">
-                          {user.avatar_url ? (
-                            <Image
-                              src={optimizeAvatar(user.avatar_url)}
-                              alt={user.username}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <UserIcon className="w-8 h-8 text-primary" />
-                          )}
-                        </div>
-                        
-                        {/* Name & IGN with Flag */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-xl font-bold text-white truncate">
-                              {user.in_game_name || user.username}
-                            </h3>
-                            {nationality && (
-                              <Image
-                                src={nationality.flagUrl}
-                                alt={nationality.code}
-                                width={24}
-                                height={18}
-                                className="object-contain rounded-sm flex-shrink-0"
-                              />
-                            )}
-                          </div>
-                          {user.in_game_name && (
-                            <p className="text-sm text-gray-400">@{user.username}</p>
-                          )}
-                        </div>
+                <div className="p-6">
+                  {/* Player Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Avatar */}
+                      <div className="w-14 h-14 bg-gradient-to-br from-primary/30 to-primary/10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-primary/20 flex-shrink-0">
+                        {user.avatar_url ? (
+                          <Image
+                            src={optimizeAvatar(user.avatar_url)}
+                            alt={user.username}
+                            width={56}
+                            height={56}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <UserIcon className="w-7 h-7 text-primary" />
+                        )}
                       </div>
-
-                      {/* Team|Role Badge and Rank - Top Right */}
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <span 
-                          className={`px-3 py-1 text-xs border rounded-lg whitespace-nowrap font-semibold ${teamColors.badgeColors}`}
-                          style={teamColors.badgeStyle}
-                        >
-                          {teamTag || 'No Team'} | {getRoleLabel(user.role)}
-                        </span>
-                        {user.rank && rankImage && (
-                          <div className="group/rank relative">
-                            <Image
-                              src={rankImage}
-                              alt={user.rank}
-                              width={40}
-                              height={40}
-                              className="object-contain"
-                            />
-                            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                              {user.rank}
-                            </div>
-                          </div>
+                      
+                      {/* Name & IGN */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
+                          {user.in_game_name || user.username}
+                        </h3>
+                        {user.in_game_name && (
+                          <p className="text-sm text-gray-400">@{user.username}</p>
                         )}
                       </div>
                     </div>
 
-                    {/* Player-specific Info */}
+                    {/* Team|Role Badge - Top Right */}
+                    <div className="flex-shrink-0">
+                      {user.role === 'admin' ? (
+                        <span className="px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold bg-red-500/20 text-red-300 border-red-500/30 flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5" />
+                          Admin
+                        </span>
+                      ) : (
+                        <span 
+                          className={`px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold ${teamColors.badgeColors}`}
+                          style={teamColors.badgeStyle}
+                        >
+                          {teamTag || 'No Team'} | {getRoleLabel(user.role)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Player Info */}
+                  <div className="space-y-4">
+
+                    {/* Role and Status Badges */}
                     {user.role === 'player' && (
-                      <div className="space-y-3">
-                        {/* Role and Status */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {user.position && (
-                            <span className={`px-3 py-1 text-xs font-semibold border rounded-lg ${getPositionColor(user.position)}`}>
-                              {user.position}
-                            </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {user.position && (
+                          <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getPositionColor(user.position)}`}>
+                            {user.position}
+                          </span>
+                        )}
+                        {user.is_igl && (
+                          <span className="px-3 py-1.5 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-400 text-xs rounded-lg font-semibold border border-yellow-500/30">
+                            IGL
+                          </span>
+                        )}
+                        {user.is_substitute && (
+                          <span className="px-3 py-1.5 bg-gradient-to-r from-orange-500/20 to-orange-600/20 text-orange-400 text-xs rounded-lg font-semibold border border-orange-500/30">
+                            SUB
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Rank and Nationality Grid */}
+                    {user.role === 'player' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/rank relative">
+                          {rankImage ? (
+                            <>
+                              <Image
+                                src={rankImage}
+                                alt={user.rank || 'Unranked'}
+                                width={32}
+                                height={32}
+                                className="object-contain"
+                              />
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                {user.rank}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 text-xs">N/A</span>
                           )}
-                          {user.is_igl && (
-                            <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-lg font-semibold border border-yellow-500/30">
-                              IGL
-                            </span>
+                        </div>
+                        <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/nation relative">
+                          {nationality ? (
+                            <>
+                              <Image
+                                src={nationality.flagUrl}
+                                alt={nationality.code}
+                                width={32}
+                                height={24}
+                                className="rounded object-cover"
+                              />
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/nation:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                {nationality.name}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 text-xs">N/A</span>
                           )}
-                          {user.is_substitute && (
-                            <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-lg font-semibold border border-orange-500/30">
-                              SUB
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Agent Pool */}
+                    {user.role === 'player' && user.champion_pool && user.champion_pool.length > 0 && (
+                      <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
+                        <p className="text-gray-400 text-xs mb-2 font-medium">Main Agents</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {user.champion_pool.slice(0, 3).map((agent: string) => (
+                            <span key={agent} className="px-2.5 py-1 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs rounded-md font-medium border border-gray-700">
+                              {agent}
+                            </span>
+                          ))}
+                          {user.champion_pool.length > 3 && (
+                            <span className="px-2.5 py-1 bg-primary/20 text-primary text-xs rounded-md font-medium border border-primary/30">
+                              +{user.champion_pool.length - 3}
                             </span>
                           )}
                         </div>
-
-                        {/* Agent Pool */}
-                        {user.champion_pool && user.champion_pool.length > 0 && (
-                          <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
-                            <p className="text-xs text-gray-400 mb-2 font-medium">Agent Pool</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {user.champion_pool.slice(0, 3).map((agent: string) => (
-                                <span key={agent} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded font-medium border border-primary/20">
-                                  {agent}
-                                </span>
-                              ))}
-                              {user.champion_pool.length > 3 && (
-                                <span className="px-2 py-1 text-gray-400 text-xs">
-                                  +{user.champion_pool.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 
                     {/* Manager-specific Info */}
                     {user.role === 'manager' && user.staff_role && (
-                      <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-800/50">
-                        <p className="text-xs text-gray-400 mb-1 font-medium">Staff Role</p>
+                      <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
+                        <p className="text-gray-400 text-xs mb-1.5 font-medium">Staff Role</p>
                         <p className="text-sm text-white font-semibold">{user.staff_role}</p>
                       </div>
                     )}
