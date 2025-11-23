@@ -109,12 +109,12 @@ export default function TryoutWeekDetail({ weekId }: TryoutWeekDetailProps) {
     try {
       // Get all players from the same team category who aren't already in this tryout
       const currentPlayerIds = availabilities.map(a => a.player_id)
-      
+
       let query = supabase
         .from('profiles_tryouts')
         .select('*')
         .eq('team_category', week.team_category)
-        .in('status', ['not_contacted', 'contacted', 'in_tryouts', 'substitute'])
+        .in('status', ['in_tryouts', 'accepted', 'substitute'])
         .order('username')
         
       // Only add the exclusion filter if there are existing players
@@ -123,6 +123,9 @@ export default function TryoutWeekDetail({ weekId }: TryoutWeekDetailProps) {
       }
 
       const { data: players, error } = await query
+
+      console.log('Fetched players:', players)
+      console.log('Error:', error)
 
       if (error) throw error
       setAvailablePlayers(players || [])
