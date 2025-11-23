@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank, UserRole, StaffRole } from '@/lib/types/database'
 import { Save, X } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface UserFormProps {
   userId?: string
@@ -322,16 +323,16 @@ export default function UserForm({ userId }: UserFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Account Type *
             </label>
-            <select
-              required
+            <CustomSelect
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="player">Player</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, role: value as UserRole })}
+              options={[
+                { value: 'player', label: 'Player' },
+                { value: 'manager', label: 'Manager' },
+                { value: 'admin', label: 'Admin' }
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
 
@@ -357,36 +358,36 @@ export default function UserForm({ userId }: UserFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Team
             </label>
-            <select
+            <CustomSelect
               value={formData.team_id}
-              onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">No Team</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, team_id: value })}
+              options={[
+                { value: '', label: 'No Team' },
+                ...teams.map(team => ({
+                  value: team.id,
+                  label: team.name
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Role
             </label>
-            <select
+            <CustomSelect
               value={formData.position}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select Role</option>
-              {VALORANT_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              options={[
+                { value: '', label: 'Select Role' },
+                ...VALORANT_ROLES.map(role => ({
+                  value: role,
+                  label: role
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div className="flex items-center">
@@ -424,36 +425,36 @@ export default function UserForm({ userId }: UserFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
-            <select
+            <CustomSelect
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select Country</option>
-              {EUROPEAN_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              options={[
+                { value: '', label: 'Select Country' },
+                ...EUROPEAN_COUNTRIES.map(country => ({
+                  value: country.code,
+                  label: country.name
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Rank
             </label>
-            <select
+            <CustomSelect
               value={formData.rank}
-              onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select Rank</option>
-              {VALORANT_RANKS.map((rank) => (
-                <option key={rank} value={rank}>
-                  {rank}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              options={[
+                { value: '', label: 'Select Rank' },
+                ...VALORANT_RANKS.map(rank => ({
+                  value: rank,
+                  label: rank
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
@@ -461,18 +462,18 @@ export default function UserForm({ userId }: UserFormProps) {
               Agent Pool
             </label>
             <div className="flex gap-2 mb-2">
-              <select
+              <CustomSelect
                 value={championInput}
-                onChange={(e) => setChampionInput(e.target.value)}
-                className="flex-1 px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-              >
-                <option value="">Select agent...</option>
-                {VALORANT_AGENTS.map((agent) => (
-                  <option key={agent} value={agent}>
-                    {agent}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setChampionInput(value)}
+                options={[
+                  { value: '', label: 'Select agent...' },
+                  ...VALORANT_AGENTS.map(agent => ({
+                    value: agent,
+                    label: agent
+                  }))
+                ]}
+                className="flex-1"
+              />
               <button
                 type="button"
                 onClick={addChampion}
@@ -545,36 +546,36 @@ export default function UserForm({ userId }: UserFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Team
             </label>
-            <select
+            <CustomSelect
               value={formData.team_id}
-              onChange={(e) => setFormData({ ...formData, team_id: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">No Team</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, team_id: value })}
+              options={[
+                { value: '', label: 'No Team' },
+                ...teams.map(team => ({
+                  value: team.id,
+                  label: team.name
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Staff Role
             </label>
-            <select
+            <CustomSelect
               value={formData.staff_role}
-              onChange={(e) => setFormData({ ...formData, staff_role: e.target.value as StaffRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select Role</option>
-              {STAFF_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, staff_role: value as StaffRole })}
+              options={[
+                { value: '', label: 'Select Role' },
+                ...STAFF_ROLES.map(role => ({
+                  value: role,
+                  label: role
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
 
@@ -586,18 +587,18 @@ export default function UserForm({ userId }: UserFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
-            <select
+            <CustomSelect
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select Country</option>
-              {EUROPEAN_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              options={[
+                { value: '', label: 'Select Country' },
+                ...EUROPEAN_COUNTRIES.map(country => ({
+                  value: country.code,
+                  label: country.name
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
 

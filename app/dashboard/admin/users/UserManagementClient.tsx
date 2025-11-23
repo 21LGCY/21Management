@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
 import { getTeamColors } from '@/lib/utils/teamColors'
+import CustomSelect from '@/components/CustomSelect'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -159,41 +160,44 @@ export default function UserManagementClient() {
             />
           </div>
 
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
-          >
-            <option value="all">All Account Types</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="player">Player</option>
-          </select>
+            onChange={(value) => setRoleFilter(value as UserRole | 'all')}
+            options={[
+              { value: 'all', label: 'All Account Types' },
+              { value: 'admin', label: 'Admin' },
+              { value: 'manager', label: 'Manager' },
+              { value: 'player', label: 'Player' }
+            ]}
+            className=""
+          />
 
-          <select
+          <CustomSelect
             value={teamFilter}
-            onChange={(e) => setTeamFilter(e.target.value)}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
-          >
-            <option value="all">All Teams</option>
-            <option value="none">No Team</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setTeamFilter(value)}
+            options={[
+              { value: 'all', label: 'All Teams' },
+              { value: 'none', label: 'No Team' },
+              ...teams.map(team => ({
+                value: team.id,
+                label: team.name
+              }))
+            ]}
+            className=""
+          />
 
-          <select
+          <CustomSelect
             value={positionFilter}
-            onChange={(e) => setPositionFilter(e.target.value)}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none font-sans"
-          >
-            <option value="all">All Roles</option>
-            {roles.map((role) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
+            onChange={(value) => setPositionFilter(value)}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              ...roles.map(role => ({
+                value: role as string,
+                label: role as string
+              }))
+            ]}
+            className=""
+          />
         </div>
       </div>
 

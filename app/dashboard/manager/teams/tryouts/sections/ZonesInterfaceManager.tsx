@@ -5,6 +5,7 @@ import { Globe, Users, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TeamCategory, TryoutStatus, ValorantRole } from '@/lib/types/database'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 // VALORANT European Zones mapping (same as admin)
 const VALORANT_ZONES: Record<string, string[]> = {
@@ -202,35 +203,35 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           {/* Status Filter */}
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="not_contacted">Not Contacted</option>
-            <option value="contacted">Contacted</option>
-            <option value="in_tryouts">In Tryouts</option>
-            <option value="player">Player</option>
-            <option value="substitute">Substitute</option>
-            <option value="rejected">Rejected</option>
-            <option value="left">Left</option>
-          </select>
+            onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'not_contacted', label: 'Not Contacted' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'in_tryouts', label: 'In Tryouts' },
+              { value: 'player', label: 'Player' },
+              { value: 'substitute', label: 'Substitute' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'left', label: 'Left' }
+            ]}
+          />
 
           {/* Role Filter */}
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Roles</option>
-            <option value="Duelist">Duelist</option>
-            <option value="Initiator">Initiator</option>
-            <option value="Controller">Controller</option>
-            <option value="Sentinel">Sentinel</option>
-            <option value="Flex">Flex</option>
-            <option value="Staff">Staff</option>
-          </select>
+            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              { value: 'Duelist', label: 'Duelist' },
+              { value: 'Initiator', label: 'Initiator' },
+              { value: 'Controller', label: 'Controller' },
+              { value: 'Sentinel', label: 'Sentinel' },
+              { value: 'Flex', label: 'Flex' },
+              { value: 'Staff', label: 'Staff' }
+            ]}
+          />
         </div>
       </div>
 

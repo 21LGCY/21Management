@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Users, Search, Filter, Crown, Shield, UserMinus, Edit, Eye } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -106,26 +107,26 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
             />
           </div>
           
-          <select
+          <CustomSelect
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value as 'all' | 'main' | 'substitute')}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-          >
-            <option value="all">All Players ({players.length})</option>
-            <option value="main">Main Players ({mainRoster.length})</option>
-            <option value="substitute">Substitutes ({substitutes.length})</option>
-          </select>
+            onChange={(value) => setFilterType(value as 'all' | 'main' | 'substitute')}
+            options={[
+              { value: 'all', label: `All Players (${players.length})` },
+              { value: 'main', label: `Main Players (${mainRoster.length})` },
+              { value: 'substitute', label: `Substitutes (${substitutes.length})` }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'name' | 'role' | 'rank' | 'joined')}
-            className="px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="role">Sort by Role</option>
-            <option value="rank">Sort by Rank</option>
-            <option value="joined">Sort by Join Date</option>
-          </select>
+            onChange={(value) => setSortBy(value as 'name' | 'role' | 'rank' | 'joined')}
+            options={[
+              { value: 'name', label: 'Sort by Name' },
+              { value: 'role', label: 'Sort by Role' },
+              { value: 'rank', label: 'Sort by Rank' },
+              { value: 'joined', label: 'Sort by Join Date' }
+            ]}
+          />
         </div>
 
         <div className="flex items-center justify-between">

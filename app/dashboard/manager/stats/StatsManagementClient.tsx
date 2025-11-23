@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/database'
 import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Trophy, Calendar, TrendingDown, Eye, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 interface StatsManagementClientProps {
   user: UserProfile
@@ -395,16 +396,17 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                   <Users className="w-4 h-4" />
                   <span>{teamName}</span>
                 </div>
-                <select
+                <CustomSelect
                   value={timeFilter}
-                  onChange={(e) => setTimeFilter(e.target.value as 'all' | 'last5' | 'last10' | 'last15')}
-                  className="px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-300 focus:border-primary focus:outline-none"
-                >
-                  <option value="all">All Time</option>
-                  <option value="last5">Last 5 Matches</option>
-                  <option value="last10">Last 10 Matches</option>
-                  <option value="last15">Last 15 Matches</option>
-                </select>
+                  onChange={(value) => setTimeFilter(value as 'all' | 'last5' | 'last10' | 'last15')}
+                  options={[
+                    { value: 'all', label: 'All Time' },
+                    { value: 'last5', label: 'Last 5 Matches' },
+                    { value: 'last10', label: 'Last 10 Matches' },
+                    { value: 'last15', label: 'Last 15 Matches' }
+                  ]}
+                  className="min-w-[150px]"
+                />
               </div>
             </div>
             

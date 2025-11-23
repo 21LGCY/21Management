@@ -334,3 +334,39 @@ a, button, select, input, textarea {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Custom Select Dropdown Styling */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgb(156, 163, 175)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25em 1.25em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+select:hover {
+  border-color: rgb(75, 85, 99);
+}
+
+select:focus {
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* Style for select options - Universal approach */
+select option {
+  background: #1a1625 !important;
+  color: white !important;
+}
+
+select:focus option:checked,
+select option:checked {
+  background: linear-gradient(to right, #8B5CF6, #7C3AED) !important;
+  color: white !important;
+}
+

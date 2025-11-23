@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import CustomSelect from '@/components/CustomSelect'
 
 interface ScoutingDatabaseManagerProps {
   teamId: string | null
@@ -209,34 +210,34 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-          >
-            <option value="all">All Statuses</option>
-            <option value="not_contacted">Not Contacted</option>
-            <option value="contacted">Contacted</option>
-            <option value="in_tryouts">In Tryouts</option>
-            <option value="substitute">Substitute</option>
-            <option value="rejected">Rejected</option>
-            <option value="left">Left</option>
-            <option value="player">Player</option>
-          </select>
+            onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
+            options={[
+              { value: 'all', label: 'All Statuses' },
+              { value: 'not_contacted', label: 'Not Contacted' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'in_tryouts', label: 'In Tryouts' },
+              { value: 'substitute', label: 'Substitute' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'left', label: 'Left' },
+              { value: 'player', label: 'Player' }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-          >
-            <option value="all">All Roles</option>
-            <option value="Duelist">Duelist</option>
-            <option value="Initiator">Initiator</option>
-            <option value="Controller">Controller</option>
-            <option value="Sentinel">Sentinel</option>
-            <option value="Flex">Flex</option>
-            <option value="Staff">Staff</option>
-          </select>
+            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              { value: 'Duelist', label: 'Duelist' },
+              { value: 'Initiator', label: 'Initiator' },
+              { value: 'Controller', label: 'Controller' },
+              { value: 'Sentinel', label: 'Sentinel' },
+              { value: 'Flex', label: 'Flex' },
+              { value: 'Staff', label: 'Staff' }
+            ]}
+          />
 
           <Link
             href="/dashboard/manager/teams/tryouts/scouts/new"
@@ -313,20 +314,9 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
                         
                         {/* Name & IGN */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
-                              {tryout.in_game_name || tryout.username}
-                            </h3>
-                            {nationality && (
-                              <Image
-                                src={nationality.flagUrl}
-                                alt={nationality.code}
-                                width={20}
-                                height={15}
-                                className="object-contain rounded-sm flex-shrink-0"
-                              />
-                            )}
-                          </div>
+                          <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate mb-1">
+                            {tryout.in_game_name || tryout.username}
+                          </h3>
                           {tryout.in_game_name && (
                             <p className="text-sm text-gray-400">@{tryout.username}</p>
                           )}

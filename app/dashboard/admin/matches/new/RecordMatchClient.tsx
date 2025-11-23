@@ -19,6 +19,9 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
+  firstKills: number
+  plants: number
+  defuses: number
   agent: string
   championPool: string[]
 }
@@ -77,6 +80,9 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             deaths: 0,
             assists: 0,
             acs: 0,
+            firstKills: 0,
+            plants: 0,
+            defuses: 0,
             agent: championPool.length === 1 ? championPool[0] : '',
             championPool: championPool
           }
@@ -108,6 +114,9 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
         deaths: 0,
         assists: 0,
         acs: 0,
+        firstKills: 0,
+        plants: 0,
+        defuses: 0,
         agent: championPool.length === 1 ? championPool[0] : '',
         championPool: championPool
       }
@@ -439,7 +448,8 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
           <div className="space-y-4 mb-6">
             {playerStats.map((stat, index) => (
               <div key={index} className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div className="space-y-4">
+                  {/* Player Selection */}
                   <div>
                     <label className="block text-xs font-medium text-gray-400 mb-2">Player</label>
                     <select
@@ -458,39 +468,93 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">Kills</label>
-                    <input
-                      type="number"
-                      value={stat.kills}
-                      onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)}
-                      min="0"
-                      className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                    />
+                  {/* Core Stats Grid */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">Kills</label>
+                      <input
+                        type="number"
+                        value={stat.kills}
+                        onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">Deaths</label>
+                      <input
+                        type="number"
+                        value={stat.deaths}
+                        onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">Assists</label>
+                      <input
+                        type="number"
+                        value={stat.assists}
+                        onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">Deaths</label>
-                    <input
-                      type="number"
-                      value={stat.deaths}
-                      onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)}
-                      min="0"
-                      className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                    />
+                  {/* Advanced Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">AVG CS (ACS)</label>
+                      <input
+                        type="number"
+                        value={stat.acs}
+                        onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">First Bloods</label>
+                      <input
+                        type="number"
+                        value={stat.firstKills}
+                        onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">Assists</label>
-                    <input
-                      type="number"
-                      value={stat.assists}
-                      onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)}
-                      min="0"
-                      className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                    />
+                  {/* Objective Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">Plants</label>
+                      <input
+                        type="number"
+                        value={stat.plants}
+                        onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">Defuses</label>
+                      <input
+                        type="number"
+                        value={stat.defuses}
+                        onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
                   </div>
 
+                  {/* Agent Selection */}
                   <div>
                     <label className="block text-xs font-medium text-gray-400 mb-2">Agent</label>
                     {stat.championPool && stat.championPool.length > 0 ? (
@@ -536,13 +600,15 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     )}
                   </div>
 
-                  <div className="flex items-end">
+                  {/* Remove Button */}
+                  <div className="flex justify-end">
                     <button
                       onClick={() => removePlayerStat(index)}
-                      className="w-full p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                      className="px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition flex items-center gap-2"
                       title="Remove Player"
                     >
-                      <Trash2 className="w-5 h-5 mx-auto" />
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">Remove Player</span>
                     </button>
                   </div>
                 </div>

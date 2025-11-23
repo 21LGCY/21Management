@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank } from '@/lib/types/database'
 import { Save, X, Plus } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface PlayerFormProps {
   teamId: string
@@ -282,48 +283,45 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Role/Position
             </label>
-            <select
+            <CustomSelect
               value={formData.position}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select a role</option>
-              {VALORANT_ROLES.map((role) => (
-                <option key={role} value={role}>{role}</option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              placeholder="Select a role"
+              options={[
+                { value: '', label: 'Select a role' },
+                ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Rank
             </label>
-            <select
+            <CustomSelect
               value={formData.rank}
-              onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select rank</option>
-              {VALORANT_RANKS.map((rank) => (
-                <option key={rank} value={rank}>{rank}</option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              placeholder="Select rank"
+              options={[
+                { value: '', label: 'Select rank' },
+                ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
-            <select
+            <CustomSelect
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">Select nationality</option>
-              {EUROPEAN_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>{country.name}</option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              placeholder="Select nationality"
+              options={[
+                { value: '', label: 'Select nationality' },
+                ...EUROPEAN_COUNTRIES.map(country => ({ value: country.code, label: country.name }))
+              ]}
+            />
           </div>
 
           <div>
@@ -383,16 +381,16 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
         <h3 className="text-lg font-semibold text-white">Agent Pool</h3>
         
         <div className="flex gap-2">
-          <select
+          <CustomSelect
             value={championInput}
-            onChange={(e) => setChampionInput(e.target.value)}
-            className="flex-1 px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="">Select agent to add</option>
-            {VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map((agent) => (
-              <option key={agent} value={agent}>{agent}</option>
-            ))}
-          </select>
+            onChange={(value) => setChampionInput(value)}
+            placeholder="Select agent to add"
+            options={[
+              { value: '', label: 'Select agent to add' },
+              ...VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map(agent => ({ value: agent, label: agent }))
+            ]}
+            className="flex-1"
+          />
           <button
             type="button"
             onClick={addChampion}

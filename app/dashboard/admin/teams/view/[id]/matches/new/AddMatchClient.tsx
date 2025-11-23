@@ -6,6 +6,7 @@ import { UserProfile, MatchType } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface AddMatchClientProps {
   teamId: string
@@ -307,18 +308,17 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Match Type *
               </label>
-              <select
+              <CustomSelect
                 value={matchType}
-                onChange={(e) => setMatchType(e.target.value as MatchType)}
-                className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                required
-              >
-                <option value="Scrim">Scrim</option>
-                <option value="Tournament">Tournament</option>
-                <option value="Qualifier">Qualifier</option>
-                <option value="League">League</option>
-                <option value="Other">Other</option>
-              </select>
+                onChange={(value) => setMatchType(value as MatchType)}
+                options={[
+                  { value: 'Scrim', label: 'Scrim' },
+                  { value: 'Tournament', label: 'Tournament' },
+                  { value: 'Qualifier', label: 'Qualifier' },
+                  { value: 'League', label: 'League' },
+                  { value: 'Other', label: 'Other' }
+                ]}
+              />
             </div>
           </div>
 

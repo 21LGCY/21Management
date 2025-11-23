@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank, TryoutStatus } from '@/lib/types/database'
 import { Save, X } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface TryoutFormProps {
   tryoutId?: string
@@ -12,13 +13,13 @@ interface TryoutFormProps {
 
 const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
 const TRYOUT_STATUSES: TryoutStatus[] = [
-  'Not Contacted',
-  'Contacted/Pending',
-  'In Tryouts',
-  'Player',
-  'Substitute',
-  'Rejected',
-  'Left'
+  'not_contacted',
+  'contacted',
+  'in_tryouts',
+  'accepted',
+  'substitute',
+  'rejected',
+  'left'
 ]
 
 const VALORANT_RANKS: ValorantRank[] = [
@@ -230,18 +231,15 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Role
             </label>
-            <select
+            <CustomSelect
               value={formData.position}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select Role</option>
-              {VALORANT_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              placeholder="Select Role"
+              options={[
+                { value: '', label: 'Select Role' },
+                ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
+              ]}
+            />
           </div>
 
           <div className="flex items-center">
@@ -266,36 +264,30 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
-            <select
+            <CustomSelect
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select Country</option>
-              {EUROPEAN_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              placeholder="Select Country"
+              options={[
+                { value: '', label: 'Select Country' },
+                ...EUROPEAN_COUNTRIES.map(country => ({ value: country.code, label: country.name }))
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Rank
             </label>
-            <select
+            <CustomSelect
               value={formData.rank}
-              onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select Rank</option>
-              {VALORANT_RANKS.map((rank) => (
-                <option key={rank} value={rank}>
-                  {rank}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              placeholder="Select Rank"
+              options={[
+                { value: '', label: 'Select Rank' },
+                ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
+              ]}
+            />
           </div>
 
           <div>
@@ -373,17 +365,19 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Contact Status *
             </label>
-            <select
+            <CustomSelect
               value={formData.contact_status}
-              onChange={(e) => setFormData({ ...formData, contact_status: e.target.value as TryoutStatus })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            >
-              {TRYOUT_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, contact_status: value as TryoutStatus })}
+              options={[
+                { value: 'not_contacted', label: 'Not Contacted' },
+                { value: 'contacted', label: 'Contacted' },
+                { value: 'in_tryouts', label: 'In Tryouts' },
+                { value: 'accepted', label: 'Player' },
+                { value: 'substitute', label: 'Substitute' },
+                { value: 'rejected', label: 'Rejected' },
+                { value: 'left', label: 'Left' }
+              ]}
+            />
           </div>
 
           <div>

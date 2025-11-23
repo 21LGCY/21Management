@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Calendar, Users, Search, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { TeamCategory, ProfileTryout } from '@/lib/types/database'
+import CustomSelect from '@/components/CustomSelect'
 
 export default function NewTryoutWeekForm() {
   const router = useRouter()
@@ -209,16 +210,16 @@ export default function NewTryoutWeekForm() {
               <label className="text-sm font-medium text-gray-300 mb-2 block">
                 Team
               </label>
-              <select
+              <CustomSelect
                 value={formData.team_category}
-                onChange={handleInputChange('team_category')}
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
-                required
-              >
-                <option value="21L">21L</option>
-                <option value="21GC">21GC</option>
-                <option value="21ACA">21 ACA</option>
-              </select>
+                onChange={(value) => setFormData(prev => ({ ...prev, team_category: value as TeamCategory }))}
+                options={[
+                  { value: '21L', label: '21L' },
+                  { value: '21GC', label: '21GC' },
+                  { value: '21ACA', label: '21 ACA' }
+                ]}
+                className="w-full"
+              />
             </div>
 
             {/* Week Label */}
@@ -314,18 +315,19 @@ export default function NewTryoutWeekForm() {
 
             {/* Status Filter */}
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <select
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
+              <CustomSelect
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
-              >
-                <option value="all">All Statuses</option>
-                <option value="inTryouts">In Tryouts</option>
-                <option value="contacted">Contacted</option>
-                <option value="notContacted">Not Contacted</option>
-                <option value="substitute">Substitute</option>
-              </select>
+                onChange={(value) => setStatusFilter(value)}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 'inTryouts', label: 'In Tryouts' },
+                  { value: 'contacted', label: 'Contacted' },
+                  { value: 'notContacted', label: 'Not Contacted' },
+                  { value: 'substitute', label: 'Substitute' }
+                ]}
+                className="w-full pl-7"
+              />
             </div>
           </div>
 

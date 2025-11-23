@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Team, UserProfile, MatchType } from '@/lib/types/database'
 import { X, Save, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface RecordMatchModalProps {
   teams: Team[]
@@ -18,9 +19,7 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
-  headshotPercent: number
   firstKills: number
-  firstDeaths: number
   plants: number
   defuses: number
   agentPlayed: string
@@ -90,9 +89,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
         deaths: 0,
         assists: 0,
         acs: 0,
-        headshotPercent: 0,
         firstKills: 0,
-        firstDeaths: 0,
         plants: 0,
         defuses: 0,
         agentPlayed: ''
@@ -189,9 +186,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
         deaths: stat.deaths,
         assists: stat.assists,
         acs: stat.acs,
-        headshot_percentage: stat.headshotPercent,
         first_kills: stat.firstKills,
-        first_deaths: stat.firstDeaths,
         plants: stat.plants,
         defuses: stat.defuses,
         agent_played: stat.agentPlayed.trim()
@@ -237,19 +232,18 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Select Team *
             </label>
-            <select
+            <CustomSelect
               value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-              required
-            >
-              <option value="">Choose a team...</option>
-              {teams.map(team => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedTeam(value)}
+              options={[
+                { value: '', label: 'Choose a team...' },
+                ...teams.map(team => ({
+                  value: team.id,
+                  label: team.name
+                }))
+              ]}
+              className="w-full"
+            />
             {loadingPlayers && (
               <p className="text-sm text-gray-400 mt-2">Loading players...</p>
             )}
@@ -338,18 +332,18 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Match Type *
                     </label>
-                    <select
+                    <CustomSelect
                       value={matchType}
-                      onChange={(e) => setMatchType(e.target.value as MatchType)}
-                      className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                      required
-                    >
-                      <option value="Scrim">Scrim</option>
-                      <option value="Tournament">Tournament</option>
-                      <option value="Qualifier">Qualifier</option>
-                      <option value="League">League</option>
-                      <option value="Other">Other</option>
-                    </select>
+                      onChange={(value) => setMatchType(value as MatchType)}
+                      options={[
+                        { value: 'Scrim', label: 'Scrim' },
+                        { value: 'Tournament', label: 'Tournament' },
+                        { value: 'Qualifier', label: 'Qualifier' },
+                        { value: 'League', label: 'League' },
+                        { value: 'Other', label: 'Other' }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
@@ -455,21 +449,20 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div className="col-span-2">
                                   <label className="block text-xs font-medium text-gray-400 mb-1">Player *</label>
-                                  <select
+                                  <CustomSelect
                                     value={stat.playerId}
-                                    onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
-                                    required
-                                  >
-                                    <option value="">Select Player</option>
-                                    {players
-                                      .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
-                                      .map(player => (
-                                        <option key={player.id} value={player.id}>
-                                          {player.username} {player.in_game_name ? `(${player.in_game_name})` : ''}
-                                        </option>
-                                      ))}
-                                  </select>
+                                    onChange={(value) => updatePlayerStat(index, 'playerId', value)}
+                                    options={[
+                                      { value: '', label: 'Select Player' },
+                                      ...players
+                                        .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
+                                        .map(player => ({
+                                          value: player.id,
+                                          label: `${player.username}${player.in_game_name ? ` (${player.in_game_name})` : ''}`
+                                        }))
+                                    ]}
+                                    className="w-full"
+                                  />
                                 </div>
 
                                 <div className="col-span-2">
@@ -487,7 +480,11 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">K</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">D</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">A</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">ACS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">AVG CS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Econ Rating</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">First Bloods</label><input type="number" min="0" value={stat.firstKills} onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Plants</label><input type="number" min="0" value={stat.plants} onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Defuses</label><input type="number" min="0" value={stat.defuses} onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                               </div>
                             </div>
                           )}

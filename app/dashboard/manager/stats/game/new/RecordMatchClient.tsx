@@ -6,6 +6,7 @@ import { UserProfile, MatchType } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
+import CustomSelect from '@/components/CustomSelect'
 
 interface RecordMatchClientProps {
   teamId: string
@@ -20,9 +21,7 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
-  headshotPercent: number
   firstKills: number
-  firstDeaths: number
   plants: number
   defuses: number
   agentPlayed: string
@@ -86,9 +85,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
         deaths: 0,
         assists: 0,
         acs: 0,
-        headshotPercent: 0,
         firstKills: 0,
-        firstDeaths: 0,
         plants: 0,
         defuses: 0,
         agentPlayed: ''
@@ -187,9 +184,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
         deaths: stat.deaths,
         assists: stat.assists,
         acs: stat.acs,
-        headshot_percentage: stat.headshotPercent,
         first_kills: stat.firstKills,
-        first_deaths: stat.firstDeaths,
         plants: stat.plants,
         defuses: stat.defuses,
         agent_played: stat.agentPlayed.trim()
@@ -322,18 +317,17 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Match Type *
               </label>
-              <select
+              <CustomSelect
                 value={matchType}
-                onChange={(e) => setMatchType(e.target.value as MatchType)}
-                className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                required
-              >
-                <option value="Scrim">Scrim</option>
-                <option value="Tournament">Tournament</option>
-                <option value="Qualifier">Qualifier</option>
-                <option value="League">League</option>
-                <option value="Other">Other</option>
-              </select>
+                onChange={(value) => setMatchType(value as MatchType)}
+                options={[
+                  { value: 'Scrim', label: 'Scrim' },
+                  { value: 'Tournament', label: 'Tournament' },
+                  { value: 'Qualifier', label: 'Qualifier' },
+                  { value: 'League', label: 'League' },
+                  { value: 'Other', label: 'Other' }
+                ]}
+              />
             </div>
           </div>
 
@@ -404,21 +398,20 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Player *
                       </label>
-                      <select
+                      <CustomSelect
                         value={stat.playerId}
-                        onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
-                        className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                        required
-                      >
-                        <option value="">Select Player</option>
-                        {players
-                          .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
-                          .map(player => (
-                            <option key={player.id} value={player.id}>
-                              {player.username} {player.in_game_name ? `(${player.in_game_name})` : ''}
-                            </option>
-                          ))}
-                      </select>
+                        onChange={(value) => updatePlayerStat(index, 'playerId', value)}
+                        placeholder="Select Player"
+                        options={[
+                          { value: '', label: 'Select Player' },
+                          ...players
+                            .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
+                            .map(player => ({
+                              value: player.id,
+                              label: `${player.username}${player.in_game_name ? ` (${player.in_game_name})` : ''}`
+                            }))
+                        ]}
+                      />
                     </div>
 
                     <div>
@@ -427,24 +420,20 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                       </label>
                       {stat.championPool && stat.championPool.length > 0 ? (
                         <>
-                          <select
+                          <CustomSelect
                             value={stat.championPool.includes(stat.agentPlayed) ? stat.agentPlayed : 'other'}
-                            onChange={(e) => {
-                              if (e.target.value !== 'other') {
-                                updatePlayerStat(index, 'agentPlayed', e.target.value)
+                            onChange={(value) => {
+                              if (value !== 'other') {
+                                updatePlayerStat(index, 'agentPlayed', value)
                               }
                             }}
-                            className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                            required
-                          >
-                            <option value="">Select Agent</option>
-                            {stat.championPool.map(agent => (
-                              <option key={agent} value={agent}>
-                                {agent}
-                              </option>
-                            ))}
-                            <option value="other">Other (Custom)</option>
-                          </select>
+                            placeholder="Select Agent"
+                            options={[
+                              { value: '', label: 'Select Agent' },
+                              ...stat.championPool.map(agent => ({ value: agent, label: agent })),
+                              { value: 'other', label: 'Other (Custom)' }
+                            ]}
+                          />
                           {!stat.championPool.includes(stat.agentPlayed) && (
                             <input
                               type="text"
@@ -505,7 +494,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">ACS</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">AVG CS</label>
                       <input
                         type="number"
                         min="0"
@@ -516,20 +505,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Headshot %</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={stat.headshotPercent}
-                        onChange={(e) => updatePlayerStat(index, 'headshotPercent', parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">First Kills</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">First Bloods</label>
                       <input
                         type="number"
                         min="0"
@@ -540,12 +516,12 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">First Deaths</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Econ Rating</label>
                       <input
                         type="number"
                         min="0"
-                        value={stat.firstDeaths}
-                        onChange={(e) => updatePlayerStat(index, 'firstDeaths', parseInt(e.target.value) || 0)}
+                        value={stat.acs}
+                        onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)}
                         className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                       />
                     </div>

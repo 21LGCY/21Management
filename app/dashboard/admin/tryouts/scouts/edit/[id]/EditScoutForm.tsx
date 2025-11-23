@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus, ProfileTryout } from '@/lib/types/database'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 const VALORANT_AGENTS = [
   'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
@@ -262,16 +263,16 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Team <span className="text-red-500">*</span>
             </label>
-            <select
-              required
+            <CustomSelect
               value={formData.team_category}
-              onChange={(e) => setFormData({ ...formData, team_category: e.target.value as TeamCategory })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="21L">21L</option>
-              <option value="21GC">21GC</option>
-              <option value="21ACA">21 ACA</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, team_category: value as TeamCategory })}
+              options={[
+                { value: '21L', label: '21L' },
+                { value: '21GC', label: '21GC' },
+                { value: '21ACA', label: '21 ACA' }
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
@@ -287,18 +288,18 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
-            <select
+            <CustomSelect
               value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select Country</option>
-              {EUROPEAN_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              options={[
+                { value: '', label: 'Select Country' },
+                ...EUROPEAN_COUNTRIES.map(country => ({
+                  value: country.code,
+                  label: country.name
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
       </div>
@@ -309,37 +310,39 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
-            <select
+            <CustomSelect
               value={formData.position}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value as ValorantRole })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select</option>
-              <option value="Duelist">Duelist</option>
-              <option value="Controller">Controller</option>
-              <option value="Initiator">Initiator</option>
-              <option value="Sentinel">Sentinel</option>
-              <option value="Flex">Flex</option>
-              <option value="Staff">Staff</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              options={[
+                { value: '', label: 'Select' },
+                { value: 'Duelist', label: 'Duelist' },
+                { value: 'Controller', label: 'Controller' },
+                { value: 'Initiator', label: 'Initiator' },
+                { value: 'Sentinel', label: 'Sentinel' },
+                { value: 'Flex', label: 'Flex' },
+                { value: 'Staff', label: 'Staff' }
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
-            <select
+            <CustomSelect
               value={formData.rank}
-              onChange={(e) => setFormData({ ...formData, rank: e.target.value as ValorantRank })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">Select</option>
-              <option value="Ascendant 1">Ascendant 1</option>
-              <option value="Ascendant 2">Ascendant 2</option>
-              <option value="Ascendant 3">Ascendant 3</option>
-              <option value="Immortal 1">Immortal 1</option>
-              <option value="Immortal 2">Immortal 2</option>
-              <option value="Immortal 3">Immortal 3</option>
-              <option value="Radiant">Radiant</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              options={[
+                { value: '', label: 'Select' },
+                { value: 'Ascendant 1', label: 'Ascendant 1' },
+                { value: 'Ascendant 2', label: 'Ascendant 2' },
+                { value: 'Ascendant 3', label: 'Ascendant 3' },
+                { value: 'Immortal 1', label: 'Immortal 1' },
+                { value: 'Immortal 2', label: 'Immortal 2' },
+                { value: 'Immortal 3', label: 'Immortal 3' },
+                { value: 'Radiant', label: 'Radiant' }
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
 
@@ -460,69 +463,60 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
-            <select
+            <CustomSelect
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as TryoutStatus })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="not_contacted">Not Contacted</option>
-              <option value="contacted">Contacted</option>
-              <option value="in_tryouts">In Tryouts</option>
-              <option value="substitute">Substitute</option>
-              <option value="rejected">Rejected</option>
-              <option value="left">Left</option>
-              <option value="player">Player</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, status: value as TryoutStatus })}
+              options={[
+                { value: 'not_contacted', label: 'Not Contacted' },
+                { value: 'contacted', label: 'Contacted' },
+                { value: 'in_tryouts', label: 'In Tryouts' },
+                { value: 'substitute', label: 'Substitute' },
+                { value: 'rejected', label: 'Rejected' },
+                { value: 'left', label: 'Left' },
+                { value: 'player', label: 'Player' }
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
-            <select
+            <CustomSelect
               value={formData.managed_by}
-              onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">None</option>
-              <optgroup label="Admins">
-                {adminUsers.map((user) => (
-                  <option key={user.id} value={user.username}>
-                    {user.username}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Managers">
-                {managerUsers.map((user) => (
-                  <option key={user.id} value={user.username}>
-                    {user.username}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
+              onChange={(value) => setFormData({ ...formData, managed_by: value })}
+              options={[
+                { value: '', label: 'None' },
+                ...adminUsers.map(user => ({
+                  value: user.username,
+                  label: `Admin: ${user.username}`
+                })),
+                ...managerUsers.map(user => ({
+                  value: user.username,
+                  label: `Manager: ${user.username}`
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Contacted By</label>
-            <select
+            <CustomSelect
               value={formData.contacted_by}
-              onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            >
-              <option value="">None</option>
-              <optgroup label="Admins">
-                {adminUsers.map((user) => (
-                  <option key={user.id} value={user.username}>
-                    {user.username}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Managers">
-                {managerUsers.map((user) => (
-                  <option key={user.id} value={user.username}>
-                    {user.username}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
+              onChange={(value) => setFormData({ ...formData, contacted_by: value })}
+              options={[
+                { value: '', label: 'None' },
+                ...adminUsers.map(user => ({
+                  value: user.username,
+                  label: `Admin: ${user.username}`
+                })),
+                ...managerUsers.map(user => ({
+                  value: user.username,
+                  label: `Manager: ${user.username}`
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
         </div>
 

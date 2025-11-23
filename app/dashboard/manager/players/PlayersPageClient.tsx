@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
 import { Users, Search, Plus, Mail, Phone, MapPin, Trophy, Target, Award, Activity, Star } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -138,27 +139,23 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               />
             </div>
             
-            <select
+            <CustomSelect
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
-            >
-              <option value="">All Roles</option>
-              {roles.map((role) => (
-                <option key={role} value={role}>{role}</option>
-              ))}
-            </select>
+              onChange={(value) => setRoleFilter(value)}
+              options={[
+                { value: '', label: 'All Roles' },
+                ...roles.filter(role => role).map(role => ({ value: role as string, label: role as string }))
+              ]}
+            />
 
-            <select
+            <CustomSelect
               value={rankFilter}
-              onChange={(e) => setRankFilter(e.target.value)}
-              className="px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
-            >
-              <option value="">All Ranks</option>
-              {ranks.map((rank) => (
-                <option key={rank} value={rank}>{rank}</option>
-              ))}
-            </select>
+              onChange={(value) => setRankFilter(value)}
+              options={[
+                { value: '', label: 'All Ranks' },
+                ...ranks.filter(rank => rank).map(rank => ({ value: rank as string, label: rank as string }))
+              ]}
+            />
 
             <div className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary/20 to-primary-dark/20 border border-primary/40 rounded-lg text-white font-medium">
               <Users className="w-5 h-5 text-primary" />

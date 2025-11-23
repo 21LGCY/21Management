@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Edit, Trash2, Plus, Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import CustomSelect from '@/components/CustomSelect'
 
 // Activity types with colors and icons (matching player schedule)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -1039,15 +1040,18 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
                     <div>
                       <label className="text-sm text-gray-400 mb-2 block">Duration</label>
-                      <select
-                        value={selectedActivity.duration}
-                        onChange={(e) => setSelectedActivity({...selectedActivity, duration: parseInt(e.target.value)})}
-                        className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
-                      >
-                        {[1, 2, 3, 4, 5, 6].map(h => (
-                          <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>
-                        ))}
-                      </select>
+                      <CustomSelect
+                        value={selectedActivity.duration.toString()}
+                        onChange={(value) => setSelectedActivity({...selectedActivity, duration: parseInt(value)})}
+                        options={[
+                          { value: '1', label: '1 hour' },
+                          { value: '2', label: '2 hours' },
+                          { value: '3', label: '3 hours' },
+                          { value: '4', label: '4 hours' },
+                          { value: '5', label: '5 hours' },
+                          { value: '6', label: '6 hours' }
+                        ]}
+                      />
                     </div>
                   </div>
 
@@ -1095,15 +1099,14 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-sm text-gray-400 mb-2 block">Activity Type</label>
-                <select
+                <CustomSelect
                   value={newActivity.type}
-                  onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
-                  className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
-                >
-                  {Object.entries(activityTypes).map(([key, { name }]) => (
-                    <option key={key} value={key}>{name}</option>
-                  ))}
-                </select>
+                  onChange={(value) => setNewActivity({...newActivity, type: value})}
+                  options={Object.entries(activityTypes).map(([key, { name }]) => ({
+                    value: key,
+                    label: name
+                  }))}
+                />
               </div>
 
               <div>
@@ -1130,15 +1133,18 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
               <div>
                 <label className="text-sm text-gray-400 mb-2 block">Duration</label>
-                <select
-                  value={newActivity.duration}
-                  onChange={(e) => setNewActivity({...newActivity, duration: parseInt(e.target.value)})}
-                  className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
-                >
-                  {[1, 2, 3, 4, 5, 6].map(h => (
-                    <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={newActivity.duration.toString()}
+                  onChange={(value) => setNewActivity({...newActivity, duration: parseInt(value)})}
+                  options={[
+                    { value: '1', label: '1 hour' },
+                    { value: '2', label: '2 hours' },
+                    { value: '3', label: '3 hours' },
+                    { value: '4', label: '4 hours' },
+                    { value: '5', label: '5 hours' },
+                    { value: '6', label: '6 hours' }
+                  ]}
+                />
               </div>
             </div>
 

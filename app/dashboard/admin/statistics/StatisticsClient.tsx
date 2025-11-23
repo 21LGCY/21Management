@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Team, UserProfile, PlayerMatchStats } from '@/lib/types/database'
 import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp } from 'lucide-react'
 import Image from 'next/image'
+import CustomSelect from '@/components/CustomSelect'
 
 interface StatisticsClientProps {
   teams: Team[]
@@ -230,18 +231,18 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
         {viewMode === 'team' && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
-            <select
+            <CustomSelect
               value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-            >
-              <option value="">Choose a team...</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name} - {team.game}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedTeamId(value)}
+              options={[
+                { value: '', label: 'Choose a team...' },
+                ...teams.map(team => ({
+                  value: team.id,
+                  label: `${team.name} - ${team.game}`
+                }))
+              ]}
+              className="w-full"
+            />
           </div>
         )}
 
@@ -250,35 +251,34 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
           <div className="mt-4 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Select Team (Optional)</label>
-              <select
+              <CustomSelect
                 value={selectedTeamId}
-                onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-              >
-                <option value="">All teams...</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name} - {team.game}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setSelectedTeamId(value)}
+                options={[
+                  { value: '', label: 'All teams...' },
+                  ...teams.map(team => ({
+                    value: team.id,
+                    label: `${team.name} - ${team.game}`
+                  }))
+                ]}
+                className="w-full"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Select Player</label>
-              <select
+              <CustomSelect
                 value={selectedPlayerId}
-                onChange={(e) => setSelectedPlayerId(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-                disabled={!selectedTeamId && players.length === 0}
-              >
-                <option value="">Choose a player...</option>
-                {(selectedTeamId ? players : []).map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {player.in_game_name || player.username}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setSelectedPlayerId(value)}
+                options={[
+                  { value: '', label: 'Choose a player...' },
+                  ...(selectedTeamId ? players : []).map(player => ({
+                    value: player.id,
+                    label: player.in_game_name || player.username
+                  }))
+                ]}
+                className="w-full"
+              />
             </div>
           </div>
         )}

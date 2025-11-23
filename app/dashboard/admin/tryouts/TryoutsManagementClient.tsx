@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, ValorantRole, ValorantRank } from '@/lib/types/database'
 import { Plus, Edit, Trash2, Search, Eye, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 export default function TryoutsManagementClient() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
@@ -150,34 +151,36 @@ export default function TryoutsManagementClient() {
             />
           </div>
           
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Statuses</option>
-            <option value="Not Contacted">Not Contacted</option>
-            <option value="Contacted/Pending">Contacted/Pending</option>
-            <option value="In Tryouts">In Tryouts</option>
-            <option value="Player">Player</option>
-            <option value="Substitute">Substitute</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Left">Left</option>
-          </select>
+            onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
+            options={[
+              { value: 'all', label: 'All Statuses' },
+              { value: 'Not Contacted', label: 'Not Contacted' },
+              { value: 'Contacted/Pending', label: 'Contacted/Pending' },
+              { value: 'In Tryouts', label: 'In Tryouts' },
+              { value: 'Player', label: 'Player' },
+              { value: 'Substitute', label: 'Substitute' },
+              { value: 'Rejected', label: 'Rejected' },
+              { value: 'Left', label: 'Left' }
+            ]}
+            className=""
+          />
 
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
-            className="px-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Roles</option>
-            <option value="Duelist">Duelist</option>
-            <option value="Initiator">Initiator</option>
-            <option value="Controller">Controller</option>
-            <option value="Sentinel">Sentinel</option>
-            <option value="Flex">Flex</option>
-            <option value="Staff">Staff</option>
-          </select>
+            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              { value: 'Duelist', label: 'Duelist' },
+              { value: 'Initiator', label: 'Initiator' },
+              { value: 'Controller', label: 'Controller' },
+              { value: 'Sentinel', label: 'Sentinel' },
+              { value: 'Flex', label: 'Flex' },
+              { value: 'Staff', label: 'Staff' }
+            ]}
+            className=""
+          />
 
           <Link
             href="/dashboard/admin/tryouts/new"
