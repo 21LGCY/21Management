@@ -183,7 +183,7 @@ export default function UserManagementClient() {
                 label: team.name
               }))
             ]}
-            className=""
+            className="min-w-[200px]"
           />
 
           <CustomSelect

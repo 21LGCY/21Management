@@ -146,6 +146,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 { value: '', label: 'All Roles' },
                 ...roles.filter(role => role).map(role => ({ value: role as string, label: role as string }))
               ]}
+              className="min-w-[150px]"
             />
 
             <CustomSelect
@@ -155,6 +156,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 { value: '', label: 'All Ranks' },
                 ...ranks.filter(rank => rank).map(rank => ({ value: rank as string, label: rank as string }))
               ]}
+              className="min-w-[150px]"
             />
 
             <div className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary/20 to-primary-dark/20 border border-primary/40 rounded-lg text-white font-medium">

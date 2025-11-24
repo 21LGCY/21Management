@@ -223,6 +223,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
               { value: 'left', label: 'Left' },
               { value: 'player', label: 'Player' }
             ]}
+            className="min-w-[160px]"
           />
 
           <CustomSelect
@@ -237,6 +238,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
               { value: 'Flex', label: 'Flex' },
               { value: 'Staff', label: 'Staff' }
             ]}
+            className="min-w-[140px]"
           />
 
           <Link
