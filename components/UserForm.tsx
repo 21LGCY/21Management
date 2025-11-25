@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank, UserRole, StaffRole } from '@/lib/types/database'
-import { Save, X } from 'lucide-react'
+import { Save, X, User, Shield, Award, Link as LinkIcon, Globe } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import SearchableCountrySelect from '@/components/SearchableCountrySelect'
 
 interface UserFormProps {
   userId?: string
@@ -272,15 +273,23 @@ export default function UserForm({ userId }: UserFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Account Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Account Information</h3>
-          
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Account Information Section */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <User className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Account Information</h3>
+            <p className="text-xs text-gray-400">Basic account credentials and settings</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username *
+              Username <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -288,40 +297,33 @@ export default function UserForm({ userId }: UserFormProps) {
               disabled={!!userId}
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            {userId && (
+              <p className="mt-1.5 text-xs text-gray-500">Username cannot be changed</p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              {userId ? 'New Password (leave blank to keep current)' : 'Password *'}
+              {userId ? 'New Password' : 'Password'} {!userId && <span className="text-red-400">*</span>}
             </label>
             <input
               type="password"
               required={!userId}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              placeholder={userId ? 'Leave blank to keep current' : ''}
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
+            {userId && (
+              <p className="mt-1.5 text-xs text-gray-500">Leave blank to keep current password</p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Avatar URL
-            </label>
-            <input
-              type="url"
-              value={formData.avatar_url}
-              onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-              placeholder="https://example.com/avatar.jpg"
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
-            <p className="mt-1 text-xs text-gray-500">Recommended: Square image, at least 256x256px</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Account Type *
+              Account Type <span className="text-red-400">*</span>
             </label>
             <CustomSelect
               value={formData.role}
@@ -334,203 +336,260 @@ export default function UserForm({ userId }: UserFormProps) {
               className="w-full"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Avatar URL
+            </label>
+            <input
+              type="url"
+              value={formData.avatar_url}
+              onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+              placeholder="https://example.com/avatar.jpg"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+            <p className="mt-1.5 text-xs text-gray-500">Square image, at least 256x256px recommended</p>
+          </div>
         </div>
+      </div>
 
         {/* Player Information - Only show for players */}
         {formData.role === 'player' && (
         <>
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Player Information</h3>
+        {/* Player Details Section */}
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Award className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Player Information</h3>
+              <p className="text-xs text-gray-400">In-game details and team assignment</p>
+            </div>
+          </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              In-Game Name
-            </label>
-            <input
-              type="text"
-              value={formData.in_game_name}
-              onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                In-Game Name
+              </label>
+              <input
+                type="text"
+                value={formData.in_game_name}
+                onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
+                placeholder="IGN"
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team
-            </label>
-            <CustomSelect
-              value={formData.team_id}
-              onChange={(value) => setFormData({ ...formData, team_id: value })}
-              options={[
-                { value: '', label: 'No Team' },
-                ...teams.map(team => ({
-                  value: team.id,
-                  label: team.name
-                }))
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Role
-            </label>
-            <CustomSelect
-              value={formData.position}
-              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
-              options={[
-                { value: '', label: 'Select Role' },
-                ...VALORANT_ROLES.map(role => ({
-                  value: role,
-                  label: role
-                }))
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="is_igl"
-              checked={formData.is_igl}
-              onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
-              className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
-            />
-            <label htmlFor="is_igl" className="ml-2 text-sm font-medium text-gray-300">
-              IGL (In-Game Leader)
-            </label>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="is_substitute"
-              checked={formData.is_substitute}
-              onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
-              className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
-            />
-            <label htmlFor="is_substitute" className="ml-2 text-sm font-medium text-gray-300">
-              Substitute Player
-            </label>
-          </div>
-        </div>
-
-        {/* Additional Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Additional Details</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nationality
-            </label>
-            <CustomSelect
-              value={formData.nationality}
-              onChange={(value) => setFormData({ ...formData, nationality: value })}
-              options={[
-                { value: '', label: 'Select Country' },
-                ...EUROPEAN_COUNTRIES.map(country => ({
-                  value: country.code,
-                  label: country.name
-                }))
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Rank
-            </label>
-            <CustomSelect
-              value={formData.rank}
-              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
-              options={[
-                { value: '', label: 'Select Rank' },
-                ...VALORANT_RANKS.map(rank => ({
-                  value: rank,
-                  label: rank
-                }))
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Agent Pool
-            </label>
-            <div className="flex gap-2 mb-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Team
+              </label>
               <CustomSelect
-                value={championInput}
-                onChange={(value) => setChampionInput(value)}
+                value={formData.team_id}
+                onChange={(value) => setFormData({ ...formData, team_id: value })}
                 options={[
-                  { value: '', label: 'Select agent...' },
-                  ...VALORANT_AGENTS.map(agent => ({
-                    value: agent,
-                    label: agent
+                  { value: '', label: 'No Team' },
+                  ...teams.map(team => ({
+                    value: team.id,
+                    label: team.name
                   }))
                 ]}
-                className="flex-1"
+                className="w-full"
               />
-              <button
-                type="button"
-                onClick={addChampion}
-                disabled={!championInput}
-                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Add
-              </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.champion_pool.map((champion) => (
-                <span
-                  key={champion}
-                  className="px-3 py-1 bg-dark border border-gray-800 rounded-full text-sm text-white flex items-center gap-2"
-                >
-                  {champion}
-                  <button
-                    type="button"
-                    onClick={() => removeChampion(champion)}
-                    className="hover:text-red-400"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Position
+              </label>
+              <CustomSelect
+                value={formData.position}
+                onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+                options={[
+                  { value: '', label: 'Select Position' },
+                  ...VALORANT_ROLES.map(role => ({
+                    value: role,
+                    label: role
+                  }))
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Rank
+              </label>
+              <CustomSelect
+                value={formData.rank}
+                onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+                options={[
+                  { value: '', label: 'Select Rank' },
+                  ...VALORANT_RANKS.map(rank => ({
+                    value: rank,
+                    label: rank
+                  }))
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-3">
+              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="is_igl"
+                    checked={formData.is_igl}
+                    onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
+                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
+                  <p className="text-xs text-gray-500">This player leads the team strategy</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="is_substitute"
+                    checked={formData.is_substitute}
+                    onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
+                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
+                  <p className="text-xs text-gray-500">Backup roster member</p>
+                </div>
+              </label>
             </div>
           </div>
         </div>
 
-        {/* Links */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Links</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Valorant Tracker URL
-            </label>
-            <input
-              type="url"
-              value={formData.valorant_tracker_url}
-              onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-              placeholder="https://tracker.gg/valorant/profile/..."
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
+        {/* Additional Details Section */}
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Globe className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Additional Details</h3>
+              <p className="text-xs text-gray-400">Player profile and agent pool</p>
+            </div>
           </div>
+          
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Nationality
+              </label>
+              <SearchableCountrySelect
+                value={formData.nationality}
+                onChange={(value) => setFormData({ ...formData, nationality: value })}
+                countries={EUROPEAN_COUNTRIES}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Twitter/X URL
-            </label>
-            <input
-              type="url"
-              value={formData.twitter_url}
-              onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-              placeholder="https://x.com/..."
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Agent Pool
+              </label>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <CustomSelect
+                    value={championInput}
+                    onChange={(value) => setChampionInput(value)}
+                    options={[
+                      { value: '', label: 'Select agent...' },
+                      ...VALORANT_AGENTS.map(agent => ({
+                        value: agent,
+                        label: agent
+                      }))
+                    ]}
+                    className="flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={addChampion}
+                    disabled={!championInput}
+                    className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.champion_pool.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-4 bg-dark/50 border border-gray-800 rounded-lg">
+                    {formData.champion_pool.map((champion) => (
+                      <span
+                        key={champion}
+                        className="group px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary flex items-center gap-2 hover:bg-primary/20 transition-all"
+                      >
+                        {champion}
+                        <button
+                          type="button"
+                          onClick={() => removeChampion(champion)}
+                          className="opacity-70 group-hover:opacity-100 hover:text-red-400 transition-all"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {formData.champion_pool.length === 0 && (
+                  <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
+                    <p className="text-sm text-gray-500">No agents added yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Links Section */}
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <LinkIcon className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Links & Profiles</h3>
+              <p className="text-xs text-gray-400">External profile links</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Valorant Tracker URL
+              </label>
+              <input
+                type="url"
+                value={formData.valorant_tracker_url}
+                onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
+                placeholder="https://tracker.gg/valorant/profile/..."
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Twitter/X URL
+              </label>
+              <input
+                type="url"
+                value={formData.twitter_url}
+                onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
+                placeholder="https://x.com/..."
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
           </div>
         </div>
         </>
@@ -539,115 +598,137 @@ export default function UserForm({ userId }: UserFormProps) {
         {/* Manager Information - Only show for managers */}
         {formData.role === 'manager' && (
         <>
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Manager Information</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team
-            </label>
-            <CustomSelect
-              value={formData.team_id}
-              onChange={(value) => setFormData({ ...formData, team_id: value })}
-              options={[
-                { value: '', label: 'No Team' },
-                ...teams.map(team => ({
-                  value: team.id,
-                  label: team.name
-                }))
-              ]}
-              className="w-full"
-            />
+        {/* Manager Details Section */}
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Shield className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Manager Information</h3>
+              <p className="text-xs text-gray-400">Team assignment and staff role</p>
+            </div>
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Team
+              </label>
+              <CustomSelect
+                value={formData.team_id}
+                onChange={(value) => setFormData({ ...formData, team_id: value })}
+                options={[
+                  { value: '', label: 'No Team' },
+                  ...teams.map(team => ({
+                    value: team.id,
+                    label: team.name
+                  }))
+                ]}
+                className="w-full"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Staff Role
-            </label>
-            <CustomSelect
-              value={formData.staff_role}
-              onChange={(value) => setFormData({ ...formData, staff_role: value as StaffRole })}
-              options={[
-                { value: '', label: 'Select Role' },
-                ...STAFF_ROLES.map(role => ({
-                  value: role,
-                  label: role
-                }))
-              ]}
-              className="w-full"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Staff Role
+              </label>
+              <CustomSelect
+                value={formData.staff_role}
+                onChange={(value) => setFormData({ ...formData, staff_role: value as StaffRole })}
+                options={[
+                  { value: '', label: 'Select Role' },
+                  ...STAFF_ROLES.map(role => ({
+                    value: role,
+                    label: role
+                  }))
+                ]}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 
         {/* Additional Details for Managers */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Additional Details</h3>
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Globe className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Additional Details</h3>
+              <p className="text-xs text-gray-400">Personal information</p>
+            </div>
+          </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Nationality
             </label>
-            <CustomSelect
+            <SearchableCountrySelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
-              options={[
-                { value: '', label: 'Select Country' },
-                ...EUROPEAN_COUNTRIES.map(country => ({
-                  value: country.code,
-                  label: country.name
-                }))
-              ]}
-              className="w-full"
+              countries={EUROPEAN_COUNTRIES}
             />
           </div>
         </div>
 
         {/* Links for Managers */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Links</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Valorant Tracker URL
-            </label>
-            <input
-              type="url"
-              value={formData.valorant_tracker_url}
-              onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-              placeholder="https://tracker.gg/valorant/profile/..."
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <LinkIcon className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Links & Profiles</h3>
+              <p className="text-xs text-gray-400">External profile links</p>
+            </div>
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Valorant Tracker URL
+              </label>
+              <input
+                type="url"
+                value={formData.valorant_tracker_url}
+                onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
+                placeholder="https://tracker.gg/valorant/profile/..."
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Twitter/X URL
-            </label>
-            <input
-              type="url"
-              value={formData.twitter_url}
-              onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-              placeholder="https://x.com/..."
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Twitter/X URL
+              </label>
+              <input
+                type="url"
+                value={formData.twitter_url}
+                onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
+                placeholder="https://x.com/..."
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
           </div>
         </div>
         </>
         )}
-      </div>
+
       {/* Form Actions */}
-      <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
+      <div className="flex justify-end gap-4 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-2 bg-dark-card border border-gray-800 hover:border-gray-700 text-white rounded-lg transition"
+          className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all disabled:opacity-50 font-medium shadow-lg shadow-primary/20"
         >
           {loading ? (
             <>

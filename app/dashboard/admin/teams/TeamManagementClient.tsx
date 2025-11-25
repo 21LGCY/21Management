@@ -124,7 +124,7 @@ export default function TeamManagementClient() {
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Teams</h2>
           <Link
             href="/dashboard/admin/teams/new"
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
             <span>Add Team</span>
@@ -194,7 +194,7 @@ export default function TeamManagementClient() {
               </Link>
               <Link
                 href="/dashboard/admin/matches/new"
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
               >
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">Record Match</span>
@@ -248,7 +248,7 @@ export default function TeamManagementClient() {
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Planning</h2>
             <Link
               href="/dashboard/admin/teams/schedule"
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
             >
               <Calendar className="w-4 h-4" />
               <span className="hidden sm:inline">Schedule</span>

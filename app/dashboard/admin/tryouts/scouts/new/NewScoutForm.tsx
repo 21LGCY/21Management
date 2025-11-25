@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ValorantRole, ValorantRank, TeamCategory, TryoutStatus } from '@/lib/types/database'
-import { ArrowLeft, Plus, X } from 'lucide-react'
+import { ArrowLeft, Plus, X, User, Gamepad2, Link as LinkIcon, Settings } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import SearchableCountrySelect from '@/components/SearchableCountrySelect'
 
 const VALORANT_AGENTS = [
   'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
@@ -69,7 +70,6 @@ export default function NewScoutForm() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
-  const [showAgentDropdown, setShowAgentDropdown] = useState(false)
   const [adminUsers, setAdminUsers] = useState<Array<{ id: string; username: string }>>([])
   const [managerUsers, setManagerUsers] = useState<Array<{ id: string; username: string }>>([])
   const [formData, setFormData] = useState({
@@ -90,6 +90,7 @@ export default function NewScoutForm() {
     notes: '',
     links: '',
   })
+  const [championInput, setChampionInput] = useState('')
 
   useEffect(() => {
     fetchUsers()
@@ -159,17 +160,13 @@ export default function NewScoutForm() {
     }
   }
 
-  const toggleAgent = (agent: string) => {
-    if (formData.champion_pool.includes(agent)) {
-      setFormData({ 
-        ...formData, 
-        champion_pool: formData.champion_pool.filter(a => a !== agent) 
+  const addChampion = () => {
+    if (championInput.trim() && !formData.champion_pool.includes(championInput.trim())) {
+      setFormData({
+        ...formData,
+        champion_pool: [...formData.champion_pool, championInput.trim()]
       })
-    } else {
-      setFormData({ 
-        ...formData, 
-        champion_pool: [...formData.champion_pool, agent] 
-      })
+      setChampionInput('')
     }
   }
 
@@ -181,36 +178,37 @@ export default function NewScoutForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-dark-card border border-gray-800 rounded-lg p-6 space-y-6">
-      <Link
-        href="/dashboard/admin/tryouts?tab=scouting"
-        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-4"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Scouting Database
-      </Link>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Basic Information</h2>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Basic Information Section */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <User className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
+            <p className="text-xs text-gray-400">Scout identity and team assignment</p>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username <span className="text-red-500">*</span>
+              Username <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="Discord username"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team <span className="text-red-500">*</span>
+              Team <span className="text-red-400">*</span>
             </label>
             <CustomSelect
               value={formData.team_category}
@@ -230,156 +228,163 @@ export default function NewScoutForm() {
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="IGN"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
-            <CustomSelect
+            <SearchableCountrySelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
-              options={[
-                { value: '', label: 'Select Country' },
-                ...EUROPEAN_COUNTRIES.map(country => ({
-                  value: country.code,
-                  label: country.name
-                }))
-              ]}
-              className="w-full"
+              countries={EUROPEAN_COUNTRIES}
             />
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Game Information</h2>
+      {/* Game Information Section */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500/10 rounded-lg">
+            <Gamepad2 className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Game Information</h2>
+            <p className="text-xs text-gray-400">In-game details and agent pool</p>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
-            <CustomSelect
-              value={formData.position}
-              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
-              options={[
-                { value: '', label: 'Select' },
-                { value: 'Duelist', label: 'Duelist' },
-                { value: 'Controller', label: 'Controller' },
-                { value: 'Initiator', label: 'Initiator' },
-                { value: 'Sentinel', label: 'Sentinel' },
-                { value: 'Flex', label: 'Flex' },
-                { value: 'Staff', label: 'Staff' }
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
-            <CustomSelect
-              value={formData.rank}
-              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
-              options={[
-                { value: '', label: 'Select' },
-                { value: 'Ascendant 1', label: 'Ascendant 1' },
-                { value: 'Ascendant 2', label: 'Ascendant 2' },
-                { value: 'Ascendant 3', label: 'Ascendant 3' },
-                { value: 'Immortal 1', label: 'Immortal 1' },
-                { value: 'Immortal 2', label: 'Immortal 2' },
-                { value: 'Immortal 3', label: 'Immortal 3' },
-                { value: 'Radiant', label: 'Radiant' }
-              ]}
-              className="w-full"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-300 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.is_igl}
-              onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
-              className="w-4 h-4 text-primary bg-dark border-gray-800 rounded focus:ring-primary"
-            />
-            <span className="font-sans">Is IGL (In-Game Leader)</span>
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
-          
-          {/* Selected Agents Display */}
-          {formData.champion_pool.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {formData.champion_pool.map((agent) => (
-                <span
-                  key={agent}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg text-sm"
-                >
-                  {agent}
-                  <button
-                    type="button"
-                    onClick={() => removeAgent(agent)}
-                    className="hover:text-white transition"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
+              <CustomSelect
+                value={formData.position}
+                onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+                options={[
+                  { value: '', label: 'Select' },
+                  { value: 'Duelist', label: 'Duelist' },
+                  { value: 'Controller', label: 'Controller' },
+                  { value: 'Initiator', label: 'Initiator' },
+                  { value: 'Sentinel', label: 'Sentinel' },
+                  { value: 'Flex', label: 'Flex' },
+                  { value: 'Staff', label: 'Staff' }
+                ]}
+                className="w-full"
+              />
             </div>
-          )}
 
-          {/* Agent Selector Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-left text-gray-400 hover:border-gray-700 focus:outline-none focus:border-primary flex items-center justify-between font-sans"
-            >
-              <span>{formData.champion_pool.length > 0 ? `${formData.champion_pool.length} agent(s) selected` : 'Select agents...'}</span>
-              <Plus className="w-4 h-4" />
-            </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
+              <CustomSelect
+                value={formData.rank}
+                onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+                options={[
+                  { value: '', label: 'Select' },
+                  { value: 'Ascendant 1', label: 'Ascendant 1' },
+                  { value: 'Ascendant 2', label: 'Ascendant 2' },
+                  { value: 'Ascendant 3', label: 'Ascendant 3' },
+                  { value: 'Immortal 1', label: 'Immortal 1' },
+                  { value: 'Immortal 2', label: 'Immortal 2' },
+                  { value: 'Immortal 3', label: 'Immortal 3' },
+                  { value: 'Radiant', label: 'Radiant' }
+                ]}
+                className="w-full"
+              />
+            </div>
+          </div>
 
-            {showAgentDropdown && (
-              <div className="absolute z-10 w-full mt-1 bg-dark-card border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {VALORANT_AGENTS.map((agent) => (
-                  <button
+          <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={formData.is_igl}
+                onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
+                className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
+              <p className="text-xs text-gray-500">This player leads the team strategy</p>
+            </div>
+          </label>
+
+          <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <CustomSelect
+                value={championInput}
+                onChange={(value) => setChampionInput(value)}
+                options={[
+                  { value: '', label: 'Select agent...' },
+                  ...VALORANT_AGENTS.map(agent => ({
+                    value: agent,
+                    label: agent
+                  }))
+                ]}
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={addChampion}
+                disabled={!championInput}
+                className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30"
+              >
+                Add
+              </button>
+            </div>
+            {formData.champion_pool.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-4 bg-dark/50 border border-gray-800 rounded-lg">
+                {formData.champion_pool.map((agent) => (
+                  <span
                     key={agent}
-                    type="button"
-                    onClick={() => {
-                      toggleAgent(agent)
-                    }}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-800 transition font-sans ${
-                      formData.champion_pool.includes(agent)
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-gray-300'
-                    }`}
+                    className="group px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary flex items-center gap-2 hover:bg-primary/20 transition-all"
                   >
                     {agent}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => removeAgent(agent)}
+                      className="opacity-70 group-hover:opacity-100 hover:text-red-400 transition-all"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
                 ))}
               </div>
             )}
+            {formData.champion_pool.length === 0 && (
+              <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
+                <p className="text-sm text-gray-500">No agents added yet</p>
+              </div>
+            )}
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Click to add/remove agents from the pool
-          </p>
+        </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Contact & Links</h2>
+      {/* Contact & Links Section */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <LinkIcon className="w-5 h-5 text-green-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Contact & Links</h2>
+            <p className="text-xs text-gray-400">External profiles and social links</p>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Tracker URL</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
               onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="https://tracker.gg/..."
             />
           </div>
@@ -390,7 +395,7 @@ export default function NewScoutForm() {
               type="url"
               value={formData.twitter_url}
               onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="https://twitter.com/..."
             />
           </div>
@@ -401,40 +406,50 @@ export default function NewScoutForm() {
               type="text"
               value={formData.links}
               onChange={(e) => setFormData({ ...formData, links: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="YouTube, portfolio, etc."
             />
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white border-b border-gray-800 pb-2">Management</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
-            <CustomSelect
-              value={formData.status}
-              onChange={(value) => setFormData({ ...formData, status: value as TryoutStatus })}
-              options={[
-                { value: 'not_contacted', label: 'Not Contacted' },
-                { value: 'contacted', label: 'Contacted' },
-                { value: 'in_tryouts', label: 'In Tryouts' },
-                { value: 'substitute', label: 'Substitute' },
-                { value: 'rejected', label: 'Rejected' },
-                { value: 'left', label: 'Left' },
-                { value: 'player', label: 'Player' }
-              ]}
-              className="w-full"
-            />
+      {/* Management Section */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-orange-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-orange-500/10 rounded-lg">
+            <Settings className="w-5 h-5 text-orange-400" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
-            <CustomSelect
-              value={formData.managed_by}
-              onChange={(value) => setFormData({ ...formData, managed_by: value })}
+            <h2 className="text-lg font-semibold text-white">Management</h2>
+            <p className="text-xs text-gray-400">Tracking and administrative details</p>
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+              <CustomSelect
+                value={formData.status}
+                onChange={(value) => setFormData({ ...formData, status: value as TryoutStatus })}
+                options={[
+                  { value: 'not_contacted', label: 'Not Contacted' },
+                  { value: 'contacted', label: 'Contacted' },
+                  { value: 'in_tryouts', label: 'In Tryouts' },
+                  { value: 'substitute', label: 'Substitute' },
+                  { value: 'rejected', label: 'Rejected' },
+                  { value: 'left', label: 'Left' },
+                  { value: 'player', label: 'Player' }
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
+              <CustomSelect
+                value={formData.managed_by}
+                onChange={(value) => setFormData({ ...formData, managed_by: value })}
               options={[
                 { value: '', label: 'None' },
                 ...adminUsers.map(user => ({
@@ -479,7 +494,7 @@ export default function NewScoutForm() {
               type="date"
               value={formData.contacted_by_date}
               onChange={(e) => setFormData({ ...formData, contacted_by_date: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
         )}
@@ -490,23 +505,25 @@ export default function NewScoutForm() {
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             rows={4}
-            className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
+            className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
             placeholder="Internal notes..."
           />
         </div>
+        </div>
       </div>
 
-      <div className="flex justify-end gap-4 pt-4 border-t border-gray-800">
+      {/* Form Actions */}
+      <div className="flex justify-end gap-4 pt-4">
         <Link
           href="/dashboard/admin/tryouts?tab=scouting"
-          className="px-6 py-2 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-800 transition"
+          className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all disabled:opacity-50 font-medium shadow-lg shadow-primary/20"
         >
           {loading ? 'Creating...' : 'Create Scout Profile'}
         </button>
@@ -514,4 +531,3 @@ export default function NewScoutForm() {
     </form>
   )
 }
-

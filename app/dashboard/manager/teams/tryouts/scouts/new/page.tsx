@@ -17,8 +17,10 @@ export default async function NewScoutManagerPage() {
               Back to Scouting Database
             </BackButton>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Add New Scout Profile</h1>
-          <p className="text-gray-400">Add a potential player to the scouting database</p>
+          <div className="border-l-4 border-primary pl-4">
+            <h1 className="text-3xl font-bold text-white mb-2">Add New Scout Profile</h1>
+            <p className="text-gray-400">Add a potential player to the scouting database</p>
+          </div>
         </div>
         
         <div className="max-w-4xl mx-auto">

@@ -217,35 +217,45 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Tryouts</span>
         </Link>
-        <h1 className="flex items-center gap-3 text-3xl font-bold text-white">
-          <Calendar className="w-8 h-8 text-primary" />
-          Create Tryout Week - {getTeamLabel(teamCategory)}
-        </h1>
-        <p className="text-gray-400 mt-2">Schedule a full week of tryouts for {team.name}</p>
+        <div className="border-l-4 border-primary pl-4">
+          <h1 className="flex items-center gap-3 text-3xl font-bold text-white">
+            <Calendar className="w-8 h-8 text-primary" />
+            Create Tryout Week - {getTeamLabel(teamCategory)}
+          </h1>
+          <p className="text-gray-400 mt-2">Schedule a full week of tryouts for {team.name}</p>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Info Card */}
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Week Information</h2>
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Calendar className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Week Information</h2>
+              <p className="text-xs text-gray-400">Schedule details and description</p>
+            </div>
+          </div>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Team Category - Read Only */}
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Team
               </label>
               <input
                 type="text"
                 value={`${team.name} (${getTeamLabel(teamCategory)})`}
                 readOnly
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-gray-400 cursor-not-allowed font-sans"
+                className="w-full px-4 py-2.5 bg-dark border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed"
               />
             </div>
 
             {/* Week Label */}
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Title (visible to staff and players)
               </label>
               <input
@@ -253,29 +263,29 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                 value={formData.week_label}
                 onChange={handleInputChange('week_label')}
                 placeholder="e.g., Week 1, January Tryouts"
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-2">
                 Optional - Helps identify this session easily
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Description (visible to staff and players)
               </label>
               <textarea
                 value={formData.notes}
                 onChange={handleInputChange('notes')}
-                className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] font-sans"
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
                 placeholder="e.g., Players present in the session with roles"
               />
             </div>
 
             {/* Date Range */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Session Start
                 </label>
                 <input
@@ -283,11 +293,11 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                   value={formData.week_start}
                   onChange={handleInputChange('week_start')}
                   required
-                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
+                  className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Session End (automatic week)
                 </label>
                 <input
@@ -296,7 +306,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                   onChange={handleInputChange('week_end')}
                   required
                   readOnly
-                  className="w-full rounded-lg px-3 py-2 bg-dark border border-gray-700 text-gray-400 cursor-not-allowed font-sans"
+                  className="w-full px-4 py-2.5 bg-dark border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -304,16 +314,19 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
         </div>
 
         {/* Player Selection Card */}
-        <div className="bg-dark-card border border-gray-800 rounded-lg p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-              <Users className="w-5 h-5" />
-              Select Players ({selectedPlayers.size} selected)
-            </h2>
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Users className="w-5 h-5 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-white">Select Players</h2>
+              <p className="text-xs text-gray-400">{selectedPlayers.size} player{selectedPlayers.size !== 1 ? 's' : ''} selected</p>
+            </div>
             <button
               type="button"
               onClick={selectAllPlayers}
-              className="px-4 py-2 text-sm border border-gray-700 rounded-lg text-gray-300 hover:bg-dark-hover transition"
+              className="px-4 py-2 text-sm border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:border-gray-600 transition-all"
               disabled={filteredPlayers.length === 0}
             >
               {selectedPlayers.size === filteredPlayers.length && filteredPlayers.length > 0 ? 'Deselect All' : 'Select All'}
@@ -321,7 +334,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
           </div>
 
           {/* Search and Filter */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Search Bar */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -330,7 +343,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search for a player..."
-                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
+                className="w-full pl-10 px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
 
@@ -340,7 +353,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 rounded-lg px-3 py-2 bg-dark border border-gray-700 text-white focus:border-primary focus:ring-1 focus:ring-primary font-sans"
+                className="w-full pl-10 px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 <option value="all">All Statuses</option>
                 <option value="in_tryouts">In Tryouts</option>
@@ -383,8 +396,8 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                   onClick={() => togglePlayer(player.id)}
                   className={`p-4 rounded-lg border cursor-pointer transition-all ${
                     selectedPlayers.has(player.id)
-                      ? 'bg-primary/20 border-primary/50'
-                      : 'bg-dark-hover border-gray-700 hover:bg-dark-hover/80'
+                      ? 'bg-primary/20 border-primary/50 shadow-sm shadow-primary/10'
+                      : 'bg-dark/30 border-gray-800 hover:bg-dark/50 hover:border-gray-700'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -392,7 +405,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                       type="checkbox"
                       checked={selectedPlayers.has(player.id)}
                       onChange={() => {}}
-                      className="w-5 h-5 rounded border-gray-700 bg-dark text-primary"
+                      className="w-5 h-5 rounded border-gray-700 bg-dark text-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -418,13 +431,13 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
           <button
             type="submit"
             disabled={loading || selectedPlayers.size === 0}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             <Save className="w-4 h-4" />
             {loading ? 'Creating...' : 'Create Tryout Week'}
           </button>
           <Link href="/dashboard/manager/teams/tryouts">
-            <button type="button" className="px-6 py-3 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition">
+            <button type="button" className="px-6 py-3 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-700 transition-all">
               Cancel
             </button>
           </Link>
