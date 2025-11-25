@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import StratMapSelection from './sections/StratMapSelection'
 import PraccsReviewSelection from './sections/PraccsReviewSelection'
+import ActionButton from '@/components/ActionButton'
 
 interface Player {
   id: string
@@ -321,12 +322,10 @@ export default function PlayerTeamsClient({
                 <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
                 <p className="text-sm text-gray-400">Your team's upcoming activities</p>
               </div>
-              <Link 
-                href="/dashboard/player/teams/schedule"
-                className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20 flex items-center gap-2"
-              >
-                View Schedule
-                <ArrowRight className="w-4 h-4" />
+              <Link href="/dashboard/player/teams/schedule">
+                <ActionButton icon={ArrowRight}>
+                  View Schedule
+                </ActionButton>
               </Link>
             </div>
 
@@ -390,9 +389,9 @@ export default function PlayerTeamsClient({
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-400 mb-4">No activities scheduled</p>
                 <Link href="/dashboard/player/teams/schedule">
-                  <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+                  <ActionButton icon={Calendar}>
                     View Schedule
-                  </button>
+                  </ActionButton>
                 </Link>
               </div>
             )}

@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import CustomSelect from '@/components/CustomSelect'
+import ActionButton from '@/components/ActionButton'
 
 export default function ScoutingDatabase() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
@@ -170,6 +171,7 @@ export default function ScoutingDatabase() {
               { value: '21GC', label: '21GC' },
               { value: '21ACA', label: '21 ACA' }
             ]}
+            className="min-w-[140px]"
           />
           
           <CustomSelect
@@ -185,6 +187,7 @@ export default function ScoutingDatabase() {
               { value: 'left', label: 'Left' },
               { value: 'player', label: 'Player' }
             ]}
+            className="min-w-[160px]"
           />
 
           <CustomSelect
@@ -199,14 +202,13 @@ export default function ScoutingDatabase() {
               { value: 'Flex', label: 'Flex' },
               { value: 'Staff', label: 'Staff' }
             ]}
+            className="min-w-[140px]"
           />
 
-          <Link
-            href="/dashboard/admin/tryouts/scouts/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 whitespace-nowrap font-semibold"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Scout</span>
+          <Link href="/dashboard/admin/tryouts/scouts/new">
+            <ActionButton icon={Plus}>
+              Add Scout
+            </ActionButton>
           </Link>
         </div>
       </div>
@@ -257,15 +259,6 @@ export default function ScoutingDatabase() {
                             <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
                               {tryout.in_game_name || tryout.username}
                             </h3>
-                            {nationality && (
-                              <Image
-                                src={nationality.flagUrl}
-                                alt={nationality.code}
-                                width={20}
-                                height={15}
-                                className="object-contain rounded-sm flex-shrink-0"
-                              />
-                            )}
                           </div>
                           {tryout.in_game_name && (
                             <p className="text-sm text-gray-400">@{tryout.username}</p>

@@ -5,6 +5,7 @@ import { Plus, Calendar, Users, CheckCircle, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, PlayerAvailability, TeamCategory } from '@/lib/types/database'
 import Link from 'next/link'
+import ActionButton from '@/components/ActionButton'
 
 type TryoutWeekWithStats = TryoutWeek & {
   availabilities?: PlayerAvailability[]
@@ -134,10 +135,9 @@ export default function TryoutWeeks() {
           <p className="text-gray-400 mt-1">Manage tryout sessions and track player availability</p>
         </div>
         <Link href="/dashboard/admin/tryouts/new">
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 font-semibold">
-            <Plus className="w-4 h-4" />
-            <span>Create Tryout Week</span>
-          </button>
+          <ActionButton icon={Plus}>
+            Create Tryout Week
+          </ActionButton>
         </Link>
       </div>
 

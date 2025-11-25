@@ -216,6 +216,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
               { value: 'rejected', label: 'Rejected' },
               { value: 'left', label: 'Left' }
             ]}
+            className="min-w-[160px]"
           />
 
           {/* Role Filter */}
@@ -231,6 +232,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
               { value: 'Flex', label: 'Flex' },
               { value: 'Staff', label: 'Staff' }
             ]}
+            className="min-w-[140px]"
           />
         </div>
       </div>

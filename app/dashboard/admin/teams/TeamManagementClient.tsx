@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Calendar, TrendingUp, Users, Trophy } from 'lucide-
 import Link from 'next/link'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
+import ActionButton from '@/components/ActionButton'
 
 export default function TeamManagementClient() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -122,12 +123,10 @@ export default function TeamManagementClient() {
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Teams</h2>
-          <Link
-            href="/dashboard/admin/teams/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Team</span>
+          <Link href="/dashboard/admin/teams/new">
+            <ActionButton icon={Plus}>
+              Add Team
+            </ActionButton>
           </Link>
         </div>
 
@@ -192,12 +191,11 @@ export default function TeamManagementClient() {
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">View All</span>
               </Link>
-              <Link
-                href="/dashboard/admin/matches/new"
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
-              >
-                <Trophy className="w-4 h-4" />
-                <span className="hidden sm:inline">Record Match</span>
+              <Link href="/dashboard/admin/matches/new">
+                <ActionButton icon={Trophy}>
+                  <span className="hidden sm:inline">Record Match</span>
+                  <span className="sm:hidden">Record</span>
+                </ActionButton>
               </Link>
             </div>
           </div>
@@ -246,12 +244,11 @@ export default function TeamManagementClient() {
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Planning</h2>
-            <Link
-              href="/dashboard/admin/teams/schedule"
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
-            >
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">Schedule</span>
+            <Link href="/dashboard/admin/teams/schedule">
+              <ActionButton icon={Calendar}>
+                <span className="hidden sm:inline">Schedule</span>
+                <span className="sm:hidden">Plan</span>
+              </ActionButton>
             </Link>
           </div>
 

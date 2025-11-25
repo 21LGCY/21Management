@@ -100,12 +100,17 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
         const { availabilities } = await response.json()
         if (availabilities && availabilities.length > 0) {
           const availability = availabilities[0]
-          setTimeSlots(availability.time_slots || {})
-          setNotes(availability.notes || '')
+          // Smooth transition: update state in next tick to allow for CSS transitions
+          requestAnimationFrame(() => {
+            setTimeSlots(availability.time_slots || {})
+            setNotes(availability.notes || '')
+          })
         } else {
           // Reset for new week
-          setTimeSlots({})
-          setNotes('')
+          requestAnimationFrame(() => {
+            setTimeSlots({})
+            setNotes('')
+          })
         }
       }
     } catch (error) {
@@ -214,15 +219,16 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
 
   return (
     <div className="space-y-6 relative">
-      {/* Subtle loading overlay during week changes */}
+      {/* Week change indicator - subtle, non-blocking */}
       {fetching && (
-        <div className="absolute inset-0 bg-dark-card/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="absolute top-0 right-0 z-10 bg-dark-card/90 border border-primary/30 rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+          <span className="text-sm text-gray-300">Loading week...</span>
         </div>
       )}
       
       {/* Header */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+      <div className="bg-dark-card border border-gray-800 rounded-lg p-6 transition-opacity duration-200" style={{ opacity: fetching ? 0.6 : 1 }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/20 rounded-lg">
@@ -285,7 +291,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       )}
 
       {/* Calendar */}
-      <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
+      <div className="bg-dark-card border border-gray-800 rounded-lg p-6 transition-opacity duration-200" style={{ opacity: fetching ? 0.6 : 1 }}>
         <AvailabilityCalendar
           weekStart={currentWeekStart.toISOString().split('T')[0]}
           timeSlots={timeSlots}

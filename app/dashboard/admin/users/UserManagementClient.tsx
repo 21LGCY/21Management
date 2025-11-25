@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import ActionButton from '@/components/ActionButton'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import CustomSelect from '@/components/CustomSelect'
 
@@ -133,12 +134,10 @@ export default function UserManagementClient() {
         <p className="text-gray-400 text-sm font-semibold">
           Showing {filteredUsers.length} of {users.length} users
         </p>
-        <Link
-          href="/dashboard/admin/users/new"
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add User</span>
+        <Link href="/dashboard/admin/users/new">
+          <ActionButton icon={Plus}>
+            Add User
+          </ActionButton>
         </Link>
       </div>
 

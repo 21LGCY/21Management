@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
 import { Globe, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 // VALORANT European Zones mapping
 const VALORANT_ZONES: Record<string, string[]> = {
@@ -194,46 +195,49 @@ export default function ZonesInterface() {
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           {/* Team Filter */}
-          <select
+          <CustomSelect
             value={teamFilter}
-            onChange={(e) => setTeamFilter(e.target.value as TeamCategory | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Teams</option>
-            <option value="21L">21L</option>
-            <option value="21GC">21GC</option>
-            <option value="21ACA">21 ACA</option>
-          </select>
+            onChange={(value) => setTeamFilter(value as TeamCategory | 'all')}
+            options={[
+              { value: 'all', label: 'All Teams' },
+              { value: '21L', label: '21L' },
+              { value: '21GC', label: '21GC' },
+              { value: '21ACA', label: '21 ACA' }
+            ]}
+            className="min-w-[140px]"
+          />
 
           {/* Status Filter */}
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TryoutStatus | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="not_contacted">Not Contacted</option>
-            <option value="contacted">Contacted</option>
-            <option value="in_tryouts">In Tryouts</option>
-            <option value="substitute">Substitute</option>
-            <option value="rejected">Rejected</option>
-            <option value="left">Left</option>
-            <option value="player">Player</option>
-          </select>
+            onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'not_contacted', label: 'Not Contacted' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'in_tryouts', label: 'In Tryouts' },
+              { value: 'substitute', label: 'Substitute' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'left', label: 'Left' },
+              { value: 'player', label: 'Player' }
+            ]}
+            className="min-w-[160px]"
+          />
 
           {/* Role Filter */}
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as ValorantRole | 'all')}
-            className="px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Roles</option>
-            <option value="Duelist">Duelist</option>
-            <option value="Initiator">Initiator</option>
-            <option value="Controller">Controller</option>
-            <option value="Sentinel">Sentinel</option>
-            <option value="Flex">Flex</option>
-          </select>
+            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              { value: 'Duelist', label: 'Duelist' },
+              { value: 'Initiator', label: 'Initiator' },
+              { value: 'Controller', label: 'Controller' },
+              { value: 'Sentinel', label: 'Sentinel' },
+              { value: 'Flex', label: 'Flex' }
+            ]}
+            className="min-w-[140px]"
+          />
         </div>
       </div>
 

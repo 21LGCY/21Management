@@ -6,6 +6,7 @@ import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/databas
 import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Trophy, Calendar, TrendingDown, Eye, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import ActionButton from '@/components/ActionButton'
 
 interface StatsManagementClientProps {
   user: UserProfile
@@ -235,9 +236,9 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                   <Filter className="w-4 h-4" />
                 </button>
                 <Link href="/dashboard/manager/stats/game/new">
-                  <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition text-sm">
+                  <ActionButton icon={Trophy}>
                     Record Match
-                  </button>
+                  </ActionButton>
                 </Link>
               </div>
             </div>
@@ -378,9 +379,9 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                   <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-400 mb-4">No game statistics recorded</p>
                   <Link href="/dashboard/manager/stats/game/new">
-                    <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+                    <ActionButton icon={Trophy}>
                       {matches.length === 0 ? 'Record First Match' : 'Record Match'}
-                    </button>
+                    </ActionButton>
                   </Link>
                 </div>
               )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { CheckCircle, XCircle, Calendar as CalendarIcon } from 'lucide-react'
 import { TimeSlots, DayOfWeek, HourSlot } from '@/lib/types/database'
 
@@ -45,7 +45,57 @@ const getDateForDay = (weekStart: string, dayIndex: number): string => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
-export default function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false }: AvailabilityCalendarProps) {
+// Memoized slot component to prevent unnecessary re-renders
+const TimeSlot = memo(({ 
+  day, 
+  hour, 
+  available, 
+  readOnly, 
+  onMouseDown, 
+  onMouseEnter 
+}: {
+  day: DayOfWeek
+  hour: number
+  available: boolean
+  readOnly: boolean
+  onMouseDown: () => void
+  onMouseEnter: () => void
+}) => {
+  const getSlotClass = (): string => {
+    if (readOnly) {
+      return available
+        ? 'bg-green-500/30 border-green-500/50 cursor-default'
+        : 'bg-dark border-gray-700 cursor-default'
+    }
+    
+    return available
+      ? 'bg-green-500/20 border-green-500/50 hover:bg-green-500/30 cursor-pointer'
+      : 'bg-dark border-gray-700 hover:bg-dark-hover cursor-pointer'
+  }
+
+  return (
+    <div
+      className={`
+        relative h-12 rounded-lg border-2 transition-all duration-150 select-none
+        ${getSlotClass()}
+      `}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+    >
+      <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-150">
+        {available ? (
+          <CheckCircle className="w-5 h-5 text-green-400" />
+        ) : (
+          <XCircle className="w-4 h-4 text-gray-600 opacity-0 group-hover:opacity-100" />
+        )}
+      </div>
+    </div>
+  )
+})
+
+TimeSlot.displayName = 'TimeSlot'
+
+function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false }: AvailabilityCalendarProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragValue, setDragValue] = useState<boolean | null>(null)
 
@@ -101,23 +151,9 @@ export default function AvailabilityCalendar({ weekStart, timeSlots, onChange, r
     return timeSlots[day]?.[hour] || false
   }
 
-  const getSlotClass = (day: DayOfWeek, hour: number): string => {
-    const available = isSlotAvailable(day, hour)
-    
-    if (readOnly) {
-      return available
-        ? 'bg-green-500/30 border-green-500/50 cursor-default'
-        : 'bg-dark border-gray-700 cursor-default'
-    }
-    
-    return available
-      ? 'bg-green-500/20 border-green-500/50 hover:bg-green-500/30 cursor-pointer'
-      : 'bg-dark border-gray-700 hover:bg-dark-hover cursor-pointer'
-  }
-
   return (
     <div className="w-full overflow-x-auto">
-      <div className="min-w-[800px] pr-2">
+      <div className="min-w-[800px] pr-2 transition-opacity duration-200">
         {/* Header with Days */}
         <div className="grid grid-cols-8 gap-2 mb-2">
           <div className="text-sm font-medium text-gray-400 flex items-center justify-center">
@@ -149,23 +185,15 @@ export default function AvailabilityCalendar({ weekStart, timeSlots, onChange, r
                 const available = isSlotAvailable(day, hour)
                 
                 return (
-                  <div
+                  <TimeSlot
                     key={`${day}-${hour}`}
-                    className={`
-                      relative h-12 rounded-lg border-2 transition-all select-none
-                      ${getSlotClass(day, hour)}
-                    `}
+                    day={day}
+                    hour={hour}
+                    available={available}
+                    readOnly={readOnly}
                     onMouseDown={() => handleMouseDown(day, hour)}
                     onMouseEnter={() => handleMouseEnter(day, hour)}
-                  >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {available ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-gray-600 opacity-0 group-hover:opacity-100" />
-                      )}
-                    </div>
-                  </div>
+                  />
                 )
               })}
             </div>
@@ -193,3 +221,5 @@ export default function AvailabilityCalendar({ weekStart, timeSlots, onChange, r
     </div>
   )
 }
+
+export default memo(AvailabilityCalendar)
