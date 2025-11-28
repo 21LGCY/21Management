@@ -387,12 +387,7 @@ export default function PlayerTeamsClient({
             ) : (
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-4">No activities scheduled</p>
-                <Link href="/dashboard/player/teams/schedule">
-                  <ActionButton icon={Calendar}>
-                    View Schedule
-                  </ActionButton>
-                </Link>
+                <p className="text-gray-400">No activities scheduled</p>
               </div>
             )}
 
