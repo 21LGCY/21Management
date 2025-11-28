@@ -381,8 +381,8 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
           <div className="bg-dark-card border border-gray-800 rounded-xl p-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <div className="relative flex-1 max-w-md group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
                 <input
                   type="text"
                   placeholder="Search players..."
