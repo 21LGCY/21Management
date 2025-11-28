@@ -217,7 +217,9 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
                         </span>
                       )}
                       {!user.is_igl && !user.is_substitute && (
-                        <span className="text-white font-semibold text-sm">Regular Player</span>
+                        <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg font-semibold border border-green-500/30">
+                          PLAYER
+                        </span>
                       )}
                     </div>
                   </div>
