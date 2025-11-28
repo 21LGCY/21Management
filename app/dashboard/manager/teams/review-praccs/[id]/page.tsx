@@ -1,4 +1,5 @@
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
+import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import PraccsReviewClient from './PraccsReviewClient'
 
@@ -9,6 +10,11 @@ export default async function ManagerPraccsReviewPage({
 }) {
   const { user, teamId } = await requireManagerTeamAccess()
   const matchId = params.id
+
+  // Redirect if no team assigned
+  if (!teamId) {
+    redirect('/dashboard/manager')
+  }
 
   return (
     <div className="min-h-screen bg-dark">

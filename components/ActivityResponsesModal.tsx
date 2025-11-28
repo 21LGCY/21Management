@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { CheckCircle, XCircle, HelpCircle, Users, Calendar } from 'lucide-react'
 import { ScheduleActivity, ScheduleActivityResponse } from '@/lib/types/database'
 import Image from 'next/image'
@@ -12,17 +12,81 @@ interface ActivityResponsesModalProps {
   currentUserId?: string
 }
 
-export default function ActivityResponsesModal({ activity, onClose, currentUserId }: ActivityResponsesModalProps) {
+// Status helper functions moved outside component
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'available':
+      return 'text-green-400 bg-green-500/20 border-green-500/30'
+    case 'unavailable':
+      return 'text-red-400 bg-red-500/20 border-red-500/30'
+    case 'maybe':
+      return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
+    default:
+      return 'text-gray-400 bg-gray-500/20 border-gray-500/30'
+  }
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'available':
+      return <CheckCircle className="w-4 h-4" />
+    case 'unavailable':
+      return <XCircle className="w-4 h-4" />
+    case 'maybe':
+      return <HelpCircle className="w-4 h-4" />
+    default:
+      return null
+  }
+}
+
+// Memoized response item component
+const ResponseItem = memo(function ResponseItem({ 
+  response 
+}: { 
+  response: ScheduleActivityResponse 
+}) {
+  const player = (response as { player?: { avatar_url?: string; username?: string; in_game_name?: string } }).player
+  
+  return (
+    <div className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800">
+      <div className="flex items-center gap-3">
+        {player?.avatar_url ? (
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-700">
+            <Image
+              src={optimizeAvatar(player.avatar_url)}
+              alt={player.username || 'Player'}
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+            <Users className="w-5 h-5 text-gray-400" />
+          </div>
+        )}
+        <div>
+          <p className="font-medium text-white">{player?.username || 'Unknown'}</p>
+          {player?.in_game_name && (
+            <p className="text-xs text-gray-400">{player.in_game_name}</p>
+          )}
+        </div>
+      </div>
+      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${getStatusColor(response.status)}`}>
+        {getStatusIcon(response.status)}
+        <span className="text-sm font-medium capitalize">{response.status}</span>
+      </div>
+    </div>
+  )
+})
+
+function ActivityResponsesModal({ activity, onClose, currentUserId }: ActivityResponsesModalProps) {
   const [responses, setResponses] = useState<ScheduleActivityResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [userResponse, setUserResponse] = useState<'available' | 'unavailable' | 'maybe' | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    fetchResponses()
-  }, [activity.id])
-
-  const fetchResponses = async () => {
+  const fetchResponses = useCallback(async () => {
     try {
       const response = await fetch(`/api/schedule-responses?activity_id=${activity.id}`)
       if (response.ok) {
@@ -36,13 +100,28 @@ export default function ActivityResponsesModal({ activity, onClose, currentUserI
         }
       }
     } catch (error) {
-      console.error('Error fetching responses:', error)
+      console.error('Error fetching responses:', error instanceof Error ? error.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
-  }
+  }, [activity.id, currentUserId])
 
-  const handleResponseChange = async (status: 'available' | 'unavailable' | 'maybe') => {
+  useEffect(() => {
+    fetchResponses()
+  }, [fetchResponses])
+
+  // Handle keyboard events for modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+
+  const handleResponseChange = useCallback(async (status: 'available' | 'unavailable' | 'maybe') => {
     if (!currentUserId) return
     
     setSubmitting(true)
@@ -59,53 +138,36 @@ export default function ActivityResponsesModal({ activity, onClose, currentUserI
 
       if (response.ok) {
         setUserResponse(status)
-        await fetchResponses() // Refresh to show updated list
+        await fetchResponses()
       }
     } catch (error) {
-      console.error('Error saving response:', error)
+      console.error('Error saving response:', error instanceof Error ? error.message : 'Unknown error')
     } finally {
       setSubmitting(false)
     }
-  }
+  }, [currentUserId, activity.id, fetchResponses])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'text-green-400 bg-green-500/20 border-green-500/30'
-      case 'unavailable':
-        return 'text-red-400 bg-red-500/20 border-red-500/30'
-      case 'maybe':
-        return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
-      default:
-        return 'text-gray-400 bg-gray-500/20 border-gray-500/30'
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'available':
-        return <CheckCircle className="w-4 h-4" />
-      case 'unavailable':
-        return <XCircle className="w-4 h-4" />
-      case 'maybe':
-        return <HelpCircle className="w-4 h-4" />
-      default:
-        return null
-    }
-  }
-
-  const availableCount = responses.filter(r => r.status === 'available').length
-  const unavailableCount = responses.filter(r => r.status === 'unavailable').length
-  const maybeCount = responses.filter(r => r.status === 'maybe').length
+  // Memoize counts to avoid recalculating on every render
+  const { availableCount, unavailableCount, maybeCount } = useMemo(() => ({
+    availableCount: responses.filter(r => r.status === 'available').length,
+    unavailableCount: responses.filter(r => r.status === 'unavailable').length,
+    maybeCount: responses.filter(r => r.status === 'maybe').length,
+  }), [responses])
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
       <div className="bg-dark-card border border-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-800">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">{activity.title}</h2>
+              <h2 id="modal-title" className="text-2xl font-bold text-white mb-2">{activity.title}</h2>
               <div className="flex items-center gap-4 text-sm text-gray-400">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -120,6 +182,7 @@ export default function ActivityResponsesModal({ activity, onClose, currentUserI
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition"
+              aria-label="Close modal"
             >
               ✕
             </button>
@@ -208,43 +271,9 @@ export default function ActivityResponsesModal({ activity, onClose, currentUserI
             <p className="text-gray-400 text-center py-8">No responses yet</p>
           ) : (
             <div className="space-y-2">
-              {responses.map((response) => {
-                const player = (response as any).player
-                return (
-                  <div
-                    key={response.id}
-                    className="flex items-center justify-between p-3 bg-dark rounded-lg border border-gray-800"
-                  >
-                    <div className="flex items-center gap-3">
-                      {player?.avatar_url ? (
-                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-700">
-                          <Image
-                            src={optimizeAvatar(player.avatar_url)}
-                            alt={player.username}
-                            width={40}
-                            height={40}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                          <Users className="w-5 h-5 text-gray-400" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium text-white">{player?.username || 'Unknown'}</p>
-                        {player?.in_game_name && (
-                          <p className="text-xs text-gray-400">{player.in_game_name}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${getStatusColor(response.status)}`}>
-                      {getStatusIcon(response.status)}
-                      <span className="text-sm font-medium capitalize">{response.status}</span>
-                    </div>
-                  </div>
-                )
-              })}
+              {responses.map((response) => (
+                <ResponseItem key={response.id} response={response} />
+              ))}
             </div>
           )}
         </div>
@@ -252,3 +281,5 @@ export default function ActivityResponsesModal({ activity, onClose, currentUserI
     </div>
   )
 }
+
+export default memo(ActivityResponsesModal)

@@ -16,7 +16,9 @@ export default async function PlayerSchedulePage() {
     .single()
 
   const teamId = playerData?.team_id || ''
-  const teamName = playerData?.teams?.name || 'Your Team'
+  // Handle teams as array from the join
+  const teams = playerData?.teams as { id: string; name: string; game: string; tag: string }[] | null
+  const teamName = teams?.[0]?.name || 'Your Team'
 
   return (
     <div className="min-h-screen bg-dark">
