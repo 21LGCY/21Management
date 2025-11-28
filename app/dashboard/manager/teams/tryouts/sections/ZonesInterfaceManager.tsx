@@ -37,14 +37,16 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
   const supabase = createClient()
 
   useEffect(() => {
-    if (teamCategory) {
-      fetchTryouts()
-    }
+    fetchTryouts()
   }, [teamCategory])
 
   const fetchTryouts = async () => {
-    if (!teamCategory) return
+    if (!teamCategory) {
+      setLoading(false)
+      return
+    }
     
+    setLoading(true)
     try {
       const { data, error } = await supabase
         .from('profiles_tryouts')
@@ -125,7 +127,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       case 'not_contacted': return 'bg-gray-500/20 text-gray-300'
       case 'contacted': return 'bg-blue-500/20 text-blue-300'
       case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300'
-      case 'player': return 'bg-green-500/20 text-green-300'
+      case 'accepted': return 'bg-green-500/20 text-green-300'
       case 'substitute': return 'bg-purple-500/20 text-purple-300'
       case 'rejected': return 'bg-red-500/20 text-red-300'
       case 'left': return 'bg-orange-500/20 text-orange-300'
@@ -138,7 +140,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       case 'not_contacted': return 'Not Contacted'
       case 'contacted': return 'Pending'
       case 'in_tryouts': return 'Trying Out'
-      case 'player': return 'Player'
+      case 'accepted': return 'Player'
       case 'substitute': return 'Sub'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
@@ -211,7 +213,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
               { value: 'not_contacted', label: 'Not Contacted' },
               { value: 'contacted', label: 'Contacted' },
               { value: 'in_tryouts', label: 'In Tryouts' },
-              { value: 'player', label: 'Player' },
+              { value: 'accepted', label: 'Player' },
               { value: 'substitute', label: 'Substitute' },
               { value: 'rejected', label: 'Rejected' },
               { value: 'left', label: 'Left' }

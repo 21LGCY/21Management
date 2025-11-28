@@ -474,7 +474,7 @@ export default function NewScoutManagerForm({ teamId, team, teamCategory, manage
                 { value: 'substitute', label: 'Substitute' },
                 { value: 'rejected', label: 'Rejected' },
                 { value: 'left', label: 'Left' },
-                { value: 'player', label: 'Player' }
+                { value: 'accepted', label: 'Player' }
               ]}
             />
           </div>

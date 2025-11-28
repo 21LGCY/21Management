@@ -397,12 +397,10 @@ export default function PlayerTeamsClient({
             )}
 
             {upcomingActivities.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-800">
-                <Link href="/dashboard/player/teams/schedule">
-                  <button className="w-full text-center text-sm text-gray-400 hover:text-primary transition-colors">
-                    View full schedule →
-                  </button>
-                </Link>
+              <div className="mt-4 pt-4 border-t border-gray-800 text-center">
+                <p className="text-sm text-gray-500">
+                  Showing {upcomingActivities.length} upcoming {upcomingActivities.length === 1 ? 'activity' : 'activities'}
+                </p>
               </div>
             )}
           </div>

@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Calendar, Users, Search, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { TeamCategory, ProfileTryout } from '@/lib/types/database'
+import CustomSelect from '@/components/CustomSelect'
 
 interface NewTryoutWeekFormManagerProps {
   team: any
@@ -53,7 +54,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
         .from('profiles_tryouts')
         .select('*')
         .eq('team_category', teamCategory)
-        .not('status', 'in', '(rejected,left)')
+        .not('status', 'in', '(rejected,left,not_contacted)')
         .order('username')
 
       if (error) throw error
@@ -170,7 +171,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       case 'in_tryouts': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
-      case 'player': return 'bg-primary/20 text-primary border-primary/30'
+      case 'accepted': return 'bg-primary/20 text-primary border-primary/30'
       default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
     }
   }
@@ -183,7 +184,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       case 'substitute': return 'Substitute'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
-      case 'player': return 'Player'
+      case 'accepted': return 'Player'
       default: return status
     }
   }
@@ -349,18 +350,17 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
 
             {/* Status Filter */}
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <select
+              <CustomSelect
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              >
-                <option value="all">All Statuses</option>
-                <option value="in_tryouts">In Tryouts</option>
-                <option value="contacted">Contacted</option>
-                <option value="not_contacted">Not Contacted</option>
-                <option value="substitute">Substitute</option>
-              </select>
+                onChange={(value) => setStatusFilter(value)}
+                options={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 'in_tryouts', label: 'In Tryouts' },
+                  { value: 'contacted', label: 'Contacted' },
+                  { value: 'substitute', label: 'Substitute' }
+                ]}
+                className="min-w-[180px]"
+              />
             </div>
           </div>
 

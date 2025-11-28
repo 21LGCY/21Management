@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Team, MatchHistoryWithStats } from '@/lib/types/database'
 import { Trophy, Calendar, Search, Eye, Edit, Trash2, Filter, Plus } from 'lucide-react'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 interface MatchesClientProps {
   teams: Team[]
@@ -163,33 +164,31 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
           {/* Team Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Team</label>
-            <select
+            <CustomSelect
               value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-            >
-              <option value="all">All Teams</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedTeam(value)}
+              options={[
+                { value: 'all', label: 'All Teams' },
+                ...teams.map((team) => ({ value: team.id, label: team.name }))
+              ]}
+              className="min-w-[180px]"
+            />
           </div>
 
           {/* Result Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Result</label>
-            <select
+            <CustomSelect
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as FilterType)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-            >
-              <option value="all">All Results</option>
-              <option value="wins">Wins Only</option>
-              <option value="losses">Losses Only</option>
-              <option value="draws">Draws Only</option>
-            </select>
+              onChange={(value) => setFilterType(value as FilterType)}
+              options={[
+                { value: 'all', label: 'All Results' },
+                { value: 'wins', label: 'Wins Only' },
+                { value: 'losses', label: 'Losses Only' },
+                { value: 'draws', label: 'Draws Only' }
+              ]}
+              className="min-w-[160px]"
+            />
           </div>
         </div>
 

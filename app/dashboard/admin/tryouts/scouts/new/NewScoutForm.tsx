@@ -439,7 +439,7 @@ export default function NewScoutForm() {
                   { value: 'substitute', label: 'Substitute' },
                   { value: 'rejected', label: 'Rejected' },
                   { value: 'left', label: 'Left' },
-                  { value: 'player', label: 'Player' }
+                  { value: 'accepted', label: 'Player' }
                 ]}
                 className="w-full"
               />

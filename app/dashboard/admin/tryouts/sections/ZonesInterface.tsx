@@ -26,10 +26,9 @@ interface ZoneStats {
 export default function ZonesInterface() {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
   const [loading, setLoading] = useState(true)
-  const [zoneStats, setZoneStats] = useState<ZoneStats[]>([])
   
   const [teamFilter, setTeamFilter] = useState<TeamCategory | 'all'>('all')
-  const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('in_tryouts')
+  const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
   const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
 
   const supabase = createClient()
@@ -38,11 +37,8 @@ export default function ZonesInterface() {
     fetchTryouts()
   }, [])
 
-  useEffect(() => {
-    calculateZoneStats()
-  }, [tryouts, teamFilter, statusFilter, roleFilter])
-
   const fetchTryouts = async () => {
+    setLoading(true)
     try {
       const { data, error } = await supabase
         .from('profiles_tryouts')
@@ -72,7 +68,8 @@ export default function ZonesInterface() {
     return 'Autre'
   }
 
-  const calculateZoneStats = () => {
+  // Compute zone stats inline based on current filters
+  const zoneStats: ZoneStats[] = (() => {
     let filtered = tryouts
     
     // Apply filters
@@ -104,7 +101,7 @@ export default function ZonesInterface() {
     })
 
     const total = playersWithNationality.length
-    const stats: ZoneStats[] = Array.from(zoneMap.entries())
+    return Array.from(zoneMap.entries())
       .map(([zone, zonePlayers]) => ({
         zone,
         count: zonePlayers.length,
@@ -112,9 +109,7 @@ export default function ZonesInterface() {
         percentage: total > 0 ? (zonePlayers.length / total) * 100 : 0
       }))
       .sort((a, b) => b.count - a.count)
-
-    setZoneStats(stats)
-  }
+  })()
 
   const getZoneColor = (zone: string): string => {
     const colors: Record<string, string> = {
@@ -136,7 +131,7 @@ export default function ZonesInterface() {
       case 'not_contacted': return 'bg-slate-500/20 text-slate-300'
       case 'rejected': return 'bg-red-500/20 text-red-300'
       case 'left': return 'bg-gray-500/20 text-gray-300'
-      case 'player': return 'bg-green-500/20 text-green-300'
+      case 'accepted': return 'bg-green-500/20 text-green-300'
     }
   }
 
@@ -148,7 +143,7 @@ export default function ZonesInterface() {
       case 'not_contacted': return 'not_contacted'
       case 'rejected': return 'rejected'
       case 'left': return 'left'
-      case 'player': return 'Player'
+      case 'accepted': return 'Player'
     }
   }
 
@@ -219,7 +214,7 @@ export default function ZonesInterface() {
               { value: 'substitute', label: 'Substitute' },
               { value: 'rejected', label: 'Rejected' },
               { value: 'left', label: 'Left' },
-              { value: 'player', label: 'Player' }
+              { value: 'accepted', label: 'Player' }
             ]}
             className="min-w-[160px]"
           />

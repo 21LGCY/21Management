@@ -30,10 +30,10 @@ export type TryoutStatus =
   | 'not_contacted'
   | 'contacted'
   | 'in_tryouts'
+  | 'accepted'
   | 'substitute'
   | 'rejected'
   | 'left'
-  | 'player'
 
 // Time slots structure for player availability
 export type TimeSlots = {

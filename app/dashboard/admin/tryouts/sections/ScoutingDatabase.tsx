@@ -98,7 +98,7 @@ export default function ScoutingDatabase() {
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
       case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
-      case 'player': return 'bg-primary/20 text-primary border-primary/30'
+      case 'accepted': return 'bg-primary/20 text-primary border-primary/30'
     }
   }
 
@@ -136,7 +136,7 @@ export default function ScoutingDatabase() {
       case 'substitute': return 'Substitute'
       case 'rejected': return 'Rejected'
       case 'left': return 'Left'
-      case 'player': return 'Player'
+      case 'accepted': return 'Player'
     }
   }
 
@@ -185,7 +185,7 @@ export default function ScoutingDatabase() {
               { value: 'substitute', label: 'Substitute' },
               { value: 'rejected', label: 'Rejected' },
               { value: 'left', label: 'Left' },
-              { value: 'player', label: 'Player' }
+              { value: 'accepted', label: 'Player' }
             ]}
             className="min-w-[160px]"
           />

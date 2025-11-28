@@ -350,6 +350,17 @@ export default function UserForm({ userId }: UserFormProps) {
             />
             <p className="mt-1.5 text-xs text-gray-500">Square image, at least 256x256px recommended</p>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Nationality
+            </label>
+            <SearchableCountrySelect
+              value={formData.nationality}
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              countries={EUROPEAN_COUNTRIES}
+            />
+          </div>
         </div>
       </div>
 
@@ -436,67 +447,8 @@ export default function UserForm({ userId }: UserFormProps) {
               />
             </div>
 
-            <div className="md:col-span-2 space-y-3">
-              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    id="is_igl"
-                    checked={formData.is_igl}
-                    onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
-                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
-                  <p className="text-xs text-gray-500">This player leads the team strategy</p>
-                </div>
-              </label>
-
-              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    id="is_substitute"
-                    checked={formData.is_substitute}
-                    onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
-                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
-                  <p className="text-xs text-gray-500">Backup roster member</p>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Details Section */}
-        <div className="bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <Globe className="w-5 h-5 text-purple-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Additional Details</h3>
-              <p className="text-xs text-gray-400">Player profile and agent pool</p>
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Nationality
-              </label>
-              <SearchableCountrySelect
-                value={formData.nationality}
-                onChange={(value) => setFormData({ ...formData, nationality: value })}
-                countries={EUROPEAN_COUNTRIES}
-              />
-            </div>
-
-            <div>
+            {/* Agent Pool */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Agent Pool
               </label>
@@ -548,6 +500,40 @@ export default function UserForm({ userId }: UserFormProps) {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="md:col-span-2 space-y-3">
+              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="is_igl"
+                    checked={formData.is_igl}
+                    onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
+                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
+                  <p className="text-xs text-gray-500">This player leads the team strategy</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="is_substitute"
+                    checked={formData.is_substitute}
+                    onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
+                    className="w-5 h-5 text-primary bg-dark border-gray-700 rounded focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
+                  <p className="text-xs text-gray-500">Backup roster member</p>
+                </div>
+              </label>
             </div>
           </div>
         </div>
@@ -646,30 +632,6 @@ export default function UserForm({ userId }: UserFormProps) {
                 className="w-full"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Additional Details for Managers */}
-        <div className="bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <Globe className="w-5 h-5 text-purple-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Additional Details</h3>
-              <p className="text-xs text-gray-400">Personal information</p>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nationality
-            </label>
-            <SearchableCountrySelect
-              value={formData.nationality}
-              onChange={(value) => setFormData({ ...formData, nationality: value })}
-              countries={EUROPEAN_COUNTRIES}
-            />
           </div>
         </div>
 

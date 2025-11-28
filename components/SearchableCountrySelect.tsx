@@ -19,7 +19,7 @@ interface SearchableCountrySelectProps {
 export default function SearchableCountrySelect({
   value,
   onChange,
-  countries,
+  countries = [],
   placeholder = 'Select Country',
   className = ''
 }: SearchableCountrySelectProps) {
@@ -27,9 +27,11 @@ export default function SearchableCountrySelect({
   const [searchTerm, setSearchTerm] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const selectedCountry = countries.find(c => c.code === value)
+  // Defensive check for countries array
+  const safeCountries = countries || []
+  const selectedCountry = safeCountries.find(c => c.code === value)
 
-  const filteredCountries = countries.filter(country =>
+  const filteredCountries = safeCountries.filter(country =>
     country.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -62,7 +64,7 @@ export default function SearchableCountrySelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-left text-white hover:border-primary/50 focus:outline-none focus:border-primary transition-all flex items-center justify-between group"
+        className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-left text-white hover:border-gray-700 focus:outline-none focus:border-primary transition-all flex items-center justify-between group"
       >
         <span className={selectedCountry ? 'text-white' : 'text-gray-400'}>
           {selectedCountry ? selectedCountry.name : placeholder}

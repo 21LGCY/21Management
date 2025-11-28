@@ -6,6 +6,7 @@ import { Team, UserProfile, MatchType } from '@/lib/types/database'
 import { ArrowLeft, Save, Plus, Trash2, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import CustomSelect from '@/components/CustomSelect'
 
 interface RecordMatchClientProps {
   teams: Team[]
@@ -345,17 +346,18 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Match Type</label>
-              <select
+              <CustomSelect
                 value={matchType}
-                onChange={(e) => setMatchType(e.target.value as MatchType)}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
-              >
-                <option value="Scrim">Scrim</option>
-                <option value="Tournament">Tournament</option>
-                <option value="Qualifier">Qualifier</option>
-                <option value="League">League</option>
-                <option value="Other">Other</option>
-              </select>
+                onChange={(value) => setMatchType(value as MatchType)}
+                options={[
+                  { value: 'Scrim', label: 'Scrim' },
+                  { value: 'Tournament', label: 'Tournament' },
+                  { value: 'Qualifier', label: 'Qualifier' },
+                  { value: 'League', label: 'League' },
+                  { value: 'Other', label: 'Other' }
+                ]}
+                className="min-w-[160px]"
+              />
             </div>
 
             <div>
@@ -452,20 +454,20 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                   {/* Player Selection */}
                   <div>
                     <label className="block text-xs font-medium text-gray-400 mb-2">Player</label>
-                    <select
+                    <CustomSelect
                       value={stat.playerId}
-                      onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
-                      className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                    >
-                      <option value="">Select...</option>
-                      {players
-                        .filter(p => p.id === stat.playerId || !playerStats.some(ps => ps.playerId === p.id))
-                        .map(player => (
-                          <option key={player.id} value={player.id}>
-                            {player.in_game_name || player.username}
-                          </option>
-                        ))}
-                    </select>
+                      onChange={(value) => updatePlayerStat(index, 'playerId', value)}
+                      options={[
+                        { value: '', label: 'Select...' },
+                        ...players
+                          .filter(p => p.id === stat.playerId || !playerStats.some(ps => ps.playerId === p.id))
+                          .map(player => ({
+                            value: player.id,
+                            label: player.in_game_name || player.username
+                          }))
+                      ]}
+                      className="w-full"
+                    />
                   </div>
 
                   {/* Core Stats Grid */}
@@ -559,22 +561,24 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     <label className="block text-xs font-medium text-gray-400 mb-2">Agent</label>
                     {stat.championPool && stat.championPool.length > 0 ? (
                       <>
-                        <select
+                        <CustomSelect
                           value={stat.championPool.includes(stat.agent || '') ? stat.agent : 'other'}
-                          onChange={(e) => {
-                            if (e.target.value !== 'other') {
-                              updatePlayerStat(index, 'agent', e.target.value)
+                          onChange={(value) => {
+                            if (value !== 'other') {
+                              updatePlayerStat(index, 'agent', value)
                             }
                           }}
-                          className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                        >
-                          <option value="">Select...</option>
-                          {stat.championPool.map(champion => (
-                            <option key={champion} value={champion}>{champion}</option>
-                          ))}
-                          <option value="other">Other (Custom)</option>
-                        </select>
-                        {!stat.championPool.includes(stat.agent || '') && (
+                          options={[
+                            { value: '', label: 'Select...' },
+                            ...stat.championPool.map(champion => ({
+                              value: champion,
+                              label: champion
+                            })),
+                            { value: 'other', label: 'Other (Custom)' }
+                          ]}
+                          className="w-full"
+                        />
+                        {!stat.championPool.includes(stat.agent || '') && stat.agent !== '' && (
                           <input
                             type="text"
                             value={stat.agent || ''}

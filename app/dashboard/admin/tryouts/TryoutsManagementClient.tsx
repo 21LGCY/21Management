@@ -72,7 +72,7 @@ export default function TryoutsManagementClient() {
       case 'substitute': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'rejected': return 'bg-red-500/20 text-red-300 border-red-500/30'
       case 'left': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
-      case 'player': return 'bg-primary/20 text-primary border-primary/30'
+      case 'accepted': return 'bg-primary/20 text-primary border-primary/30'
     }
   }
 
@@ -95,7 +95,7 @@ export default function TryoutsManagementClient() {
       inTryouts: tryouts.filter(t => t.status === 'in_tryouts').length,
       substitute: tryouts.filter(t => t.status === 'substitute').length,
       rejected: tryouts.filter(t => t.status === 'rejected').length,
-      player: tryouts.filter(t => t.status === 'player').length,
+      accepted: tryouts.filter(t => t.status === 'accepted').length,
     }
   }
 
@@ -125,7 +125,7 @@ export default function TryoutsManagementClient() {
         </div>
         <div className="bg-dark-card border border-green-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-1">Players</p>
-          <p className="text-2xl font-bold text-green-300">{stats.player}</p>
+          <p className="text-2xl font-bold text-green-300">{stats.accepted}</p>
         </div>
         <div className="bg-dark-card border border-purple-800/50 rounded-lg p-4">
           <p className="text-sm text-gray-400 mb-1">Substitutes</p>
@@ -156,13 +156,13 @@ export default function TryoutsManagementClient() {
             onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
             options={[
               { value: 'all', label: 'All Statuses' },
-              { value: 'Not Contacted', label: 'Not Contacted' },
-              { value: 'Contacted/Pending', label: 'Contacted/Pending' },
-              { value: 'In Tryouts', label: 'In Tryouts' },
-              { value: 'Player', label: 'Player' },
-              { value: 'Substitute', label: 'Substitute' },
-              { value: 'Rejected', label: 'Rejected' },
-              { value: 'Left', label: 'Left' }
+              { value: 'not_contacted', label: 'Not Contacted' },
+              { value: 'contacted', label: 'Contacted/Pending' },
+              { value: 'in_tryouts', label: 'In Tryouts' },
+              { value: 'accepted', label: 'Player' },
+              { value: 'substitute', label: 'Substitute' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'left', label: 'Left' }
             ]}
             className=""
           />
