@@ -80,7 +80,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         router.refresh()
       }, 1000)
     } catch (err: any) {
-      setError(err.message || 'Failed to update account settings')
+      setError(err.message || 'failed to update account settings')
     } finally {
       setLoading(false)
     }
