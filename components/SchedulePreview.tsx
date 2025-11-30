@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Clock, Users, Target, Trophy, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { TimezoneOffset, DEFAULT_TIMEZONE, convertTimeSlotToUserTimezone, getTimezoneShort, getDayName } from '@/lib/utils/timezone'
 
 // Activity types with their icons and colors
 const activityTypes = {
@@ -12,12 +13,6 @@ const activityTypes = {
   official_match: { name: 'Official Match', icon: Trophy, color: 'text-yellow-400' },
   tournament: { name: 'Tournament', icon: Trophy, color: 'text-red-400' },
   meeting: { name: 'Team Meeting', icon: MessageSquare, color: 'text-indigo-400' }
-}
-
-// Helper function to convert day number to name
-const getDayName = (dayNumber: number): string => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return days[dayNumber]
 }
 
 interface ScheduleActivity {
@@ -34,9 +29,10 @@ interface ScheduleActivity {
 
 interface SchedulePreviewProps {
   teamId: string
+  userTimezone?: TimezoneOffset
 }
 
-export default function SchedulePreview({ teamId }: SchedulePreviewProps) {
+export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZONE }: SchedulePreviewProps) {
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -132,9 +128,10 @@ export default function SchedulePreview({ teamId }: SchedulePreviewProps) {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span>{activity.time_slot}</span>
+                          <span>{convertTimeSlotToUserTimezone(activity.time_slot, userTimezone)}</span>
+                          <span className="text-xs text-gray-500">({getTimezoneShort(userTimezone)})</span>
                           {activity.duration > 1 && (
-                            <span className="text-xs">({activity.duration}h)</span>
+                            <span className="text-xs">• {activity.duration}h</span>
                           )}
                         </div>
                       </div>

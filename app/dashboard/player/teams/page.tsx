@@ -2,17 +2,20 @@ import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import PlayerTeamsClient from './PlayerTeamsClient'
+import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
 
 export default async function PlayerTeamsPage() {
   const user = await requireRole(['player'])
   const supabase = await createClient()
 
-  // Get player data with team info
+  // Get player data with team info and timezone
   const { data: playerData } = await supabase
     .from('profiles')
     .select('*, teams(id, name, game, tag)')
     .eq('id', user.user_id)
     .single()
+
+  const userTimezone = (playerData?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
 
   // Get all team players for roster display
   const { data: teamPlayers } = await supabase
@@ -41,6 +44,7 @@ export default async function PlayerTeamsPage() {
           currentPlayerId={user.user_id}
           teamPlayers={teamPlayers || []}
           staffMembers={staffMembers || []}
+          userTimezone={userTimezone}
         />
       </main>
     </div>

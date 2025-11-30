@@ -8,8 +8,40 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import ActionButton from '@/components/ActionButton'
+import { TimezoneOffset, getTimezoneShort, getHourOffset } from '@/lib/utils/timezone'
 
-export default function TeamManagementClient() {
+// Format date with timezone offset applied
+function formatDateWithTimezone(dateStr: string, timezone: TimezoneOffset): string {
+  const date = new Date(dateStr)
+  const offset = getHourOffset(timezone)
+  // Adjust the display time based on user's timezone
+  date.setHours(date.getHours() + offset)
+  return date.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  })
+}
+
+function formatDateOnlyWithTimezone(dateStr: string, timezone: TimezoneOffset): string {
+  const date = new Date(dateStr)
+  const offset = getHourOffset(timezone)
+  date.setHours(date.getHours() + offset)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+interface TeamManagementClientProps {
+  userTimezone: TimezoneOffset
+}
+
+export default function TeamManagementClient({ userTimezone }: TeamManagementClientProps) {
   const [teams, setTeams] = useState<Team[]>([])
   const [matches, setMatches] = useState<(Match & { teams: Team })[]>([])
   const [loading, setLoading] = useState(true)
@@ -224,7 +256,7 @@ export default function TeamManagementClient() {
                       )}
                     </div>
                     <p className="text-sm text-gray-500">
-                      {new Date(match.scheduled_at).toLocaleDateString()}
+                      {formatDateOnlyWithTimezone(match.scheduled_at, userTimezone)}
                       {match.score && ` • ${match.score}`}
                     </p>
                   </div>
@@ -271,7 +303,8 @@ export default function TeamManagementClient() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
-                      {new Date(match.scheduled_at).toLocaleString()}
+                      {formatDateWithTimezone(match.scheduled_at, userTimezone)}
+                      <span className="text-xs text-gray-600 ml-1">({getTimezoneShort(userTimezone)})</span>
                     </p>
                   </div>
                   <button

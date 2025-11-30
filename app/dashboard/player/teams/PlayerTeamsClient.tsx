@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import StratMapSelection from './sections/StratMapSelection'
 import PraccsReviewSelection from './sections/PraccsReviewSelection'
 import ActionButton from '@/components/ActionButton'
+import { TimezoneOffset, convertTimeSlotToUserTimezone, getTimezoneShort, getDayName } from '@/lib/utils/timezone'
 
 interface Player {
   id: string
@@ -27,6 +28,7 @@ interface PlayerTeamsClientProps {
   currentPlayerId: string
   teamPlayers: Player[]
   staffMembers: Player[]
+  userTimezone: TimezoneOffset
 }
 
 type TabType = 'overview' | 'roster' | 'strat_map' | 'review_praccs'
@@ -36,7 +38,8 @@ export default function PlayerTeamsClient({
   teamName, 
   currentPlayerId,
   teamPlayers,
-  staffMembers
+  staffMembers,
+  userTimezone
 }: PlayerTeamsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [upcomingActivities, setUpcomingActivities] = useState<any[]>([])
@@ -79,8 +82,6 @@ export default function PlayerTeamsClient({
         throw error
       }
       
-      console.log('Fetched activities:', data)
-      
       // Filter and sort activities
       const upcomingActivities = (data || [])
         .filter(activity => {
@@ -102,7 +103,6 @@ export default function PlayerTeamsClient({
         })
         .slice(0, 3)
       
-      console.log('Upcoming activities:', upcomingActivities)
       setUpcomingActivities(upcomingActivities)
     } catch (error) {
       console.error('Error fetching activities:', error)
@@ -113,11 +113,6 @@ export default function PlayerTeamsClient({
 
   const mainRoster = teamPlayers.filter(p => !p.is_substitute)
   const substitutes = teamPlayers.filter(p => p.is_substitute)
-
-  const getDayName = (dayNumber: number): string => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    return days[dayNumber]
-  }
 
   const formatDateShort = (dateStr: string): string => {
     const date = new Date(dateStr)
@@ -371,9 +366,10 @@ export default function PlayerTeamsClient({
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
-                                <span>{activity.time_slot}</span>
+                                <span>{convertTimeSlotToUserTimezone(activity.time_slot, userTimezone)}</span>
+                                <span className="text-xs text-gray-500">({getTimezoneShort(userTimezone)})</span>
                                 {activity.duration > 1 && (
-                                  <span className="text-xs">({activity.duration}h)</span>
+                                  <span className="text-xs">• {activity.duration}h</span>
                                 )}
                               </div>
                             </div>
@@ -605,7 +601,8 @@ export default function PlayerTeamsClient({
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span>{selectedActivity.time_slot}</span>
+                        <span>{convertTimeSlotToUserTimezone(selectedActivity.time_slot, userTimezone)}</span>
+                        <span className="text-xs text-gray-500">({getTimezoneShort(userTimezone)})</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-4 h-4" />

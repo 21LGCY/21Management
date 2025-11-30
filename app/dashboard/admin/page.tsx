@@ -2,14 +2,25 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
+import DashboardSchedulePreview from '@/components/DashboardSchedulePreview'
 import Link from 'next/link'
 import { Users, Trophy, Calendar, Shield, BarChart3, Search, Clock, Target, Award, TrendingUp, Map, Activity, ArrowRight } from 'lucide-react'
+import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
 
 export default async function AdminDashboard() {
   // Require admin role
   const user = await requireRole(['admin'])
   
   const supabase = await createClient()
+
+  // Get user's timezone
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', user.user_id)
+    .single()
+  
+  const userTimezone = (userProfile?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
 
   // Get statistics
   const { count: teamCount } = await supabase
@@ -170,77 +181,14 @@ export default async function AdminDashboard() {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Schedule */}
-          <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-white mb-1">Schedule</h2>
-                <p className="text-sm text-gray-400">Planned activities across all teams</p>
-              </div>
-              <Link href="/dashboard/admin/teams" className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all text-sm font-medium">
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {scheduleActivities && scheduleActivities.length > 0 ? (
-                scheduleActivities.slice(0, 3).map((activity) => {
-                  const getActivityTypeColor = (type: string) => {
-                    const colors: { [key: string]: string } = {
-                      practice: 'bg-blue-500/20 text-blue-400',
-                      individual_training: 'bg-green-500/20 text-green-400',
-                      group_training: 'bg-purple-500/20 text-purple-400',
-                      official_match: 'bg-yellow-500/20 text-yellow-400',
-                      tournament: 'bg-red-500/20 text-red-400',
-                      meeting: 'bg-indigo-500/20 text-indigo-400'
-                    }
-                    return colors[type] || 'bg-gray-500/20 text-gray-400'
-                  }
-                  
-                  const getDayName = (dayNumber: number): string => {
-                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-                    return days[dayNumber]
-                  }
-                  
-                  return (
-                    <div
-                      key={activity.id}
-                      className="p-4 bg-gradient-to-br from-dark to-dark-card rounded-xl border border-gray-800 hover:border-primary transition-all group hover:shadow-lg"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <p className="font-semibold text-white group-hover:text-primary transition">
-                            {activity.title}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">{activity.teams?.name}</p>
-                          {activity.description && (
-                            <p className="text-sm text-gray-400 mt-1 line-clamp-1">{activity.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-2">
-                            <Clock className="w-4 h-4 text-gray-400" />
-                            <p className="text-sm text-gray-400">
-                              {activity.activity_date 
-                                ? new Date(activity.activity_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                                : getDayName(activity.day_of_week)} at {activity.time_slot}
-                              {activity.duration > 1 && ` (${activity.duration}h)`}
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`px-3 py-1 ${getActivityTypeColor(activity.type)} text-xs rounded-lg font-medium whitespace-nowrap`}>
-                          {activity.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-6">
-                  <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-400">No activities scheduled</p>
-                  <p className="text-sm text-gray-500 mt-1">Plan your teams' schedules</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <DashboardSchedulePreview 
+            activities={scheduleActivities || []}
+            viewAllLink="/dashboard/admin/teams"
+            showTeamName={true}
+            emptyMessage="No activities scheduled"
+            emptySubMessage="Plan your teams' schedules"
+            userTimezone={userTimezone}
+          />
 
           {/* Players List */}
           <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">

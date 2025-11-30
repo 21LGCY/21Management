@@ -5,7 +5,7 @@ import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumb
 import { createClient } from '@/lib/supabase/client'
 import CustomSelect from '@/components/CustomSelect'
 import { TimezoneOffset } from '@/lib/types/database'
-import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE } from '@/lib/utils/timezone'
+import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, getDayNumber, getDayName } from '@/lib/utils/timezone'
 
 // Activity types with colors and icons (matching player schedule)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -115,16 +115,6 @@ const getWeekDates = (weekOffset: number): string[] => {
     dates.push(getDateString(date))
   }
   return dates
-}
-
-const getDayNumber = (dayName: string): number => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return days.indexOf(dayName)
-}
-
-const getDayName = (dayNumber: number): string => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return days[dayNumber]
 }
 
 interface ScheduleManagementProps {

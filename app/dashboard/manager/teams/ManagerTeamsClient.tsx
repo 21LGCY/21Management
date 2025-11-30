@@ -8,6 +8,7 @@ import StratMapSelection from './sections/StratMapSelection'
 import PraccsReviewSelection from './sections/PraccsReviewSelection'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, TeamCategory } from '@/lib/types/database'
+import { TimezoneOffset } from '@/lib/utils/timezone'
 
 interface ManagerTeamsClientProps {
   teamId: string
@@ -15,11 +16,12 @@ interface ManagerTeamsClientProps {
   playerCount: number
   tryouts: any[]
   teamCategory: TeamCategory
+  userTimezone: TimezoneOffset
 }
 
 type TabType = 'overview' | 'strat_map' | 'review_praccs'
 
-export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryouts, teamCategory }: ManagerTeamsClientProps) {
+export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryouts, teamCategory, userTimezone }: ManagerTeamsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [currentTryouts, setCurrentTryouts] = useState<TryoutWeek[]>([])
   const [loadingTryouts, setLoadingTryouts] = useState(true)
@@ -223,7 +225,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
 
           <div className="grid grid-cols-1 gap-6">
             {/* Weekly Schedule Preview */}
-            {teamId && <SchedulePreview teamId={teamId} />}
+            {teamId && <SchedulePreview teamId={teamId} userTimezone={userTimezone} />}
 
             {/* Recent Tryouts */}
             <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">

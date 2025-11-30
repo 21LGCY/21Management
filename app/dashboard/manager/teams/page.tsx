@@ -2,12 +2,22 @@ import { createClient } from '@/lib/supabase/server'
 import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import ManagerTeamsClient from './ManagerTeamsClient'
+import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
 
 export default async function ManagerTeamsPage() {
   // Require manager role and get team access
   const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
   
   const supabase = await createClient()
+
+  // Get user's timezone
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', user.user_id)
+    .single()
+  
+  const userTimezone = (userProfile?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
 
   // Get player count for manager's team
   const { count: playerCount } = await supabase
@@ -34,6 +44,7 @@ export default async function ManagerTeamsPage() {
           teamCategory={teamCategory || '21GC'}
           playerCount={playerCount || 0}
           tryouts={tryouts || []}
+          userTimezone={userTimezone}
         />
       </main>
     </div>

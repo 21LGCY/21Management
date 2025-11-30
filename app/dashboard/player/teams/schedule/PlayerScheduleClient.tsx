@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TimezoneOffset } from '@/lib/types/database'
-import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE } from '@/lib/utils/timezone'
+import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, getDayNumber } from '@/lib/utils/timezone'
 
 // Activity types with colors and icons (higher contrast)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -114,11 +114,6 @@ const getWeekDates = (weekOffset: number): string[] => {
     dates.push(getDateString(date))
   }
   return dates
-}
-
-const getDayNumber = (dayName: string): number => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return days.indexOf(dayName)
 }
 
 interface PlayerScheduleClientProps {

@@ -111,26 +111,52 @@ export function getTimezoneShort(timezone: TimezoneOffset): string {
 // ============================================
 
 // Convert a time slot string with timezone conversion
-// Input: "3:00 PM" (org timezone), userTimezone: "UTC+0"
-// Output: "2:00 PM"
+// Handles both "HH:MM" (24h) and "H:MM AM/PM" (12h) formats
+// Input: "16:00" or "4:00 PM" (org timezone CET), userTimezone: "UTC+0"
+// Output: "3:00 PM" (converted to user timezone)
 export function convertTimeSlotToUserTimezone(timeSlot: string, userTimezone: TimezoneOffset): string {
-  const match = timeSlot.match(/(\d+):00 (AM|PM)/)
-  if (!match) return timeSlot
+  let hour: number
   
-  let hour = parseInt(match[1])
-  const period = match[2]
-  
-  // Convert to 24-hour format
-  if (period === 'AM' && hour === 12) hour = 0
-  else if (period === 'PM' && hour !== 12) hour += 12
+  // Try 24-hour format first (e.g., "16:00")
+  const match24h = timeSlot.match(/^(\d{1,2}):(\d{2})$/)
+  if (match24h) {
+    hour = parseInt(match24h[1])
+  } else {
+    // Try 12-hour format (e.g., "4:00 PM")
+    const match12h = timeSlot.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
+    if (match12h) {
+      hour = parseInt(match12h[1])
+      const period = match12h[3].toUpperCase()
+      
+      // Convert to 24-hour format
+      if (period === 'AM' && hour === 12) hour = 0
+      else if (period === 'PM' && hour !== 12) hour += 12
+    } else {
+      // Can't parse, return as-is
+      return timeSlot
+    }
+  }
   
   // Apply timezone offset and format
-  return formatHour(convertHourToUserTimezone(hour, userTimezone))
+  const convertedHour = convertHourToUserTimezone(hour, userTimezone)
+  return formatHour(convertedHour)
 }
 
 // ============================================
 // DATE HELPERS
 // ============================================
+
+// Convert day name to day number (0-6, Sunday-Saturday)
+export function getDayNumber(dayName: string): number {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return days.indexOf(dayName)
+}
+
+// Convert day number (0-6, Sunday-Saturday) to day name
+export function getDayName(dayNumber: number): string {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  return days[dayNumber] || ''
+}
 
 // Get formatted date for a day in the week
 export function getDateForDay(weekStart: string, dayIndex: number): string {

@@ -1,9 +1,21 @@
 import { requireRole } from '@/lib/auth/server'
+import { createClient } from '@/lib/supabase/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import TeamManagementClient from './TeamManagementClient'
+import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
 
 export default async function TeamManagementPage() {
   const user = await requireRole(['admin'])
+  const supabase = await createClient()
+
+  // Get user's timezone
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', user.user_id)
+    .single()
+  
+  const userTimezone = (userProfile?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
 
   return (
     <div className="min-h-screen bg-dark">
@@ -17,7 +29,7 @@ export default async function TeamManagementPage() {
           <p className="text-gray-400">Manage teams, schedules, matches, and statistics</p>
         </div>
         
-        <TeamManagementClient />
+        <TeamManagementClient userTimezone={userTimezone} />
       </main>
     </div>
   )
