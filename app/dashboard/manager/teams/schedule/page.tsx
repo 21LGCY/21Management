@@ -3,10 +3,21 @@ import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import BackButton from '@/components/BackButton'
 import { Calendar, Clock, Users, Target, Trophy, Dumbbell, BookOpen, Gamepad2 } from 'lucide-react'
 import ScheduleManagementClient from './ScheduleManagementClient'
+import { TimezoneOffset } from '@/lib/types/database'
 
 export default async function TeamSchedulePage() {
   // Require manager role and get team access
   const { user, teamId, team } = await requireManagerTeamAccess()
+  
+  // Get user's timezone from profile
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', user.user_id)
+    .single()
+  
+  const userTimezone = (profile?.timezone || 'UTC+1') as TimezoneOffset
 
   return (
     <div className="min-h-screen bg-dark">
@@ -32,6 +43,7 @@ export default async function TeamSchedulePage() {
         <ScheduleManagementClient 
           team={team}
           user={user}
+          userTimezone={userTimezone}
         />
       </main>
     </div>

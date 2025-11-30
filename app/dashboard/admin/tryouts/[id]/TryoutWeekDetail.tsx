@@ -5,15 +5,17 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, Copy, CheckCircle, User, Trash2, BarChart3, Clock, RefreshCw, UserPlus, Edit2, Save, X, Search } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { TryoutWeek, PlayerAvailability, ProfileTryout } from '@/lib/types/database'
+import { TryoutWeek, PlayerAvailability, ProfileTryout, TimezoneOffset } from '@/lib/types/database'
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
+import { ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 interface TryoutWeekDetailProps {
   weekId: string
+  userTimezone?: TimezoneOffset
 }
 
-export default function TryoutWeekDetail({ weekId }: TryoutWeekDetailProps) {
+export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }: TryoutWeekDetailProps) {
   const router = useRouter()
   const [week, setWeek] = useState<TryoutWeek | null>(null)
   const [availabilities, setAvailabilities] = useState<PlayerAvailability[]>([])
@@ -527,7 +529,7 @@ export default function TryoutWeekDetail({ weekId }: TryoutWeekDetailProps) {
       {/* Heatmap View */}
       {viewMode === 'heatmap' && week && (
         <div>
-          <AvailabilityHeatmap availabilities={availabilities} weekStart={week.week_start} />
+          <AvailabilityHeatmap availabilities={availabilities} weekStart={week.week_start} userTimezone={userTimezone} />
         </div>
       )}
 
@@ -596,6 +598,7 @@ export default function TryoutWeekDetail({ weekId }: TryoutWeekDetailProps) {
                         timeSlots={availability.time_slots}
                         onChange={() => {}} // Read-only
                         readOnly={true}
+                        userTimezone={userTimezone}
                       />
                     </div>
                   )}

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Edit, Trash2, Plus, Save } from 'lucide-react'
+import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Edit, Trash2, Plus, Save, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { TimezoneOffset } from '@/lib/types/database'
+import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 // Activity types with colors and icons (matching player schedule)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -39,6 +41,7 @@ const activityTypes: { [key: string]: { icon: any; color: string; name: string }
 }
 
 // Generate time slots from 3:00 PM to 11:00 PM (matching player availability)
+// These are stored in ORG_TIMEZONE (CET/Paris) - admin creates in CET
 const generateTimeSlots = () => {
   const slots = []
   for (let hour = 3; hour < 12; hour++) {
@@ -47,7 +50,8 @@ const generateTimeSlots = () => {
   return slots
 }
 
-const timeSlots = generateTimeSlots()
+// Time slots in ORG_TIMEZONE (CET) - always used for storage
+const orgTimeSlots = generateTimeSlots()
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 interface ScheduleActivity {
@@ -125,9 +129,10 @@ const getDayName = (dayNumber: number): string => {
 interface ScheduleManagementProps {
   team: any
   user: any
+  userTimezone: TimezoneOffset
 }
 
-export default function ScheduleManagementClient({ team, user }: ScheduleManagementProps) {
+export default function ScheduleManagementClient({ team, user, userTimezone }: ScheduleManagementProps) {
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
@@ -155,6 +160,12 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
     timeSlot: '',
     duration: 1
   })
+
+  // Convert time slots to user's timezone for display
+  const displayTimeSlots = orgTimeSlots.map(slot => ({
+    org: slot, // Original CET time (used for matching activities and storage)
+    display: convertTimeSlotToUserTimezone(slot, userTimezone) // Converted for display
+  }))
 
   useEffect(() => {
     setWeekDates(getWeekDates(currentWeekOffset))
@@ -365,8 +376,8 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
     const dayStartIndex = daysOfWeek.indexOf(dragStart.day)
     const dayEndIndex = daysOfWeek.indexOf(day)
-    const timeStartIndex = timeSlots.indexOf(dragStart.timeSlot)
-    const timeEndIndex = timeSlots.indexOf(timeSlot)
+    const timeStartIndex = orgTimeSlots.indexOf(dragStart.timeSlot)
+    const timeEndIndex = orgTimeSlots.indexOf(timeSlot)
 
     const minDay = Math.min(dayStartIndex, dayEndIndex)
     const maxDay = Math.max(dayStartIndex, dayEndIndex)
@@ -379,7 +390,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
       for (let d = minDay; d <= maxDay; d++) {
         for (let t = minTime; t <= maxTime; t++) {
           const currentDay = daysOfWeek[d]
-          const currentTime = timeSlots[t]
+          const currentTime = orgTimeSlots[t]
           const currentDate = weekDates[d]
           const activity = getActivityForSlot(currentDay, currentTime, currentDate)
           
@@ -396,7 +407,7 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
       for (let d = minDay; d <= maxDay; d++) {
         for (let t = minTime; t <= maxTime; t++) {
           const currentDay = daysOfWeek[d]
-          const currentTime = timeSlots[t]
+          const currentTime = orgTimeSlots[t]
           const currentDate = weekDates[d]
           const activity = getActivityForSlot(currentDay, currentTime, currentDate)
           
@@ -752,6 +763,17 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
                 Go to Current Week
               </button>
             )}
+            {/* Timezone indicator */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg">
+              <Globe className="w-4 h-4 text-primary" />
+              <span className="text-sm text-gray-300">
+                {userTimezone !== ORG_TIMEZONE ? (
+                  <>Times in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
+                ) : (
+                  <span className="text-gray-400">CET (Org timezone)</span>
+                )}
+              </span>
+            </div>
           </div>
 
           <button
@@ -798,10 +820,10 @@ export default function ScheduleManagementClient({ team, user }: ScheduleManagem
 
             {/* Time Slots */}
             <div>
-              {timeSlots.map((timeSlot) => (
+              {displayTimeSlots.map(({ org: timeSlot, display: displayTime }) => (
                 <div key={timeSlot} className="grid grid-cols-8 border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors">
                   <div className="p-3 text-sm font-medium text-gray-300 bg-gray-800/60 sticky left-0 z-10 border-r border-gray-700">
-                    {timeSlot}
+                    {displayTime}
                   </div>
                   {daysOfWeek.map((day, dayIndex) => {
                     const activity = getActivityForSlot(day, timeSlot, weekDates[dayIndex])

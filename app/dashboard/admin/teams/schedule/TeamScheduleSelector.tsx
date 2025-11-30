@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Shield, Calendar } from 'lucide-react'
 import ScheduleManagementClient from './ScheduleManagementClient'
+import { TimezoneOffset } from '@/lib/types/database'
 
 interface Team {
   id: string
@@ -14,9 +15,10 @@ interface Team {
 interface TeamScheduleSelectorProps {
   teams: Team[]
   user: any
+  userTimezone: TimezoneOffset
 }
 
-export default function TeamScheduleSelector({ teams, user }: TeamScheduleSelectorProps) {
+export default function TeamScheduleSelector({ teams, user, userTimezone }: TeamScheduleSelectorProps) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
 
   return (
@@ -79,6 +81,7 @@ export default function TeamScheduleSelector({ teams, user }: TeamScheduleSelect
         <ScheduleManagementClient 
           team={selectedTeam}
           user={user}
+          userTimezone={userTimezone}
         />
       ) : (
         <div className="text-center py-12 bg-dark-card border border-gray-800 rounded-xl">

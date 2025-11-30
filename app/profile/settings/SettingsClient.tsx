@@ -2,12 +2,14 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Save, Loader2, Lock, Eye, EyeOff, Upload, Trash2, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, User, Save, Loader2, Lock, Eye, EyeOff, Upload, Trash2, Image as ImageIcon, Globe } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { deleteUserAvatar } from '@/lib/cloudinary/delete'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
+import { TIMEZONE_OPTIONS, TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
+import CustomSelect from '@/components/CustomSelect'
 
 interface Profile {
   id: string
@@ -16,6 +18,7 @@ interface Profile {
   role: string
   created_at: string
   avatar_url?: string | null
+  timezone?: TimezoneOffset | null
 }
 
 interface SettingsClientProps {
@@ -29,6 +32,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [username, setUsername] = useState(profile.username)
+  const [timezone, setTimezone] = useState<TimezoneOffset>(profile.timezone || DEFAULT_TIMEZONE)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -53,12 +57,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     try {
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ username })
+        .update({ username, timezone })
         .eq('id', userId)
 
       if (updateError) throw updateError
 
-      // Update the cookie with new username
+      // Update the cookie with new username and timezone
       const userCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('esports_user='))
@@ -66,6 +70,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
       if (userCookie) {
         const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]))
         userData.username = username
+        userData.timezone = timezone
         document.cookie = `esports_user=${JSON.stringify(userData)}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`
       }
 
@@ -320,10 +325,27 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                 <p className="text-xs text-gray-500 mt-1">Role is managed by administrators</p>
               </div>
 
+              {/* Timezone Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Timezone
+                </label>
+                <CustomSelect
+                  value={timezone}
+                  onChange={(value) => setTimezone(value as TimezoneOffset)}
+                  options={TIMEZONE_OPTIONS.map(opt => ({
+                    value: opt.value,
+                    label: `${opt.label} - ${opt.regions}`
+                  }))}
+                  placeholder="Select timezone"
+                />
+                <p className="text-xs text-gray-500 mt-2">Schedule times will be displayed in your timezone</p>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || username === profile.username}
+                disabled={loading || (username === profile.username && timezone === (profile.timezone || DEFAULT_TIMEZONE))}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 {loading ? (

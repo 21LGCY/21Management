@@ -1,44 +1,33 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { PlayerAvailability, DayOfWeek, HourSlot } from '@/lib/types/database'
+import { PlayerAvailability, DayOfWeek, HourSlot, TimezoneOffset } from '@/lib/types/database'
+import { 
+  convertHourToUserTimezone, 
+  getTimezoneShort, 
+  ORG_TIMEZONE,
+  DAYS,
+  DAY_LABELS,
+  ORG_HOURS,
+  formatHourShort,
+  getDateForDay
+} from '@/lib/utils/timezone'
+import { Globe } from 'lucide-react'
 
 interface AvailabilityHeatmapProps {
   availabilities: PlayerAvailability[]
   weekStart: string
+  userTimezone?: TimezoneOffset
 }
 
-const DAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-const HOURS: HourSlot[] = [15, 16, 17, 18, 19, 20, 21, 22, 23]
-
-const DAY_LABELS: Record<DayOfWeek, string> = {
-  monday: 'Mon',
-  tuesday: 'Tue',
-  wednesday: 'Wed',
-  thursday: 'Thu',
-  friday: 'Fri',
-  saturday: 'Sat',
-  sunday: 'Sun',
-}
-
-// Move pure functions outside component
-const formatHourSlot = (hour: number): string => {
-  if (hour === 12) return '12 PM'
-  if (hour < 12) return `${hour} AM`
-  if (hour === 24 || hour === 0) return '12 AM'
-  return `${hour - 12} PM`
-}
-
-const formatTimeRange = (hour: number): string => {
-  const start = formatHourSlot(hour)
-  const end = hour === 23 ? '12 AM' : formatHourSlot(hour + 1)
+// Format time range with timezone conversion
+const formatTimeRange = (hour: number, userTimezone?: TimezoneOffset): string => {
+  const displayHour = userTimezone ? convertHourToUserTimezone(hour, userTimezone) : hour
+  const displayEndHour = userTimezone ? convertHourToUserTimezone(hour + 1, userTimezone) : hour + 1
+  
+  const start = formatHourShort(displayHour)
+  const end = formatHourShort(displayEndHour % 24)
   return `${start} - ${end}`
-}
-
-const getDateForDay = (weekStart: string, dayIndex: number): string => {
-  const date = new Date(weekStart)
-  date.setDate(date.getDate() + dayIndex)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 const getHeatmapColor = (count: number): string => {
@@ -100,14 +89,14 @@ const HeatmapCell = memo(function HeatmapCell({
   )
 })
 
-function AvailabilityHeatmap({ availabilities, weekStart }: AvailabilityHeatmapProps) {
+function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIMEZONE }: AvailabilityHeatmapProps) {
   // Pre-compute all counts and player names in a single pass
   const heatmapData = useMemo(() => {
     const data: Record<string, { count: number; players: string[] }> = {}
     
     // Initialize all slots
     for (const day of DAYS) {
-      for (const hour of HOURS) {
+      for (const hour of ORG_HOURS) {
         data[`${day}-${hour}`] = { count: 0, players: [] }
       }
     }
@@ -118,7 +107,7 @@ function AvailabilityHeatmap({ availabilities, weekStart }: AvailabilityHeatmapP
       const playerName = (avail as { player?: { username?: string } }).player?.username || 'Unknown Player'
       
       for (const day of DAYS) {
-        for (const hour of HOURS) {
+        for (const hour of ORG_HOURS) {
           if (timeSlots[day]?.[hour] === true) {
             const key = `${day}-${hour}`
             data[key].count++
@@ -141,7 +130,18 @@ function AvailabilityHeatmap({ availabilities, weekStart }: AvailabilityHeatmapP
     <div className="space-y-4">
       {/* Heatmap Grid */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <h3 className="text-2xl font-semibold text-white mb-4">Availability Overview</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-semibold text-white">Availability Overview</h3>
+          {/* Timezone indicator */}
+          {userTimezone !== ORG_TIMEZONE && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg">
+              <Globe className="w-4 h-4 text-primary" />
+              <span className="text-sm text-gray-300">
+                Times in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span>
+              </span>
+            </div>
+          )}
+        </div>
         
         <div className="w-full overflow-x-auto">
           <div className="min-w-[800px] pr-6 pt-20">
@@ -164,11 +164,11 @@ function AvailabilityHeatmap({ availabilities, weekStart }: AvailabilityHeatmapP
 
             {/* Time Slots Grid */}
             <div className="space-y-2">
-              {HOURS.map((hour) => (
+              {ORG_HOURS.map((hour) => (
                 <div key={hour} className="grid grid-cols-8 gap-2">
-                  {/* Time Label */}
+                  {/* Time Label - converted to user timezone */}
                   <div className="flex items-center justify-center text-xs text-gray-400 font-medium">
-                    {formatTimeRange(hour)}
+                    {formatTimeRange(hour, userTimezone)}
                   </div>
 
                   {/* Day Slots */}

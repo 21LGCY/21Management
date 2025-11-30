@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import PlayerAvailabilityClient from './PlayerAvailabilityClient'
+import { TimezoneOffset } from '@/lib/types/database'
+import { ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 export default async function PlayerAvailabilityPage() {
   const user = await requireRole(['player'])
@@ -9,9 +11,12 @@ export default async function PlayerAvailabilityPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*, teams(id, name)')
+    .select('*, teams(id, name), timezone')
     .eq('id', user.user_id)
     .single()
+
+  // Get user's timezone, default to ORG_TIMEZONE if not set
+  const userTimezone: TimezoneOffset = (profile?.timezone as TimezoneOffset) || ORG_TIMEZONE
 
   if (!profile.team_id) {
     return (
@@ -33,7 +38,7 @@ export default async function PlayerAvailabilityPage() {
   return (
     <div className="min-h-screen bg-dark">
       <NavbarWrapper role={user.role} username={user.username} userId={user.user_id} avatarUrl={user.avatar_url} />
-      <PlayerAvailabilityClient profile={profile} />
+      <PlayerAvailabilityClient profile={profile} userTimezone={userTimezone} />
     </div>
   )
 }

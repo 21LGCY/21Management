@@ -287,7 +287,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Session Start
+                  Session Start <span className="text-gray-500 font-normal">(always set to Monday)</span>
                 </label>
                 <input
                   type="date"

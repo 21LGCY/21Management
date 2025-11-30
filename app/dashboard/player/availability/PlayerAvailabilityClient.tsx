@@ -2,12 +2,15 @@
 
 import PlayerAvailabilityForm from '@/components/PlayerAvailabilityForm'
 import { Calendar } from 'lucide-react'
+import { TimezoneOffset } from '@/lib/types/database'
+import { ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 interface PlayerAvailabilityClientProps {
   profile: any
+  userTimezone?: TimezoneOffset
 }
 
-export default function PlayerAvailabilityClient({ profile }: PlayerAvailabilityClientProps) {
+export default function PlayerAvailabilityClient({ profile, userTimezone = ORG_TIMEZONE }: PlayerAvailabilityClientProps) {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -25,6 +28,7 @@ export default function PlayerAvailabilityClient({ profile }: PlayerAvailability
       <PlayerAvailabilityForm 
         playerId={profile.id} 
         teamId={profile.team_id}
+        userTimezone={userTimezone}
       />
     </main>
   )

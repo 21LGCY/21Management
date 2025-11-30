@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Save, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { Calendar, Save, CheckCircle, AlertCircle, Clock, Globe } from 'lucide-react'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import QuickFillButtons from '@/components/QuickFillButtons'
-import { TimeSlots } from '@/lib/types/database'
+import { TimeSlots, TimezoneOffset } from '@/lib/types/database'
+import { ORG_TIMEZONE, getTimezoneShort } from '@/lib/utils/timezone'
 
 interface PlayerAvailabilityFormProps {
   playerId: string
   teamId: string
   onSaved?: () => void
   userRole?: string // Add role to determine access restrictions
+  userTimezone?: TimezoneOffset // User's timezone for display
 }
 
 // Helper to get Monday of current week in Europe/Paris timezone
@@ -62,7 +64,7 @@ const isWeekInPast = (weekStart: Date): boolean => {
   return weekStart < currentMonday
 }
 
-export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, userRole = 'player' }: PlayerAvailabilityFormProps) {
+export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, userRole = 'player', userTimezone = ORG_TIMEZONE }: PlayerAvailabilityFormProps) {
   const [timeSlots, setTimeSlots] = useState<TimeSlots>({})
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(true)
@@ -279,6 +281,25 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
             </div>
           </div>
         </div>
+
+        {/* Timezone Notice */}
+        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 mt-3">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-primary" />
+            <p className="text-gray-400 text-sm">
+              {userTimezone !== ORG_TIMEZONE ? (
+                <>
+                  Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span> (your timezone).
+                  Data is stored in CET for consistency.
+                </>
+              ) : (
+                <>
+                  <span className="text-primary font-medium">Times are in CET (Paris)</span> — the organization's reference timezone.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Quick Fill Buttons - Hide for read-only */}
@@ -297,6 +318,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
           timeSlots={timeSlots}
           onChange={setTimeSlots}
           readOnly={isReadOnly}
+          userTimezone={userTimezone}
         />
       </div>
 

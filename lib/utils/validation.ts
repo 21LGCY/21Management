@@ -20,12 +20,15 @@ export function isValidDateString(date: string): boolean {
 }
 
 /**
- * Validate time string format (HH:MM or HH:MM:SS)
+ * Validate time string format (HH:MM, HH:MM:SS, or X:00 AM/PM)
  */
 export function isValidTimeString(time: string): boolean {
   if (typeof time !== 'string') return false
-  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/
-  return timeRegex.test(time)
+  // 24-hour format: HH:MM or HH:MM:SS
+  const timeRegex24 = /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/
+  // 12-hour format: X:00 AM/PM (used by schedule management)
+  const timeRegex12 = /^(1[0-2]|[1-9]):00 (AM|PM)$/
+  return timeRegex24.test(time) || timeRegex12.test(time)
 }
 
 /**

@@ -1,48 +1,25 @@
 'use client'
 
 import { useState, useEffect, memo } from 'react'
-import { CheckCircle, XCircle, Calendar as CalendarIcon } from 'lucide-react'
-import { TimeSlots, DayOfWeek, HourSlot } from '@/lib/types/database'
+import { CheckCircle, XCircle, Calendar as CalendarIcon, Globe } from 'lucide-react'
+import { TimeSlots, DayOfWeek, TimezoneOffset } from '@/lib/types/database'
+import { 
+  getHourOffset, 
+  getTimezoneShort, 
+  ORG_TIMEZONE, 
+  DAYS, 
+  DAY_LABELS, 
+  ORG_HOURS,
+  formatHourRange,
+  getDateForDay
+} from '@/lib/utils/timezone'
 
 interface AvailabilityCalendarProps {
   weekStart: string
   timeSlots: TimeSlots
   onChange: (timeSlots: TimeSlots) => void
   readOnly?: boolean
-}
-
-const DAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-const HOURS: HourSlot[] = [15, 16, 17, 18, 19, 20, 21, 22, 23]
-
-const DAY_LABELS: Record<DayOfWeek, string> = {
-  monday: 'Mon',
-  tuesday: 'Tue',
-  wednesday: 'Wed',
-  thursday: 'Thu',
-  friday: 'Fri',
-  saturday: 'Sat',
-  sunday: 'Sun',
-}
-
-const formatHourSlot = (hour: number): string => {
-  if (hour === 12) return '12 PM'
-  if (hour < 12) return `${hour} AM`
-  if (hour === 24 || hour === 0) return '12 AM'
-  return `${hour - 12} PM`
-}
-
-const formatTimeRange = (hour: number): string => {
-  const start = formatHourSlot(hour)
-  const end = hour === 23 ? '12 AM' : formatHourSlot(hour + 1)
-  return `${start} - ${end}`
-}
-
-const getDateForDay = (weekStart: string, dayIndex: number): string => {
-  // Parse the date string correctly to avoid timezone issues - use UTC like manager
-  const [year, month, day] = weekStart.split('-').map(Number)
-  const date = new Date(Date.UTC(year, month - 1, day))
-  date.setUTCDate(date.getUTCDate() + dayIndex)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+  userTimezone?: TimezoneOffset
 }
 
 // Memoized slot component to prevent unnecessary re-renders
@@ -95,9 +72,17 @@ const TimeSlot = memo(({
 
 TimeSlot.displayName = 'TimeSlot'
 
-function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false }: AvailabilityCalendarProps) {
+function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false, userTimezone = ORG_TIMEZONE }: AvailabilityCalendarProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragValue, setDragValue] = useState<boolean | null>(null)
+
+  // Calculate display hours based on user timezone
+  // ORG hours are 15-23 (3PM-11PM CET), shift for user's timezone
+  const offset = getHourOffset(userTimezone)
+  const displayHours = ORG_HOURS.map(orgHour => {
+    const userHour = (orgHour + offset + 24) % 24
+    return { orgHour, userHour }
+  })
 
   const toggleSlot = (day: DayOfWeek, hour: number) => {
     if (readOnly) return
@@ -154,6 +139,16 @@ function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false
   return (
     <div className="w-full overflow-x-auto">
       <div className="min-w-[800px] pr-2 transition-opacity duration-200">
+        {/* Timezone indicator */}
+        {userTimezone !== ORG_TIMEZONE && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
+            <Globe className="w-4 h-4 text-primary" />
+            <span className="text-sm text-gray-300">
+              Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span> (your timezone)
+            </span>
+          </div>
+        )}
+
         {/* Header with Days */}
         <div className="grid grid-cols-8 gap-2 mb-2">
           <div className="text-sm font-medium text-gray-400 flex items-center justify-center">
@@ -171,28 +166,28 @@ function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false
           ))}
         </div>
 
-        {/* Time Slots Grid */}
+        {/* Time Slots Grid - uses displayHours for visual, orgHour for data */}
         <div className="space-y-2">
-          {HOURS.map((hour) => (
-            <div key={hour} className="grid grid-cols-8 gap-2">
-              {/* Time Label */}
+          {displayHours.map(({ orgHour, userHour }) => (
+            <div key={orgHour} className="grid grid-cols-8 gap-2">
+              {/* Time Label - show user's timezone hour */}
               <div className="flex items-center justify-center text-xs text-gray-400 font-medium">
-                {formatTimeRange(hour)}
+                {formatHourRange(userHour)}
               </div>
 
-              {/* Day Slots */}
+              {/* Day Slots - store using orgHour */}
               {DAYS.map((day) => {
-                const available = isSlotAvailable(day, hour)
+                const available = isSlotAvailable(day, orgHour)
                 
                 return (
                   <TimeSlot
-                    key={`${day}-${hour}`}
+                    key={`${day}-${orgHour}`}
                     day={day}
-                    hour={hour}
+                    hour={orgHour}
                     available={available}
                     readOnly={readOnly}
-                    onMouseDown={() => handleMouseDown(day, hour)}
-                    onMouseEnter={() => handleMouseEnter(day, hour)}
+                    onMouseDown={() => handleMouseDown(day, orgHour)}
+                    onMouseEnter={() => handleMouseEnter(day, orgHour)}
                   />
                 )
               })}

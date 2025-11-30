@@ -5,17 +5,19 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, Copy, CheckCircle, User, Trash2, BarChart3, Clock, RefreshCw, UserPlus, Edit2, Save, X, Search } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { TryoutWeek, PlayerAvailability, ProfileTryout, TeamCategory } from '@/lib/types/database'
+import { TryoutWeek, PlayerAvailability, ProfileTryout, TeamCategory, TimezoneOffset } from '@/lib/types/database'
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
+import { ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 interface TryoutWeekDetailManagerProps {
   weekId: string
   team: any
   teamCategory: TeamCategory | null
+  userTimezone?: TimezoneOffset
 }
 
-export default function TryoutWeekDetailManager({ weekId, team, teamCategory }: TryoutWeekDetailManagerProps) {
+export default function TryoutWeekDetailManager({ weekId, team, teamCategory, userTimezone = ORG_TIMEZONE }: TryoutWeekDetailManagerProps) {
   const router = useRouter()
   const [week, setWeek] = useState<TryoutWeek | null>(null)
   const [availabilities, setAvailabilities] = useState<PlayerAvailability[]>([])
@@ -533,7 +535,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory }: 
       {/* Heatmap View */}
       {viewMode === 'heatmap' && week && (
         <div>
-          <AvailabilityHeatmap availabilities={availabilities} weekStart={week.week_start} />
+          <AvailabilityHeatmap availabilities={availabilities} weekStart={week.week_start} userTimezone={userTimezone} />
         </div>
       )}
 
@@ -602,6 +604,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory }: 
                         timeSlots={availability.time_slots}
                         onChange={() => {}} // Read-only
                         readOnly={true}
+                        userTimezone={userTimezone}
                       />
                     </div>
                   )}

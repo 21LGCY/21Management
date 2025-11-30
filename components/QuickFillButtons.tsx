@@ -2,6 +2,7 @@
 
 import { CheckSquare, XSquare, Moon, Calendar, Save } from 'lucide-react'
 import { TimeSlots, DayOfWeek, HourSlot } from '@/lib/types/database'
+import { DAYS, ORG_HOURS } from '@/lib/utils/timezone'
 
 interface QuickFillButtonsProps {
   onFill: (timeSlots: TimeSlots) => void
@@ -9,8 +10,6 @@ interface QuickFillButtonsProps {
   saving?: boolean
 }
 
-const DAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-const HOURS: HourSlot[] = [15, 16, 17, 18, 19, 20, 21, 22, 23]
 const WEEKDAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
 const WEEKEND: DayOfWeek[] = ['saturday', 'sunday']
 const EVENING_HOURS: HourSlot[] = [18, 19, 20, 21, 22, 23] // 6 PM onwards
@@ -20,7 +19,7 @@ export default function QuickFillButtons({ onFill, onSave, saving = false }: Qui
     const slots: TimeSlots = {}
     DAYS.forEach(day => {
       slots[day] = {}
-      HOURS.forEach(hour => {
+      ORG_HOURS.forEach(hour => {
         slots[day]![hour] = true
       })
     })
@@ -31,7 +30,7 @@ export default function QuickFillButtons({ onFill, onSave, saving = false }: Qui
     const slots: TimeSlots = {}
     DAYS.forEach(day => {
       slots[day] = {}
-      HOURS.forEach(hour => {
+      ORG_HOURS.forEach(hour => {
         slots[day]![hour] = false
       })
     })
@@ -42,7 +41,7 @@ export default function QuickFillButtons({ onFill, onSave, saving = false }: Qui
     const slots: TimeSlots = {}
     DAYS.forEach(day => {
       slots[day] = {}
-      HOURS.forEach(hour => {
+      ORG_HOURS.forEach(hour => {
         slots[day]![hour] = EVENING_HOURS.includes(hour)
       })
     })
@@ -53,7 +52,7 @@ export default function QuickFillButtons({ onFill, onSave, saving = false }: Qui
     const slots: TimeSlots = {}
     DAYS.forEach(day => {
       slots[day] = {}
-      HOURS.forEach(hour => {
+      ORG_HOURS.forEach(hour => {
         slots[day]![hour] = WEEKEND.includes(day)
       })
     })
@@ -64,7 +63,7 @@ export default function QuickFillButtons({ onFill, onSave, saving = false }: Qui
     const slots: TimeSlots = {}
     DAYS.forEach(day => {
       slots[day] = {}
-      HOURS.forEach(hour => {
+      ORG_HOURS.forEach(hour => {
         slots[day]![hour] = WEEKDAYS.includes(day)
       })
     })

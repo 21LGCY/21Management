@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/server'
 import BackButton from '@/components/BackButton'
 import TeamScheduleSelector from './TeamScheduleSelector'
+import { TimezoneOffset } from '@/lib/types/database'
 
 export default async function AdminTeamSchedulePage() {
   // Require admin role
@@ -14,6 +15,15 @@ export default async function AdminTeamSchedulePage() {
     .from('teams')
     .select('*')
     .order('name', { ascending: true })
+
+  // Get user's timezone from profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('timezone')
+    .eq('id', user.user_id)
+    .single()
+  
+  const userTimezone = (profile?.timezone || 'UTC+1') as TimezoneOffset
 
   return (
     <div className="min-h-screen bg-dark">
@@ -40,6 +50,7 @@ export default async function AdminTeamSchedulePage() {
           <TeamScheduleSelector 
             teams={teams}
             user={user}
+            userTimezone={userTimezone}
           />
         ) : (
           <div className="text-center py-12">

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen } from 'lucide-react'
+import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { TimezoneOffset } from '@/lib/types/database'
+import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE } from '@/lib/utils/timezone'
 
 // Activity types with colors and icons (higher contrast)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -39,6 +41,7 @@ const activityTypes: { [key: string]: { icon: any; color: string; name: string }
 }
 
 // Generate time slots from 3:00 PM to 11:00 PM (matching player availability)
+// These are stored in ORG_TIMEZONE (CET/Paris) and will be converted for display
 const generateTimeSlots = () => {
   const slots = []
   for (let hour = 3; hour < 12; hour++) {
@@ -47,7 +50,8 @@ const generateTimeSlots = () => {
   return slots
 }
 
-const timeSlots = generateTimeSlots()
+// Time slots in ORG_TIMEZONE (CET)
+const orgTimeSlots = generateTimeSlots()
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 interface ScheduleActivity {
@@ -120,15 +124,22 @@ const getDayNumber = (dayName: string): number => {
 interface PlayerScheduleClientProps {
   teamId: string
   teamName: string
+  userTimezone: TimezoneOffset
 }
 
-export default function PlayerScheduleClient({ teamId, teamName }: PlayerScheduleClientProps) {
+export default function PlayerScheduleClient({ teamId, teamName, userTimezone }: PlayerScheduleClientProps) {
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
   const [weekDates, setWeekDates] = useState<string[]>([])
   const [selectedActivity, setSelectedActivity] = useState<ScheduleActivity | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
+
+  // Convert time slots to user's timezone for display
+  const displayTimeSlots = orgTimeSlots.map(slot => ({
+    org: slot, // Original CET time (used for matching activities)
+    display: convertTimeSlotToUserTimezone(slot, userTimezone) // Converted for user display
+  }))
 
   useEffect(() => {
     setWeekDates(getWeekDates(currentWeekOffset))
@@ -211,6 +222,17 @@ export default function PlayerScheduleClient({ teamId, teamName }: PlayerSchedul
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{teamName} Schedule</h1>
           <p className="text-gray-400">View your team's training and match schedule</p>
+        </div>
+        {/* Timezone indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <Globe className="w-4 h-4 text-primary" />
+          <span className="text-sm text-gray-300">
+            {userTimezone !== ORG_TIMEZONE ? (
+              <>Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
+            ) : (
+              <span className="text-gray-400">CET (Org timezone)</span>
+            )}
+          </span>
         </div>
       </div>
 
@@ -295,10 +317,10 @@ export default function PlayerScheduleClient({ teamId, teamName }: PlayerSchedul
 
             {/* Time Slots */}
             <div>
-              {timeSlots.map((timeSlot) => (
+              {displayTimeSlots.map(({ org: timeSlot, display: displayTime }) => (
                 <div key={timeSlot} className="grid grid-cols-8 border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors">
                   <div className="p-3 text-sm font-medium text-gray-300 bg-gray-800/60 sticky left-0 z-10 border-r border-gray-700">
-                    {timeSlot}
+                    {displayTime}
                   </div>
                   {daysOfWeek.map((day, dayIndex) => {
                     const activity = getActivityForSlot(day, timeSlot, weekDates[dayIndex])
@@ -428,7 +450,10 @@ export default function PlayerScheduleClient({ teamId, teamName }: PlayerSchedul
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span>{selectedActivity.time_slot}</span>
+                        <span>{convertTimeSlotToUserTimezone(selectedActivity.time_slot, userTimezone)}</span>
+                        {userTimezone !== ORG_TIMEZONE && (
+                          <span className="text-xs text-gray-500">({getTimezoneShort(userTimezone)})</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />

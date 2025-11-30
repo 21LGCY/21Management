@@ -3,19 +3,21 @@ import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import PlayerScheduleClient from './PlayerScheduleClient'
 import BackButton from '@/components/BackButton'
+import { TimezoneOffset } from '@/lib/types/database'
 
 export default async function PlayerSchedulePage() {
   const user = await requireRole(['player'])
   const supabase = await createClient()
 
-  // Get player's team info
+  // Get player's team info and timezone
   const { data: playerData } = await supabase
     .from('profiles')
-    .select('team_id, teams(id, name, game, tag)')
+    .select('team_id, timezone, teams(id, name, game, tag)')
     .eq('id', user.user_id)
     .single()
 
   const teamId = playerData?.team_id || ''
+  const userTimezone = (playerData?.timezone || 'UTC+1') as TimezoneOffset
   // Handle teams as array from the join
   const teams = playerData?.teams as { id: string; name: string; game: string; tag: string }[] | null
   const teamName = teams?.[0]?.name || 'Your Team'
@@ -34,6 +36,7 @@ export default async function PlayerSchedulePage() {
         <PlayerScheduleClient 
           teamId={teamId}
           teamName={teamName}
+          userTimezone={userTimezone}
         />
       </main>
     </div>

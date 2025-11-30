@@ -1,15 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, CheckCircle, Send, AlertCircle } from 'lucide-react'
+import { Calendar, CheckCircle, Send, AlertCircle, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import QuickFillButtons from '@/components/QuickFillButtons'
-import { TimeSlots } from '@/lib/types/database'
+import { TimeSlots, TimezoneOffset } from '@/lib/types/database'
+import { ORG_TIMEZONE, getTimezoneShort } from '@/lib/utils/timezone'
 
 interface AvailabilityFormProps {
   token: string
 }
+
+const TIMEZONE_OPTIONS: { value: TimezoneOffset; label: string; description: string }[] = [
+  { value: 'UTC+0', label: 'GMT / UTC+0', description: 'UK, Portugal, Iceland' },
+  { value: 'UTC+1', label: 'CET / UTC+1', description: 'France, Germany, Spain, Italy' },
+  { value: 'UTC+2', label: 'EET / UTC+2', description: 'Finland, Greece, Romania, Ukraine' },
+  { value: 'UTC+3', label: 'MSK / UTC+3', description: 'Russia (Moscow), Turkey' },
+]
 
 const getTeamLabel = (teamCategory: string): string => {
   switch (teamCategory) {
@@ -29,6 +37,7 @@ export default function AvailabilityForm({ token }: AvailabilityFormProps) {
   const [tryoutWeek, setTryoutWeek] = useState<any>(null)
   const [player, setPlayer] = useState<any>(null)
   const [timeSlots, setTimeSlots] = useState<TimeSlots>({})
+  const [userTimezone, setUserTimezone] = useState<TimezoneOffset>(ORG_TIMEZONE)
   const supabase = createClient()
 
   useEffect(() => {
@@ -245,6 +254,36 @@ export default function AvailabilityForm({ token }: AvailabilityFormProps) {
             <p className="text-gray-400 mb-6">
               Click on the time slots when you're available. You can click and drag to select multiple slots at once.
             </p>
+
+            {/* Timezone Selector */}
+            <div className="mb-4 p-3 bg-dark border border-gray-800 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="w-4 h-4 text-primary" />
+                <span className="text-white font-medium text-sm">Select Your Timezone</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {TIMEZONE_OPTIONS.map((tz) => (
+                  <button
+                    key={tz.value}
+                    type="button"
+                    onClick={() => setUserTimezone(tz.value)}
+                    className={`p-2 rounded-lg border text-left transition ${
+                      userTimezone === tz.value
+                        ? 'border-primary bg-primary/20 text-white'
+                        : 'border-gray-700 bg-dark-card text-gray-300 hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="font-medium text-xs">{tz.label}</div>
+                    <div className="text-[10px] text-gray-400 mt-0.5 truncate">{tz.description}</div>
+                  </button>
+                ))}
+              </div>
+              {userTimezone !== ORG_TIMEZONE && (
+                <p className="text-xs text-primary mt-2">
+                  Times shown in {getTimezoneShort(userTimezone)}. Data stored in CET.
+                </p>
+              )}
+            </div>
             
             {/* Quick Fill Buttons */}
             <QuickFillButtons onFill={setTimeSlots} />
@@ -254,19 +293,20 @@ export default function AvailabilityForm({ token }: AvailabilityFormProps) {
               weekStart={tryoutWeek.week_start}
               timeSlots={timeSlots}
               onChange={setTimeSlots}
+              userTimezone={userTimezone}
             />
 
             {/* Submit Button */}
-            <div className="mt-8">
+            <div className="mt-6">
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-6 text-lg px-4 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-4 text-base px-4 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
                 {submitting ? 'Submitting...' : 'Submit Availability'}
               </button>
-              <p className="text-xs text-gray-500 text-center mt-3">
+              <p className="text-xs text-gray-500 text-center mt-2">
                 Selected: {countAvailableSlots(timeSlots)} time slots
               </p>
             </div>
