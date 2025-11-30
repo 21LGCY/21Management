@@ -93,7 +93,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     setSuccess(false)
 
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match')
+      setError('New passwords does not match')
       setLoading(false)
       return
     }
