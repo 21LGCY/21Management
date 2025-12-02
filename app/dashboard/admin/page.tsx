@@ -13,55 +13,63 @@ export default async function AdminDashboard() {
   
   const supabase = await createClient()
 
-  // Get user's timezone
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('timezone')
-    .eq('id', user.user_id)
-    .single()
-  
+  // Run all queries in parallel for faster page load
+  const [
+    { data: userProfile },
+    { count: teamCount },
+    { count: playerCount },
+    { count: tournamentCount },
+    { data: scheduleActivities },
+    { data: tournaments },
+    { data: players },
+    { data: teams }
+  ] = await Promise.all([
+    // Get user's timezone
+    supabase
+      .from('profiles')
+      .select('timezone')
+      .eq('id', user.user_id)
+      .single(),
+    // Get team count
+    supabase
+      .from('teams')
+      .select('*', { count: 'exact', head: true }),
+    // Get player count
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'player'),
+    // Get tournament count
+    supabase
+      .from('tournaments')
+      .select('*', { count: 'exact', head: true }),
+    // Get schedule activities across all teams
+    supabase
+      .from('schedule_activities')
+      .select('*, teams(name)')
+      .order('activity_date', { ascending: true, nullsFirst: false })
+      .limit(5),
+    // Get tournaments
+    supabase
+      .from('tournaments')
+      .select('*')
+      .order('start_date', { ascending: false })
+      .limit(5),
+    // Get players across all teams
+    supabase
+      .from('profiles')
+      .select('*, teams(name)')
+      .eq('role', 'player')
+      .order('created_at', { ascending: false })
+      .limit(10),
+    // Get teams
+    supabase
+      .from('teams')
+      .select('*')
+      .order('created_at', { ascending: false })
+  ])
+
   const userTimezone = (userProfile?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
-
-  // Get statistics
-  const { count: teamCount } = await supabase
-    .from('teams')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: playerCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'player')
-
-  const { count: tournamentCount } = await supabase
-    .from('tournaments')
-    .select('*', { count: 'exact', head: true })
-
-  // Get schedule activities across all teams
-  const { data: scheduleActivities } = await supabase
-    .from('schedule_activities')
-    .select('*, teams(name)')
-    .order('activity_date', { ascending: true, nullsFirst: false })
-    .limit(5)
-
-  // Get tournaments
-  const { data: tournaments } = await supabase
-    .from('tournaments')
-    .select('*')
-    .order('start_date', { ascending: false })
-    .limit(5)
-
-  // Get players across all teams
-  const { data: players } = await supabase
-    .from('profiles')
-    .select('*, teams(name)')
-    .eq('role', 'player')
-    .order('created_at', { ascending: false })
-    .limit(10)
-
-  const { data: teams } = await supabase
-    .from('teams')
-    .select('*')
-    .order('created_at', { ascending: false })
 
   return (
     <div className="min-h-screen bg-dark">

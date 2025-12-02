@@ -13,45 +13,50 @@ export default async function ManagerDashboard() {
   
   const supabase = await createClient()
 
-  // Get user's timezone
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('timezone')
-    .eq('id', user.user_id)
-    .single()
-  
+  // Run all queries in parallel for faster page load
+  const [
+    { data: userProfile },
+    { count: playerCount },
+    { data: scheduleActivities },
+    { data: tournaments },
+    { data: players }
+  ] = await Promise.all([
+    // Get user's timezone
+    supabase
+      .from('profiles')
+      .select('timezone')
+      .eq('id', user.user_id)
+      .single(),
+    // Get statistics for manager's team only
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'player')
+      .eq('team_id', teamId),
+    // Get schedule activities for manager's team
+    supabase
+      .from('schedule_activities')
+      .select('*')
+      .eq('team_id', teamId)
+      .order('activity_date', { ascending: true, nullsFirst: false })
+      .limit(5),
+    // Get tournaments where manager's team is participating
+    supabase
+      .from('tournaments')
+      .select('*')
+      .order('start_date', { ascending: false })
+      .limit(5),
+    // Get players from manager's team only
+    supabase
+      .from('profiles')
+      .select('*, teams(name)')
+      .eq('role', 'player')
+      .eq('team_id', teamId)
+      .order('created_at', { ascending: false })
+      .limit(10)
+  ])
+
   const userTimezone = (userProfile?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
-
-  // Get statistics for manager's team only
-  const { count: playerCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'player')
-    .eq('team_id', teamId)
-
-  // Get schedule activities for manager's team
-  const { data: scheduleActivities } = await supabase
-    .from('schedule_activities')
-    .select('*')
-    .eq('team_id', teamId)
-    .order('activity_date', { ascending: true, nullsFirst: false })
-    .limit(5)
-
-  // Get tournaments where manager's team is participating
-  const { data: tournaments } = await supabase
-    .from('tournaments')
-    .select('*')
-    .order('start_date', { ascending: false })
-    .limit(5)
-
-  // Get players from manager's team only
-  const { data: players } = await supabase
-    .from('profiles')
-    .select('*, teams(name)')
-    .eq('role', 'player')
-    .eq('team_id', teamId)
-    .order('created_at', { ascending: false })
-    .limit(10)
 
   return (
     <div className="min-h-screen bg-dark">

@@ -18,27 +18,20 @@ interface PageTransitionProviderProps {
 export function PageTransitionProvider({ children }: PageTransitionProviderProps) {
   const pathname = usePathname()
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [displayChildren, setDisplayChildren] = useState(children)
 
   useEffect(() => {
-    // Start transition
+    // Quick fade transition - minimal delay
     setIsTransitioning(true)
-    
-    // Short delay for exit animation, then update content
-    const timer = setTimeout(() => {
-      setDisplayChildren(children)
-      setIsTransitioning(false)
-    }, 150)
-
+    const timer = setTimeout(() => setIsTransitioning(false), 50)
     return () => clearTimeout(timer)
-  }, [pathname, children])
+  }, [pathname])
 
   return (
     <TransitionContext.Provider value={{ isTransitioning }}>
       <div
-        className={`page-transition-wrapper ${isTransitioning ? 'page-exit' : 'page-enter'}`}
+        className={`transition-opacity duration-150 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
       >
-        {displayChildren}
+        {children}
       </div>
     </TransitionContext.Provider>
   )

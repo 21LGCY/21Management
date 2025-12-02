@@ -24,23 +24,26 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  // Fetch avatar if not provided
+  // Only fetch avatar if not provided and we have a userId - avoid unnecessary API calls
   useEffect(() => {
+    if (initialAvatarUrl || !userId) return
+    
+    let cancelled = false
     const fetchAvatar = async () => {
-      if (!initialAvatarUrl && userId) {
-        const supabase = createClient()
-        const { data } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', userId)
-          .single()
-        
-        if (data?.avatar_url) {
-          setAvatarUrl(data.avatar_url)
-        }
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', userId)
+        .single()
+      
+      if (!cancelled && data?.avatar_url) {
+        setAvatarUrl(data.avatar_url)
       }
     }
     fetchAvatar()
+    
+    return () => { cancelled = true }
   }, [userId, initialAvatarUrl])
 
   useEffect(() => {

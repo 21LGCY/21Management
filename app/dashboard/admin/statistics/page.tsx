@@ -18,34 +18,40 @@ export default async function StatisticsPage() {
   const user = await requireRole(['admin'])
   const supabase = await createClient()
 
-  // Fetch all teams
-  const { data: teams } = await supabase
-    .from('teams')
-    .select('*')
-    .order('name')
+  // Run all queries in parallel for faster page load
+  const [
+    { data: teams },
+    { count: totalPlayers },
+    { data: matchStatsData },
+    { data: topPlayerData }
+  ] = await Promise.all([
+    // Fetch all teams
+    supabase
+      .from('teams')
+      .select('*')
+      .order('name'),
+    // Fetch quick stats for the overview cards
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'player')
+      .not('team_id', 'is', null),
+    // Count unique matches from player_match_stats
+    supabase
+      .from('player_match_stats')
+      .select('match_id'),
+    // Get top player
+    supabase
+      .from('player_match_stats')
+      .select('player_id, acs, profiles!inner(username, in_game_name)')
+      .order('acs', { ascending: false })
+      .limit(1)
+      .single()
+  ])
 
-  // Fetch quick stats for the overview cards
-  const { count: totalPlayers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'player')
-    .not('team_id', 'is', null)
-
-  // Count unique matches from player_match_stats
-  const { data: matchStatsData } = await supabase
-    .from('player_match_stats')
-    .select('match_id')
-  
   // Get unique match count
   const uniqueMatchIds = new Set(matchStatsData?.map(s => s.match_id) || [])
   const totalMatches = uniqueMatchIds.size
-
-  const { data: topPlayerData } = await supabase
-    .from('player_match_stats')
-    .select('player_id, acs, profiles!inner(username, in_game_name)')
-    .order('acs', { ascending: false })
-    .limit(1)
-    .single()
 
   // Type the result properly
   const topPlayer = topPlayerData as TopPlayerResult | null

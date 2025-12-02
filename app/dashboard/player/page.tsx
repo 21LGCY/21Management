@@ -12,39 +12,46 @@ export default async function PlayerDashboard() {
   
   const supabase = await createClient()
 
-  // Get player data (now directly from profiles)
+  // Get player data first (needed for team_id)
   const { data: playerData } = await supabase
     .from('profiles')
     .select('*, teams(name, game)')
     .eq('id', user.user_id)
     .single()
 
-  // Get all team players for roster display
-  const { data: teamPlayers } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('role', 'player')
-    .eq('team_id', playerData?.team_id || '')
-    .order('is_substitute', { ascending: true })
-    .order('created_at', { ascending: true })
+  const teamId = playerData?.team_id || ''
 
-  // Get upcoming matches for player's team
-  const { data: upcomingMatches } = await supabase
-    .from('matches')
-    .select('*, teams(name), tournaments(name)')
-    .eq('team_id', playerData?.team_id || '')
-    .gte('scheduled_at', new Date().toISOString())
-    .order('scheduled_at', { ascending: true })
-    .limit(5)
-
-  // Get recent matches
-  const { data: recentMatches } = await supabase
-    .from('matches')
-    .select('*, teams(name)')
-    .eq('team_id', playerData?.team_id || '')
-    .lte('scheduled_at', new Date().toISOString())
-    .order('scheduled_at', { ascending: false })
-    .limit(5)
+  // Run remaining queries in parallel for faster page load
+  const [
+    { data: teamPlayers },
+    { data: upcomingMatches },
+    { data: recentMatches }
+  ] = await Promise.all([
+    // Get all team players for roster display
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'player')
+      .eq('team_id', teamId)
+      .order('is_substitute', { ascending: true })
+      .order('created_at', { ascending: true }),
+    // Get upcoming matches for player's team
+    supabase
+      .from('matches')
+      .select('*, teams(name), tournaments(name)')
+      .eq('team_id', teamId)
+      .gte('scheduled_at', new Date().toISOString())
+      .order('scheduled_at', { ascending: true })
+      .limit(5),
+    // Get recent matches
+    supabase
+      .from('matches')
+      .select('*, teams(name)')
+      .eq('team_id', teamId)
+      .lte('scheduled_at', new Date().toISOString())
+      .order('scheduled_at', { ascending: false })
+      .limit(5)
+  ])
 
   const winCount = recentMatches?.filter(m => m.result === 'win').length || 0
   const totalMatches = recentMatches?.length || 0
