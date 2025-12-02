@@ -126,7 +126,8 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
-  const [weekDates, setWeekDates] = useState<string[]>([])
+  // Initialize weekDates synchronously to avoid extra render
+  const [weekDates, setWeekDates] = useState<string[]>(() => getWeekDates(0))
   const [selectedActivity, setSelectedActivity] = useState<ScheduleActivity | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -157,19 +158,87 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
     display: convertTimeSlotToUserTimezone(slot, userTimezone) // Converted for display
   }))
 
+  // Update weekDates when offset changes
   useEffect(() => {
     setWeekDates(getWeekDates(currentWeekOffset))
   }, [currentWeekOffset])
 
+  // Combined initial data fetch - runs once when team changes
   useEffect(() => {
-    fetchActivities()
-    fetchTeamPlayers()
+    const loadInitialData = async () => {
+      setLoading(true)
+      const supabase = createClient()
+      
+      // Fetch activities and team players count in parallel
+      const [activitiesResult, playersResult] = await Promise.all([
+        supabase
+          .from('schedule_activities')
+          .select('*')
+          .eq('team_id', team.id),
+        supabase
+          .from('profiles')
+          .select('id')
+          .eq('team_id', team.id)
+          .eq('role', 'player')
+      ])
+      
+      if (activitiesResult.error) {
+        console.error('Error fetching activities:', activitiesResult.error)
+      } else if (activitiesResult.data) {
+        setActivities(activitiesResult.data)
+      }
+      
+      if (playersResult.data) {
+        setTotalPlayers(playersResult.data.length)
+      }
+      
+      setLoading(false)
+    }
+    
+    loadInitialData()
   }, [team.id])
 
+  // Fetch player availabilities when week changes
   useEffect(() => {
-    if (weekDates.length > 0) {
-      fetchPlayerAvailabilities()
+    const fetchPlayerAvailabilities = async () => {
+      if (weekDates.length === 0) return
+      
+      const weekStart = weekDates[0]
+      const supabase = createClient()
+      
+      const { data: availData, error: availError } = await supabase
+        .from('player_weekly_availability')
+        .select('*')
+        .eq('team_id', team.id)
+        .eq('week_start', weekStart)
+      
+      if (availError) {
+        console.error('Error fetching availabilities:', availError)
+        return
+      }
+      
+      if (!availData || availData.length === 0) {
+        setPlayerAvailabilities([])
+        return
+      }
+      
+      // Fetch player details in parallel
+      const playerIds = availData.map(a => a.player_id)
+      const { data: playerData } = await supabase
+        .from('profiles')
+        .select('id, username, in_game_name, avatar_url')
+        .in('id', playerIds)
+      
+      // Merge the data
+      const mergedData = availData.map(avail => ({
+        ...avail,
+        player: playerData?.find(p => p.id === avail.player_id)
+      }))
+      
+      setPlayerAvailabilities(mergedData)
     }
+    
+    fetchPlayerAvailabilities()
   }, [weekDates, team.id])
 
   // Global mouse up listener for drag functionality
@@ -185,73 +254,6 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
       return () => document.removeEventListener('mouseup', handleGlobalMouseUp)
     }
   }, [isDragging, selectedSlots, activitiesToDelete])
-
-  const fetchActivities = async () => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('schedule_activities')
-      .select('*')
-      .eq('team_id', team.id)
-    
-    if (error) {
-      console.error('Error fetching activities:', error)
-    } else if (data) {
-      setActivities(data)
-    }
-    setLoading(false)
-  }
-
-  const fetchTeamPlayers = async () => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('team_id', team.id)
-      .eq('role', 'player')
-    
-    if (data) {
-      setTotalPlayers(data.length)
-    }
-  }
-
-  const fetchPlayerAvailabilities = async () => {
-    if (weekDates.length === 0) return
-    
-    const weekStart = weekDates[0]
-    const supabase = createClient()
-    
-    // First, try without the join to see if we get data
-    const { data: availData, error: availError } = await supabase
-      .from('player_weekly_availability')
-      .select('*')
-      .eq('team_id', team.id)
-      .eq('week_start', weekStart)
-    
-    if (availError) {
-      console.error('Error fetching availabilities:', availError)
-      return
-    }
-    
-    if (!availData || availData.length === 0) {
-      setPlayerAvailabilities([])
-      return
-    }
-    
-    // Now fetch player details separately
-    const playerIds = availData.map(a => a.player_id)
-    const { data: playerData, error: playerError } = await supabase
-      .from('profiles')
-      .select('id, username, in_game_name, avatar_url')
-      .in('id', playerIds)
-    
-    // Merge the data
-    const mergedData = availData.map(avail => ({
-      ...avail,
-      player: playerData?.find(p => p.id === avail.player_id)
-    }))
-    
-    setPlayerAvailabilities(mergedData)
-  }
 
   const getAvailablePlayersForSlot = (day: string, timeSlot: string): number => {
     const dayKey = day.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'

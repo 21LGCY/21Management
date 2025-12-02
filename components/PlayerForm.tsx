@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank } from '@/lib/types/database'
-import { Save, X, Plus } from 'lucide-react'
+import { Save, X, Plus, User, Gamepad2, Link as LinkIcon } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import SearchableCountrySelect from '@/components/SearchableCountrySelect'
 
 interface PlayerFormProps {
   teamId: string
@@ -22,33 +23,60 @@ const VALORANT_RANKS: ValorantRank[] = [
 ]
 
 const EUROPEAN_COUNTRIES = [
-  { code: 'FR', name: 'France' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'NL', name: 'Netherlands' },
-  { code: 'BE', name: 'Belgium' },
-  { code: 'SE', name: 'Sweden' },
-  { code: 'NO', name: 'Norway' },
-  { code: 'DK', name: 'Denmark' },
-  { code: 'FI', name: 'Finland' },
-  { code: 'PL', name: 'Poland' },
-  { code: 'CZ', name: 'Czech Republic' },
+  { code: 'AL', name: 'Albania' },
+  { code: 'AD', name: 'Andorra' },
   { code: 'AT', name: 'Austria' },
-  { code: 'CH', name: 'Switzerland' },
-  { code: 'PT', name: 'Portugal' },
+  { code: 'BY', name: 'Belarus' },
+  { code: 'BE', name: 'Belgium' },
+  { code: 'BA', name: 'Bosnia and Herzegovina' },
+  { code: 'BG', name: 'Bulgaria' },
+  { code: 'HR', name: 'Croatia' },
+  { code: 'CY', name: 'Cyprus' },
+  { code: 'CZ', name: 'Czech Republic' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'EE', name: 'Estonia' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'FR', name: 'France' },
+  { code: 'DE', name: 'Germany' },
   { code: 'GR', name: 'Greece' },
-  { code: 'TR', name: 'Turkey' },
+  { code: 'HU', name: 'Hungary' },
+  { code: 'IS', name: 'Iceland' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'XK', name: 'Kosovo' },
+  { code: 'LV', name: 'Latvia' },
+  { code: 'LI', name: 'Liechtenstein' },
+  { code: 'LT', name: 'Lithuania' },
+  { code: 'LU', name: 'Luxembourg' },
+  { code: 'MT', name: 'Malta' },
+  { code: 'MD', name: 'Moldova' },
+  { code: 'MC', name: 'Monaco' },
+  { code: 'ME', name: 'Montenegro' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'MK', name: 'North Macedonia' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'RO', name: 'Romania' },
   { code: 'RU', name: 'Russia' },
+  { code: 'SM', name: 'San Marino' },
+  { code: 'RS', name: 'Serbia' },
+  { code: 'SK', name: 'Slovakia' },
+  { code: 'SI', name: 'Slovenia' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'CH', name: 'Switzerland' },
+  { code: 'TR', name: 'Turkey' },
   { code: 'UA', name: 'Ukraine' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'VA', name: 'Vatican City' },
 ]
 
 const VALORANT_AGENTS = [
-  'Jett', 'Reyna', 'Raze', 'Phoenix', 'Yoru', 'Neon', // Duelists
-  'Sova', 'Breach', 'Skye', 'KAY/O', 'Fade', 'Gekko', // Initiators
-  'Brimstone', 'Omen', 'Viper', 'Astra', 'Harbor', 'Clove', // Controllers
-  'Sage', 'Cypher', 'Killjoy', 'Chamber', 'Deadlock', 'Vyse' // Sentinels
+  'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
+  'Deadlock', 'Fade', 'Gekko', 'Harbor', 'Iso', 'Jett', 
+  'KAY/O', 'Killjoy', 'Neon', 'Omen', 'Phoenix', 'Raze', 
+  'Reyna', 'Sage', 'Skye', 'Sova', 'Viper', 'Vyse', 'Yoru'
 ]
 
 export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormProps) {
@@ -209,43 +237,87 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Account Information */}
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-white">Account Information</h3>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Account Information - Only show for new players */}
+      {!playerId && (
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <User className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Account Information</h2>
+              <p className="text-xs text-gray-400">Login credentials for the player</p>
+            </div>
+          </div>
           
-          {!playerId && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Username *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                  placeholder="Enter username"
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Username <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Enter username"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-                  placeholder="Enter password"
-                />
-              </div>
-            </>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Enter password"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Basic Information */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-blue-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500/10 rounded-lg">
+            <User className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
+            <p className="text-xs text-gray-400">Player identity and profile</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              In-Game Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.in_game_name}
+              onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder="Enter Valorant username"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
+            <SearchableCountrySelect
+              value={formData.nationality}
+              onChange={(value) => setFormData({ ...formData, nationality: value })}
+              countries={EUROPEAN_COUNTRIES}
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -255,34 +327,28 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
               type="url"
               value={formData.avatar_url}
               onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="https://example.com/avatar.jpg"
             />
           </div>
         </div>
+      </div>
 
-        {/* Gaming Information */}
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-white">Gaming Information</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              In-Game Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.in_game_name}
-              onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
-              placeholder="Enter Valorant username"
-            />
+      {/* Game Information */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-purple-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-purple-500/10 rounded-lg">
+            <Gamepad2 className="w-5 h-5 text-purple-400" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Role/Position
-            </label>
+            <h2 className="text-lg font-semibold text-white">Game Information</h2>
+            <p className="text-xs text-gray-400">Role, rank, and agent preferences</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Role/Position</label>
             <CustomSelect
               value={formData.position}
               onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
@@ -291,13 +357,12 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 { value: '', label: 'Select a role' },
                 ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
               ]}
+              className="w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Rank
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
             <CustomSelect
               value={formData.rank}
               onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
@@ -306,136 +371,173 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 { value: '', label: 'Select rank' },
                 ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
               ]}
+              className="w-full"
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nationality
-            </label>
-            <CustomSelect
-              value={formData.nationality}
-              onChange={(value) => setFormData({ ...formData, nationality: value })}
-              placeholder="Select nationality"
-              options={[
-                { value: '', label: 'Select nationality' },
-                ...EUROPEAN_COUNTRIES.map(country => ({ value: country.code, label: country.name }))
-              ]}
-            />
+        {/* Agent Pool */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <CustomSelect
+                value={championInput}
+                onChange={(value) => setChampionInput(value)}
+                placeholder="Select agent to add"
+                options={[
+                  { value: '', label: 'Select agent...' },
+                  ...VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map(agent => ({ value: agent, label: agent }))
+                ]}
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={addChampion}
+                disabled={!championInput}
+                className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
+            </div>
+            {formData.champion_pool.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-4 bg-dark/50 border border-gray-800 rounded-lg">
+                {formData.champion_pool.map((agent) => (
+                  <span
+                    key={agent}
+                    className="group px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary flex items-center gap-2 hover:bg-primary/20 transition-all"
+                  >
+                    {agent}
+                    <button
+                      type="button"
+                      onClick={() => removeChampion(agent)}
+                      className="opacity-70 group-hover:opacity-100 hover:text-red-400 transition-all"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {formData.champion_pool.length === 0 && (
+              <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
+                <p className="text-sm text-gray-500">No agents added yet</p>
+              </div>
+            )}
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+        {/* IGL and Substitute Checkboxes */}
+        <div className="mt-6 pt-4 border-t border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+            <div className="relative">
               <input
                 type="checkbox"
                 checked={formData.is_igl}
                 onChange={(e) => setFormData({ ...formData, is_igl: e.target.checked })}
-                className="mr-2"
+                className="sr-only peer"
               />
-              In-Game Leader (IGL)
-            </label>
-          </div>
+              <div className="w-5 h-5 border-2 border-gray-600 rounded bg-dark peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                {formData.is_igl && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">In-Game Leader (IGL)</span>
+              <p className="text-xs text-gray-500">This player leads the team strategy</p>
+            </div>
+          </label>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
+            <div className="relative">
               <input
                 type="checkbox"
                 checked={formData.is_substitute}
                 onChange={(e) => setFormData({ ...formData, is_substitute: e.target.checked })}
-                className="mr-2"
+                className="sr-only peer"
               />
-              Substitute Player
-            </label>
-          </div>
+              <div className="w-5 h-5 border-2 border-gray-600 rounded bg-dark peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                {formData.is_substitute && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
+              <p className="text-xs text-gray-500">Available as backup for the team</p>
+            </div>
+          </label>
+        </div>
+      </div>
 
+      {/* Contact & Links */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-green-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <LinkIcon className="w-5 h-5 text-green-400" />
+          </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Valorant Tracker URL
-            </label>
+            <h2 className="text-lg font-semibold text-white">Contact & Links</h2>
+            <p className="text-xs text-gray-400">External profiles and social links</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Valorant Tracker URL</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
               onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="https://tracker.gg/valorant/profile/..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Twitter URL
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
             <input
               type="url"
               value={formData.twitter_url}
               onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-              className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               placeholder="https://twitter.com/username"
             />
           </div>
         </div>
       </div>
 
-      {/* Agent Pool */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-white">Agent Pool</h3>
-        
-        <div className="flex gap-2">
-          <CustomSelect
-            value={championInput}
-            onChange={(value) => setChampionInput(value)}
-            placeholder="Select agent to add"
-            options={[
-              { value: '', label: 'Select agent to add' },
-              ...VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map(agent => ({ value: agent, label: agent }))
-            ]}
-            className="flex-1"
-          />
-          <button
-            type="button"
-            onClick={addChampion}
-            className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {formData.champion_pool.map((agent) => (
-            <span
-              key={agent}
-              className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-lg text-sm"
-            >
-              {agent}
-              <button
-                type="button"
-                onClick={() => removeChampion(agent)}
-                className="text-primary hover:text-red-400"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* Form Actions */}
-      <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
+      <div className="flex justify-end gap-4 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition"
+          className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2"
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all disabled:opacity-50 font-medium shadow-lg shadow-primary/20"
         >
-          <Save className="w-4 h-4" />
-          {loading ? (playerId ? 'Updating...' : 'Creating...') : (playerId ? 'Update Player' : 'Create Player')}
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+              {playerId ? 'Updating...' : 'Creating...'}
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              {playerId ? 'Update Player' : 'Create Player'}
+            </>
+          )}
         </button>
       </div>
     </form>

@@ -529,7 +529,8 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
                  formData.status === 'in_tryouts' ? 'In Tryouts' :
                  formData.status === 'substitute' ? 'Substitute' :
                  formData.status === 'rejected' ? 'Rejected' :
-                 formData.status === 'left' ? 'Left' : formData.status}
+                 formData.status === 'left' ? 'Left' :
+                 formData.status === 'accepted' ? 'Accepted (Player)' : formData.status}
               </div>
             ) : (
               <CustomSelect
@@ -541,7 +542,8 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
                   { value: 'in_tryouts', label: 'In Tryouts' },
                   { value: 'substitute', label: 'Substitute' },
                   { value: 'rejected', label: 'Rejected' },
-                  { value: 'left', label: 'Left' }
+                  { value: 'left', label: 'Left' },
+                  { value: 'accepted', label: 'Accepted (Player)' }
                 ]}
                 className="min-w-full"
               />

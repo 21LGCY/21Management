@@ -31,13 +31,13 @@ export default function ScoutingDatabase() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, username')
+        .select('id, username')
       
       if (error) throw error
       
       const userMap: Record<string, string> = {}
       data?.forEach(user => {
-        userMap[user.user_id] = user.username
+        userMap[user.id] = user.username
       })
       setUsers(userMap)
     } catch (error) {
