@@ -92,6 +92,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     setError(null)
     setSuccess(false)
 
+    if (!currentPassword) {
+      setError('Please enter your current password')
+      setLoading(false)
+      return
+    }
+
     if (newPassword !== confirmPassword) {
       setError('New passwords does not match')
       setLoading(false)
@@ -105,11 +111,23 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     }
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
+      // Call the API route to change password
+      const response = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
       })
 
-      if (updateError) throw updateError
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update password')
+      }
 
       setSuccess(true)
       setCurrentPassword('')
