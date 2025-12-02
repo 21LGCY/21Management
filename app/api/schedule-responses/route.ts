@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     // Validate status
     if (!isValidResponseStatus(status)) {
-      return NextResponse.json({ error: 'Invalid status. Must be: available, unavailable, or tentative' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid status. Must be: available, unavailable, or maybe' }, { status: 400 })
     }
 
     // Authorization: Players can only respond for themselves

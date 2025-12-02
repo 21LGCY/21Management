@@ -78,7 +78,7 @@ export function isValidActivityType(type: unknown): type is ActivityType {
 /**
  * Validate response status
  */
-const VALID_RESPONSE_STATUSES = ['available', 'unavailable', 'tentative'] as const
+const VALID_RESPONSE_STATUSES = ['available', 'unavailable', 'maybe'] as const
 
 export type ResponseStatus = typeof VALID_RESPONSE_STATUSES[number]
 

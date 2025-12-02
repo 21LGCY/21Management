@@ -79,7 +79,6 @@ export async function deleteFromCloudinary(imageUrl: string): Promise<boolean> {
     const result = await response.json()
     
     if (result.result === 'ok' || result.result === 'not found') {
-      console.log('Successfully deleted from Cloudinary:', publicId)
       return true
     } else {
       console.error('Cloudinary deletion failed:', result)

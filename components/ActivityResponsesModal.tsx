@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, HelpCircle, Users, Calendar } from 'lucide-react'
 import { ScheduleActivity, ScheduleActivityResponse } from '@/lib/types/database'
 import Image from 'next/image'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
+import { getResponseStatusColor } from '@/lib/utils/styling'
 
 interface ActivityResponsesModalProps {
   activity: ScheduleActivity
@@ -12,20 +13,7 @@ interface ActivityResponsesModalProps {
   currentUserId?: string
 }
 
-// Status helper functions moved outside component
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'available':
-      return 'text-green-400 bg-green-500/20 border-green-500/30'
-    case 'unavailable':
-      return 'text-red-400 bg-red-500/20 border-red-500/30'
-    case 'maybe':
-      return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
-    default:
-      return 'text-gray-400 bg-gray-500/20 border-gray-500/30'
-  }
-}
-
+// Status icon helper
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'available':
@@ -72,7 +60,7 @@ const ResponseItem = memo(function ResponseItem({
           )}
         </div>
       </div>
-      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${getStatusColor(response.status)}`}>
+      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${getResponseStatusColor(response.status)}`}>
         {getStatusIcon(response.status)}
         <span className="text-sm font-medium capitalize">{response.status}</span>
       </div>

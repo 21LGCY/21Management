@@ -11,53 +11,7 @@ import { getNationalityDisplay } from '@/lib/utils/nationality'
 import ActionButton from '@/components/ActionButton'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import CustomSelect from '@/components/CustomSelect'
-
-// Utility function to get rank image
-const getRankImage = (rank: string | undefined | null): string | null => {
-  if (!rank) return null
-  
-  const rankMap: { [key: string]: string } = {
-    'Ascendant 1': '/images/asc_1_rank.webp',
-    'Ascendant 2': '/images/asc_2_rank.webp',
-    'Ascendant 3': '/images/asc_3_rank.webp',
-    'Immortal 1': '/images/immo_1_rank.webp',
-    'Immortal 2': '/images/immo_2_rank.webp',
-    'Immortal 3': '/images/immo_3_rank.webp',
-    'Radiant': '/images/rad_rank.webp'
-  }
-  
-  return rankMap[rank] || null
-}
-
-// Get role color for badge
-const getRoleColor = (role: UserRole) => {
-  switch (role) {
-    case 'admin': return 'bg-red-500/20 text-red-300 border-red-500/30'
-    case 'manager': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    case 'player': return 'bg-green-500/20 text-green-300 border-green-500/30'
-  }
-}
-
-// Get role label
-const getRoleLabel = (role: UserRole) => {
-  switch (role) {
-    case 'admin': return 'Admin'
-    case 'manager': return 'Manager'
-    case 'player': return 'Player'
-  }
-}
-
-// Get position color
-const getPositionColor = (position?: string) => {
-  switch (position) {
-    case 'Duelist': return 'bg-red-500/20 text-red-300 border-red-500/30'
-    case 'Initiator': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-    case 'Controller': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-    case 'Sentinel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    case 'Flex': return 'bg-green-500/20 text-green-300 border-green-500/30'
-    default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-  }
-}
+import { getRankImage, getUserRoleColor, getUserRoleLabel, getValorantRoleColor } from '@/lib/utils/styling'
 
 export default function UserManagementClient() {
   const [users, setUsers] = useState<UserProfile[]>([])
@@ -276,7 +230,7 @@ export default function UserManagementClient() {
                           className={`px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold ${teamColors.badgeColors}`}
                           style={teamColors.badgeStyle}
                         >
-                          {teamTag || 'No Team'} | {getRoleLabel(user.role)}
+                          {teamTag || 'No Team'} | {getUserRoleLabel(user.role)}
                         </span>
                       )}
                     </div>
@@ -289,7 +243,7 @@ export default function UserManagementClient() {
                     {user.role === 'player' && (
                       <div className="flex items-center gap-2 flex-wrap">
                         {user.position && (
-                          <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getPositionColor(user.position)}`}>
+                          <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getValorantRoleColor(user.position)}`}>
                             {user.position}
                           </span>
                         )}

@@ -185,9 +185,6 @@ export default function UserForm({ userId }: UserFormProps) {
           return
         }
 
-        console.log('Creating user with role:', formData.role)
-        console.log('Form data:', formData)
-
         const { data, error } = await supabase.rpc('create_user', {
           p_username: formData.username,
           p_password: formData.password,
@@ -197,7 +194,6 @@ export default function UserForm({ userId }: UserFormProps) {
         if (error) throw error
 
         const newUserId = data
-        console.log('New user ID:', newUserId)
 
         // Update additional fields for all users (player-specific fields only set for players)
         const updates: any = {
@@ -225,8 +221,6 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.twitter_url = formData.twitter_url || null
         }
 
-        console.log('Updates to apply:', updates)
-
         // Only update if there are fields to update
         if (Object.keys(updates).length > 0) {
           const { error: updateError } = await supabase
@@ -235,13 +229,8 @@ export default function UserForm({ userId }: UserFormProps) {
             .eq('id', newUserId)
 
           if (updateError) {
-            console.error('Update error:', updateError)
             throw updateError
           }
-          
-          console.log('Update successful')
-        } else {
-          console.log('No updates to apply (non-player role)')
         }
       }
 
