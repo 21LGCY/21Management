@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Calendar, Map, MessageSquare, Users, Star, Trophy, Clock, Briefcase, ArrowRight, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -46,6 +47,11 @@ export default function PlayerTeamsClient({
   const [loadingActivities, setLoadingActivities] = useState(true)
   const [selectedActivity, setSelectedActivity] = useState<any>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
+  
+  const t = useTranslations('teams')
+  const tSchedule = useTranslations('schedule')
+  const tCommon = useTranslations('common')
+  const tRoles = useTranslations('roles')
   
   const supabase = createClient()
 
@@ -215,7 +221,7 @@ export default function PlayerTeamsClient({
               )}
               {isCurrentPlayer && (
                 <span className="px-2 py-0.5 bg-primary/30 text-primary text-xs rounded-md font-bold border border-primary/30 flex-shrink-0">
-                  You
+                  {t('you')}
                 </span>
               )}
             </div>
@@ -252,9 +258,9 @@ export default function PlayerTeamsClient({
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          <span className="text-gradient">{teamName}</span> Team Hub
+          <span className="text-gradient">{teamName}</span> {t('teamHub')}
         </h1>
-        <p className="text-gray-400">Schedule, roster, strategies, and practice reviews</p>
+        <p className="text-gray-400">{t('scheduleRosterStrats')}</p>
       </div>
 
       {/* Tabs Navigation */}
@@ -269,7 +275,7 @@ export default function PlayerTeamsClient({
             }`}
           >
             <CalendarDays className="w-4 h-4" />
-            Overview
+            {t('overview')}
           </button>
           <button
             onClick={() => setActiveTab('roster')}
@@ -280,7 +286,7 @@ export default function PlayerTeamsClient({
             }`}
           >
             <Users className="w-4 h-4" />
-            Roster
+            {t('roster')}
           </button>
           <button
             onClick={() => setActiveTab('strat_map')}
@@ -291,7 +297,7 @@ export default function PlayerTeamsClient({
             }`}
           >
             <Map className="w-4 h-4" />
-            Strategy Maps
+            {t('strategyMaps')}
           </button>
           <button
             onClick={() => setActiveTab('review_praccs')}
@@ -302,7 +308,7 @@ export default function PlayerTeamsClient({
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            Practice Reviews
+            {t('practiceReviews')}
           </button>
         </nav>
       </div>
@@ -314,12 +320,12 @@ export default function PlayerTeamsClient({
           <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
-                <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+                <h2 className="text-xl font-semibold text-white mb-1">{t('weeklySchedule')}</h2>
+                <p className="text-sm text-gray-400">{t('yourTeamActivities')}</p>
               </div>
               <Link href="/dashboard/player/teams/schedule">
                 <ActionButton icon={ArrowRight}>
-                  View Schedule
+                  {t('viewSchedule')}
                 </ActionButton>
               </Link>
             </div>
@@ -349,7 +355,7 @@ export default function PlayerTeamsClient({
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-medium text-white truncate group-hover:text-primary transition-colors">{activity.title}</h3>
                               <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded flex-shrink-0">
-                                {activity.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                {tSchedule(`activityTypes.${activity.type}`)}
                               </span>
                             </div>
                             {activity.description && (
@@ -383,14 +389,14 @@ export default function PlayerTeamsClient({
             ) : (
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400">No activities scheduled</p>
+                <p className="text-gray-400">{t('noActivitiesScheduled')}</p>
               </div>
             )}
 
             {upcomingActivities.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-800 text-center">
                 <p className="text-sm text-gray-500">
-                  Showing {upcomingActivities.length} upcoming {upcomingActivities.length === 1 ? 'activity' : 'activities'}
+                  {upcomingActivities.length} {upcomingActivities.length === 1 ? tSchedule('upcomingActivities').toLowerCase().replace('activities', 'activity') : tSchedule('upcomingActivities').toLowerCase()}
                 </p>
               </div>
             )}
@@ -405,8 +411,8 @@ export default function PlayerTeamsClient({
                 </div>
                 <span className="text-3xl font-bold text-blue-400">{mainRoster.length}</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">Main Roster</h3>
-              <p className="text-gray-400 text-sm">Active players</p>
+              <h3 className="text-white font-semibold mb-1">{t('mainRoster')}</h3>
+              <p className="text-gray-400 text-sm">{t('activePlayers')}</p>
             </div>
 
             <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/30 rounded-2xl p-6">
@@ -416,8 +422,8 @@ export default function PlayerTeamsClient({
                 </div>
                 <span className="text-3xl font-bold text-orange-400">{substitutes.length}</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">Substitutes</h3>
-              <p className="text-gray-400 text-sm">Backup players</p>
+              <h3 className="text-white font-semibold mb-1">{t('substitutes')}</h3>
+              <p className="text-gray-400 text-sm">{t('backupPlayers')}</p>
             </div>
 
             <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 rounded-2xl p-6">
@@ -427,8 +433,8 @@ export default function PlayerTeamsClient({
                 </div>
                 <span className="text-3xl font-bold text-purple-400">{staffMembers.length}</span>
               </div>
-              <h3 className="text-white font-semibold mb-1">Staff</h3>
-              <p className="text-gray-400 text-sm">Coaches & managers</p>
+              <h3 className="text-white font-semibold mb-1">{t('staff')}</h3>
+              <p className="text-gray-400 text-sm">{t('coachesManagers')}</p>
             </div>
           </div>
         </div>
@@ -440,12 +446,12 @@ export default function PlayerTeamsClient({
           <div className="lg:col-span-2 bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-white">Main Roster</h2>
+                <h2 className="text-2xl font-bold text-white">{t('mainRoster')}</h2>
                 <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-sm font-semibold">
-                  {mainRoster.length} Players
+                  {t('playersCount', { count: mainRoster.length })}
                 </span>
               </div>
-              <p className="text-sm text-gray-500">Active team members</p>
+              <p className="text-sm text-gray-500">{t('activePlayers')}</p>
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {mainRoster.length > 0 ? (
@@ -457,8 +463,8 @@ export default function PlayerTeamsClient({
               ) : (
                 <div className="col-span-full text-center py-12">
                   <Users className="w-12 h-12 text-gray-600 mx-auto mb-3 opacity-50" />
-                  <p className="text-gray-500 font-medium">No main roster players</p>
-                  <p className="text-gray-600 text-sm mt-1">Players will appear here once added</p>
+                  <p className="text-gray-500 font-medium">{t('noMainRoster')}</p>
+                  <p className="text-gray-600 text-sm mt-1">{t('playersWillAppear')}</p>
                 </div>
               )}
             </div>
@@ -468,12 +474,12 @@ export default function PlayerTeamsClient({
           <div className="bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-white">Substitutes</h2>
+                <h2 className="text-2xl font-bold text-white">{t('substitutes')}</h2>
                 <span className="px-3 py-1.5 bg-orange-500/10 text-orange-400 rounded-lg text-sm font-semibold">
-                  {substitutes.length} Players
+                  {t('playersCount', { count: substitutes.length })}
                 </span>
               </div>
-              <p className="text-sm text-gray-500">Backup team members</p>
+              <p className="text-sm text-gray-500">{t('backupPlayers')}</p>
             </div>
             <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
               {substitutes.length > 0 ? (
@@ -485,8 +491,8 @@ export default function PlayerTeamsClient({
               ) : (
                 <div className="text-center py-10">
                   <Users className="w-12 h-12 text-gray-600 mx-auto mb-2 opacity-50" />
-                  <p className="text-gray-500 text-sm font-medium">No substitute players</p>
-                  <p className="text-gray-600 text-xs mt-1">Subs will appear here once added</p>
+                  <p className="text-gray-500 text-sm font-medium">{t('noSubstitutes')}</p>
+                  <p className="text-gray-600 text-xs mt-1">{t('subsWillAppear')}</p>
                 </div>
               )}
             </div>
@@ -496,12 +502,12 @@ export default function PlayerTeamsClient({
           <div className="bg-gradient-to-br from-dark-card to-gray-900/50 border border-gray-800 rounded-2xl p-7 shadow-xl">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-white">Staff</h2>
+                <h2 className="text-2xl font-bold text-white">{t('staff')}</h2>
                 <span className="px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-lg text-sm font-semibold">
-                  {staffMembers.length} Members
+                  {t('membersCount', { count: staffMembers.length })}
                 </span>
               </div>
-              <p className="text-sm text-gray-500">Coaching and management team</p>
+              <p className="text-sm text-gray-500">{t('coachesManagers')}</p>
             </div>
             <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
               {staffMembers.length > 0 ? (
@@ -521,7 +527,7 @@ export default function PlayerTeamsClient({
                     </div>
                     <div className="text-right">
                       <span className="px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold border border-purple-500/30">
-                        {staff.staff_role || 'Manager'}
+                        {staff.staff_role || tRoles('manager')}
                       </span>
                     </div>
                   </div>
@@ -529,8 +535,8 @@ export default function PlayerTeamsClient({
               ) : (
                 <div className="text-center py-10">
                   <Briefcase className="w-12 h-12 text-gray-600 mx-auto mb-2 opacity-50" />
-                  <p className="text-gray-500 text-sm font-medium">No staff members</p>
-                  <p className="text-gray-600 text-xs mt-1">Staff will appear here once added</p>
+                  <p className="text-gray-500 text-sm font-medium">{t('noStaff')}</p>
+                  <p className="text-gray-600 text-xs mt-1">{t('staffWillAppear')}</p>
                 </div>
               )}
             </div>
@@ -572,7 +578,7 @@ export default function PlayerTeamsClient({
                         <div className="flex-1">
                           <h2 className="text-xl font-semibold text-white mb-2">{selectedActivity.title}</h2>
                           <span className="inline-block px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm">
-                            {selectedActivity.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                            {tSchedule(`activityTypes.${selectedActivity.type}`)}
                           </span>
                         </div>
                       </div>
@@ -606,7 +612,7 @@ export default function PlayerTeamsClient({
                       </div>
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-4 h-4" />
-                        <span>{selectedActivity.duration} {selectedActivity.duration === 1 ? 'hour' : 'hours'}</span>
+                        <span>{selectedActivity.duration} {selectedActivity.duration === 1 ? t('hour') : t('hours')}</span>
                       </div>
                     </div>
 
@@ -624,7 +630,7 @@ export default function PlayerTeamsClient({
                       onClick={closeActivityModal}
                       className="w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors font-medium"
                     >
-                      Close
+                      {tCommon('close')}
                     </button>
                   </div>
                 </>

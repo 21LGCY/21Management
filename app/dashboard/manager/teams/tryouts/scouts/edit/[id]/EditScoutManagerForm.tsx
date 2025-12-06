@@ -8,6 +8,7 @@ import { X, User, Gamepad2, Link as LinkIcon, Settings, Save, AlertTriangle } fr
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
+import { useTranslations } from 'next-intl'
 
 const VALORANT_AGENTS = [
   'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
@@ -77,6 +78,9 @@ interface EditScoutManagerFormProps {
 export default function EditScoutManagerForm({ scoutId, teamId, team, teamCategory, managerId }: EditScoutManagerFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('tryouts.form')
+  const tTryouts = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [championInput, setChampionInput] = useState('')
@@ -223,7 +227,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
       router.refresh()
     } catch (error) {
       console.error('Error updating scout profile:', error)
-      alert('Failed to update scout profile. Please try again.')
+      alert(t('errorUpdating'))
     } finally {
       setSaving(false)
     }
@@ -263,15 +267,15 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
             <User className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
-            <p className="text-sm text-gray-400">Personal details and identity</p>
+            <h2 className="text-lg font-semibold text-white">{t('basicInfo')}</h2>
+            <p className="text-sm text-gray-400">{t('basicInfoDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username <span className="text-red-500">*</span>
+              {t('username')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -279,13 +283,13 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-sans"
-              placeholder="Discord username"
+              placeholder={t('discordUsername')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team
+              {t('team')}
             </label>
             <input
               type="text"
@@ -297,18 +301,18 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">In-Game Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('inGameName')}</label>
             <input
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-sans"
-              placeholder="IGN"
+              placeholder={t('ign')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('nationality')}</label>
             <SearchableCountrySelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
@@ -325,19 +329,19 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
             <Gamepad2 className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Game Information</h2>
-            <p className="text-sm text-gray-400">Role, rank, and agent preferences</p>
+            <h2 className="text-lg font-semibold text-white">{t('gameInfo')}</h2>
+            <p className="text-sm text-gray-400">{t('gameInfoDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('position')}</label>
             <CustomSelect
               value={formData.position}
               onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
               options={[
-                { value: '', label: 'Select' },
+                { value: '', label: t('select') },
                 { value: 'Duelist', label: 'Duelist' },
                 { value: 'Controller', label: 'Controller' },
                 { value: 'Initiator', label: 'Initiator' },
@@ -349,12 +353,12 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('rank')}</label>
             <CustomSelect
               value={formData.rank}
               onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
               options={[
-                { value: '', label: 'Select' },
+                { value: '', label: t('select') },
                 { value: 'Ascendant 1', label: 'Ascendant 1' },
                 { value: 'Ascendant 2', label: 'Ascendant 2' },
                 { value: 'Ascendant 3', label: 'Ascendant 3' },
@@ -370,7 +374,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
 
         {/* Agent Pool */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPool')}</label>
           
           {formData.champion_pool.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -419,7 +423,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
               onClick={addChampion}
               className="px-4 py-2.5 bg-primary/20 text-primary border border-primary/30 rounded-lg hover:bg-primary/30 transition font-medium"
             >
-              Add
+              {tCommon('add')}
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-2">
@@ -445,7 +449,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
                 )}
               </div>
             </div>
-            <span className="text-gray-300 group-hover:text-white transition font-sans">Is IGL (In-Game Leader)</span>
+            <span className="text-gray-300 group-hover:text-white transition font-sans">{t('inGameLeader')}</span>
           </label>
         </div>
       </div>
@@ -457,14 +461,14 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
             <LinkIcon className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Contact & Links</h2>
-            <p className="text-sm text-gray-400">External profiles and resources</p>
+            <h2 className="text-lg font-semibold text-white">{t('contactLinks')}</h2>
+            <p className="text-sm text-gray-400">{t('contactLinksDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Tracker URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('trackerUrl')}</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
@@ -475,7 +479,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('twitterUrl')}</label>
             <input
               type="url"
               value={formData.twitter_url}
@@ -486,13 +490,13 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Other Links</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('otherLinks')}</label>
             <input
               type="text"
               value={formData.links}
               onChange={(e) => setFormData({ ...formData, links: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-sans"
-              placeholder="YouTube, portfolio, etc."
+              placeholder={t('otherLinksPlaceholder')}
             />
           </div>
         </div>
@@ -505,8 +509,8 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
             <Settings className="w-5 h-5 text-orange-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Management</h2>
-            <p className="text-sm text-gray-400">Status and tracking information</p>
+            <h2 className="text-lg font-semibold text-white">{t('management')}</h2>
+            <p className="text-sm text-gray-400">{t('managementDesc')}</p>
           </div>
         </div>
         
@@ -521,29 +525,29 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tTryouts('status')}</label>
             {isAdminManaged ? (
               <div className="w-full px-4 py-2.5 border border-gray-800 rounded-lg bg-gray-900 text-gray-500 cursor-not-allowed font-sans">
-                {formData.status === 'not_contacted' ? 'Not Contacted' :
-                 formData.status === 'contacted' ? 'Contacted' :
-                 formData.status === 'in_tryouts' ? 'In Tryouts' :
-                 formData.status === 'substitute' ? 'Substitute' :
-                 formData.status === 'rejected' ? 'Rejected' :
-                 formData.status === 'left' ? 'Left' :
-                 formData.status === 'accepted' ? 'Accepted (Player)' : formData.status}
+                {formData.status === 'not_contacted' ? tTryouts('notContacted') :
+                 formData.status === 'contacted' ? tTryouts('contacted') :
+                 formData.status === 'in_tryouts' ? tTryouts('inTryouts') :
+                 formData.status === 'substitute' ? tTryouts('substitute') :
+                 formData.status === 'rejected' ? tTryouts('rejected') :
+                 formData.status === 'left' ? tTryouts('left') :
+                 formData.status === 'accepted' ? tTryouts('accepted') : formData.status}
               </div>
             ) : (
               <CustomSelect
                 value={formData.status}
                 onChange={(value) => setFormData({ ...formData, status: value as TryoutStatus })}
                 options={[
-                  { value: 'not_contacted', label: 'Not Contacted' },
-                  { value: 'contacted', label: 'Contacted' },
-                  { value: 'in_tryouts', label: 'In Tryouts' },
-                  { value: 'substitute', label: 'Substitute' },
-                  { value: 'rejected', label: 'Rejected' },
-                  { value: 'left', label: 'Left' },
-                  { value: 'accepted', label: 'Accepted (Player)' }
+                  { value: 'not_contacted', label: tTryouts('notContacted') },
+                  { value: 'contacted', label: tTryouts('contacted') },
+                  { value: 'in_tryouts', label: tTryouts('inTryouts') },
+                  { value: 'substitute', label: tTryouts('substitute') },
+                  { value: 'rejected', label: tTryouts('rejected') },
+                  { value: 'left', label: tTryouts('left') },
+                  { value: 'accepted', label: tTryouts('accepted') }
                 ]}
                 className="min-w-full"
               />
@@ -554,7 +558,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('addedBy')}</label>
             <select
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
@@ -578,7 +582,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Contacted By</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tTryouts('contactedBy')}</label>
             <select
               value={formData.contacted_by}
               onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
@@ -604,7 +608,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
 
         {formData.contacted_by && (
           <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Contact Date</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('contactDate')}</label>
             <input
               type="date"
               value={formData.contacted_by_date}
@@ -615,13 +619,13 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
         )}
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">{tTryouts('notes')}</label>
           <textarea
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             rows={4}
             className="w-full px-4 py-2.5 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none font-sans"
-            placeholder="Internal notes..."
+            placeholder={t('internalNotes')}
           />
         </div>
       </div>
@@ -632,7 +636,7 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           href={`/dashboard/manager/teams/tryouts/scouts/view/${scoutId}`}
           className="px-6 py-2.5 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-600 transition-all font-medium"
         >
-          Cancel
+          {tCommon('cancel')}
         </Link>
         <button
           type="submit"
@@ -642,12 +646,12 @@ export default function EditScoutManagerForm({ scoutId, teamId, team, teamCatego
           {saving ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Saving...
+              {tCommon('saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Changes
+              {tCommon('saveChanges')}
             </>
           )}
         </button>

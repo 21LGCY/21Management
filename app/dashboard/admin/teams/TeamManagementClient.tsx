@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import ActionButton from '@/components/ActionButton'
 import { TimezoneOffset, getTimezoneShort, getHourOffset } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 // Format date with timezone offset applied
 function formatDateWithTimezone(dateStr: string, timezone: TimezoneOffset): string {
@@ -49,6 +50,10 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
   const [showMatchModal, setShowMatchModal] = useState(false)
   
   const supabase = createClient()
+  const t = useTranslations('teams')
+  const tMatches = useTranslations('matches')
+  const tSchedule = useTranslations('schedule')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     fetchData()
@@ -90,7 +95,7 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
   }
 
   const deleteTeam = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this team? All associated matches will also be deleted.')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const { error } = await supabase
@@ -106,7 +111,7 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
   }
 
   const deleteMatch = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this match?')) return
+    if (!confirm(tMatches('confirmDelete') || 'Are you sure you want to delete this match?')) return
 
     try {
       const { error } = await supabase
@@ -154,10 +159,10 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
       {/* Teams List */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Teams</h2>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{t('title')}</h2>
           <Link href="/dashboard/admin/teams/new">
             <ActionButton icon={Plus}>
-              Add Team
+              {t('addTeam')}
             </ActionButton>
           </Link>
         </div>
@@ -214,26 +219,26 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
         {/* Match History */}
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Match History</h2>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{tMatches('title')}</h2>
             <div className="flex gap-2 flex-wrap">
               <Link
                 href="/dashboard/admin/matches"
                 className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 text-gray-300 hover:text-white rounded-xl font-medium transition-all duration-300 border border-gray-600/50 hover:border-primary/50 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:brightness-125"
               >
                 <Trophy className="w-4 h-4" />
-                <span className="hidden sm:inline">View All</span>
+                <span className="hidden sm:inline">{tCommon('viewAll')}</span>
               </Link>
               <Link href="/dashboard/admin/matches/new">
                 <ActionButton icon={Trophy}>
-                  <span className="hidden sm:inline">Record Match</span>
-                  <span className="sm:hidden">Record</span>
+                  <span className="hidden sm:inline">{tMatches('addMatch')}</span>
+                  <span className="sm:hidden">{tCommon('add')}</span>
                 </ActionButton>
               </Link>
             </div>
           </div>
           <div className="space-y-3">
             {matches.filter(m => m.result).length === 0 ? (
-              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">No match history yet</p>
+              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">{tMatches('noMatches')}</p>
             ) : (
               matches.filter(m => m.result).slice(0, 5).map((match) => (
                 <div
@@ -275,18 +280,18 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
         {/* Planning */}
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Planning</h2>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{tSchedule('title')}</h2>
             <Link href="/dashboard/admin/teams/schedule">
               <ActionButton icon={Calendar}>
-                <span className="hidden sm:inline">Schedule</span>
-                <span className="sm:hidden">Plan</span>
+                <span className="hidden sm:inline">{tSchedule('title')}</span>
+                <span className="sm:hidden">{tSchedule('title')}</span>
               </ActionButton>
             </Link>
           </div>
 
           <div className="space-y-3">
             {matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).length === 0 ? (
-              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">No matches scheduled</p>
+              <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">{tSchedule('noActivities')}</p>
             ) : (
               matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).slice(0, 5).map((match) => (
                 <div
@@ -299,7 +304,7 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
                         {match.teams?.name || teams.find(t => t.id === match.team_id)?.name} vs {match.opponent}
                       </p>
                       <span className="px-2.5 py-1 text-xs rounded-lg font-semibold border bg-blue-500/20 text-blue-400 border-blue-500/30">
-                        SCHEDULED
+                        {tMatches('scheduled').toUpperCase()}
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
@@ -324,13 +329,13 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
       {showTeamModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold text-white mb-4">Add Team</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t('addTeam')}</h3>
             <p className="text-gray-400 mb-4">Team creation form would go here</p>
             <button
               onClick={() => setShowTeamModal(false)}
               className="px-4 py-2 bg-primary text-white rounded-lg"
             >
-              Close
+              {tCommon('close')}
             </button>
           </div>
         </div>
@@ -339,13 +344,13 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
       {showMatchModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold text-white mb-4">Add Match</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{tMatches('addMatch')}</h3>
             <p className="text-gray-400 mb-4">Match creation form would go here</p>
             <button
               onClick={() => setShowMatchModal(false)}
               className="px-4 py-2 bg-primary text-white rounded-lg"
             >
-              Close
+              {tCommon('close')}
             </button>
           </div>
         </div>

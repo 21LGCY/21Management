@@ -13,6 +13,7 @@ import {
   getDateForDay
 } from '@/lib/utils/timezone'
 import { Globe } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface AvailabilityHeatmapProps {
   availabilities: PlayerAvailability[]
@@ -90,6 +91,10 @@ const HeatmapCell = memo(function HeatmapCell({
 })
 
 function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIMEZONE }: AvailabilityHeatmapProps) {
+  const t = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
+  const tDays = useTranslations('days')
+  
   // Pre-compute all counts and player names in a single pass
   const heatmapData = useMemo(() => {
     const data: Record<string, { count: number; players: string[] }> = {}
@@ -131,7 +136,7 @@ function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIM
       {/* Heatmap Grid */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-2xl font-semibold text-white">Availability Overview</h3>
+          <h3 className="text-2xl font-semibold text-white">{t('availabilityOverview')}</h3>
           {/* Timezone indicator */}
           {userTimezone !== ORG_TIMEZONE && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg">
@@ -148,12 +153,12 @@ function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIM
             {/* Header with Days */}
             <div className="grid grid-cols-8 gap-2 mb-2">
               <div className="text-sm font-medium text-gray-400 flex items-center justify-center">
-                Time
+                {tCommon('time')}
               </div>
               {DAYS.map((day, index) => (
                 <div key={day} className="text-center">
                   <div className="text-sm font-semibold text-white">
-                    {DAY_LABELS[day]}
+                    {tDays(day.slice(0, 3) as 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')}
                   </div>
                   <div className="text-xs text-gray-500">
                     {dateLabels[index]}
@@ -193,7 +198,7 @@ function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIM
                 <div className="w-4 h-4 flex items-center justify-center rounded-full border border-gray-400 text-gray-400 text-[10px] font-semibold">
                   i
                 </div>
-                <span className="text-gray-400">Hover over a slot to see available players</span>
+                <span className="text-gray-400">{t('hoverSlotHint')}</span>
               </div>
             </div>
           </div>

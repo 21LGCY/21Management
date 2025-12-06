@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MatchHistory } from '@/lib/types/database'
 import Link from 'next/link'
 import { MessageSquare, Calendar, Trophy, Users } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface PraccsReviewSelectionProps {
   teamId: string
@@ -13,6 +14,8 @@ interface PraccsReviewSelectionProps {
 export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionProps) {
   const [matches, setMatches] = useState<MatchHistory[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useTranslations('practiceReviews')
+  const tMatches = useTranslations('matches')
   
   const supabase = createClient()
 
@@ -49,10 +52,10 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
 
   const getResultLabel = (result?: string) => {
     switch (result) {
-      case 'win': return 'Victory'
-      case 'loss': return 'Defeat'
-      case 'draw': return 'Draw'
-      default: return 'No Result'
+      case 'win': return t('victory')
+      case 'loss': return t('defeat')
+      case 'draw': return t('draw')
+      default: return t('noResult')
     }
   }
 
@@ -70,16 +73,16 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
         <div className="flex items-center gap-3 mb-6">
           <MessageSquare className="w-6 h-6 text-primary" />
           <div>
-            <h2 className="text-2xl font-bold text-white">Practice Reviews</h2>
-            <p className="text-gray-400 text-sm">Select a practice match to view and discuss the review</p>
+            <h2 className="text-2xl font-bold text-white">{t('title')}</h2>
+            <p className="text-gray-400 text-sm">{t('description')}</p>
           </div>
         </div>
 
         {matches.length === 0 ? (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-400 mb-2">No practice matches found</p>
-            <p className="text-gray-500 text-sm">Practice matches will appear here once created</p>
+            <p className="text-gray-400 mb-2">{t('noPracticeMatches')}</p>
+            <p className="text-gray-500 text-sm">{t('practiceMatchesWillAppear')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -103,14 +106,14 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
                       </span>
                     </div>
                     <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded">
-                      {match.match_type === 'Scrim' ? 'Scrim' : 'Practice'}
+                      {match.match_type === 'Scrim' ? tMatches('scrim') : t('practice')}
                     </span>
                   </div>
 
                   {/* Opponent */}
                   <div>
                     <h3 className="text-lg font-bold text-white group-hover:text-primary transition">
-                      vs {match.opponent_name}
+                      {tMatches('vs')} {match.opponent_name}
                     </h3>
                   </div>
 
@@ -124,7 +127,7 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
                         </span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400">No score recorded</span>
+                      <span className="text-sm text-gray-400">{t('noScoreRecorded')}</span>
                     )}
                     
                     {match.result && (
@@ -137,7 +140,7 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
                   {/* Map */}
                   {match.map_name && (
                     <div className="pt-2 border-t border-gray-800">
-                      <span className="text-xs text-gray-400">Map: </span>
+                      <span className="text-xs text-gray-400">{tMatches('map')}: </span>
                       <span className="text-xs text-gray-300 font-medium">{match.map_name}</span>
                     </div>
                   )}

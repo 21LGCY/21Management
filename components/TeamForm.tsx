@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Save } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface TeamFormProps {
   teamId?: string
@@ -13,6 +14,8 @@ export default function TeamForm({ teamId }: TeamFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const t = useTranslations('forms')
+  const tCommon = useTranslations('common')
   
   const [formData, setFormData] = useState({
     name: '',
@@ -71,7 +74,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
       } else {
         // Create new team
         if (!formData.name) {
-          alert('Team name is required')
+          alert(t('teamName') + ' ' + tCommon('required').toLowerCase())
           setLoading(false)
           return
         }
@@ -93,7 +96,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
       router.refresh()
     } catch (error: any) {
       console.error('Error saving team:', error)
-      alert(error.message || 'Error saving team')
+      alert(error.message || t('errorSavingTeam'))
     } finally {
       setLoading(false)
     }
@@ -103,34 +106,34 @@ export default function TeamForm({ teamId }: TeamFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Team Information */}
       <div>
-        <h3 className="text-lg font-semibold text-white mb-4">Team Information</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">{t('teamInfo')}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Column - Team Name & Tag */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Team Name *
+                {t('teamName')} *
               </label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Team Alpha"
+                placeholder={t('enterTeamName')}
                 className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Team Tag
+                {t('teamTag')}
               </label>
               <input
                 type="text"
                 value={formData.tag}
                 onChange={(e) => setFormData({ ...formData, tag: e.target.value.toUpperCase() })}
-                placeholder="e.g., TMA"
+                placeholder={t('enterTeamTag')}
                 maxLength={5}
                 className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary uppercase font-sans"
               />
@@ -142,13 +145,13 @@ export default function TeamForm({ teamId }: TeamFormProps) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Team Logo URL
+                {t('teamLogoUrl')}
               </label>
               <input
                 type="url"
                 value={formData.logo_url}
                 onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                placeholder="https://example.com/logo.png"
+                placeholder={t('teamLogoUrlPlaceholder')}
                 className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
               />
               <p className="mt-1 text-xs text-gray-400">Enter a URL to an image (PNG, JPG, SVG)</p>
@@ -178,7 +181,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
           onClick={() => router.back()}
           className="px-6 py-2 bg-dark-card border border-gray-800 hover:border-gray-700 text-white rounded-lg transition"
         >
-          Cancel
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
@@ -188,12 +191,12 @@ export default function TeamForm({ teamId }: TeamFormProps) {
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              Saving...
+              {tCommon('saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              {teamId ? 'Update Team' : 'Create Team'}
+              {teamId ? t('updateTeam') : t('createTeam')}
             </>
           )}
         </button>

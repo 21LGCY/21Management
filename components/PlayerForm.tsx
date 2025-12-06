@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank } from '@/lib/types/database'
 import { Save, X, Plus, User, Gamepad2, Link as LinkIcon } from 'lucide-react'
@@ -83,6 +84,8 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const t = useTranslations('forms')
+  const tCommon = useTranslations('common')
   
   const [formData, setFormData] = useState({
     username: '',
@@ -170,7 +173,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
       } else {
         // Create new player
         if (!formData.username || !formData.password) {
-          alert('Username and password are required')
+          alert(t('usernamePasswordRequired'))
           setLoading(false)
           return
         }
@@ -207,13 +210,13 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
 
         if (updateError) throw updateError
 
-        alert('Player created successfully!')
+        alert(t('playerCreated'))
         router.push('/dashboard/manager/players')
         router.refresh()
       }
     } catch (error: any) {
       console.error('Error saving player:', error)
-      alert(error.message || 'Error saving player')
+      alert(error.message || t('errorSavingPlayer'))
     } finally {
       setLoading(false)
     }
@@ -246,15 +249,15 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
               <User className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Account Information</h2>
-              <p className="text-xs text-gray-400">Login credentials for the player</p>
+              <h2 className="text-lg font-semibold text-white">{t('accountInfo')}</h2>
+              <p className="text-xs text-gray-400">{t('accountInfoDesc')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Username <span className="text-red-500">*</span>
+                {t('username')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -262,13 +265,13 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Enter username"
+                placeholder={t('enterUsername')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Password <span className="text-red-500">*</span>
+                {t('password')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
@@ -276,7 +279,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Enter password"
+                placeholder={t('enterPassword')}
               />
             </div>
           </div>
@@ -290,15 +293,15 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <User className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
-            <p className="text-xs text-gray-400">Player identity and profile</p>
+            <h2 className="text-lg font-semibold text-white">{t('basicInfo')}</h2>
+            <p className="text-xs text-gray-400">{t('basicInfoDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              In-Game Name <span className="text-red-500">*</span>
+              {t('inGameName')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -306,12 +309,12 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="Enter Valorant username"
+              placeholder={t('enterValorantUsername')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('nationality')}</label>
             <SearchableCountrySelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
@@ -321,14 +324,14 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Avatar URL
+              {t('avatarUrl')}
             </label>
             <input
               type="url"
               value={formData.avatar_url}
               onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="https://example.com/avatar.jpg"
+              placeholder={t('avatarUrlPlaceholder')}
             />
           </div>
         </div>
@@ -341,20 +344,20 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <Gamepad2 className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Game Information</h2>
-            <p className="text-xs text-gray-400">Role, rank, and agent preferences</p>
+            <h2 className="text-lg font-semibold text-white">{t('gameInfo')}</h2>
+            <p className="text-xs text-gray-400">{t('gameInfoDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Role/Position</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('rolePosition')}</label>
             <CustomSelect
               value={formData.position}
               onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
-              placeholder="Select a role"
+              placeholder={t('selectRole')}
               options={[
-                { value: '', label: 'Select a role' },
+                { value: '', label: t('selectRole') },
                 ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
               ]}
               className="w-full"
@@ -362,13 +365,13 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('rank')}</label>
             <CustomSelect
               value={formData.rank}
               onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
-              placeholder="Select rank"
+              placeholder={t('selectRank')}
               options={[
-                { value: '', label: 'Select rank' },
+                { value: '', label: t('selectRank') },
                 ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
               ]}
               className="w-full"
@@ -378,15 +381,15 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
 
         {/* Agent Pool */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPool')}</label>
           <div className="space-y-3">
             <div className="flex gap-2">
               <CustomSelect
                 value={championInput}
                 onChange={(value) => setChampionInput(value)}
-                placeholder="Select agent to add"
+                placeholder={t('selectAgentToAdd')}
                 options={[
-                  { value: '', label: 'Select agent...' },
+                  { value: '', label: t('selectAgent') },
                   ...VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map(agent => ({ value: agent, label: agent }))
                 ]}
                 className="flex-1"
@@ -398,7 +401,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add
+                {tCommon('add')}
               </button>
             </div>
             {formData.champion_pool.length > 0 && (
@@ -422,7 +425,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             )}
             {formData.champion_pool.length === 0 && (
               <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                <p className="text-sm text-gray-500">No agents added yet</p>
+                <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
               </div>
             )}
           </div>
@@ -447,8 +450,8 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
               </div>
             </div>
             <div className="flex-1">
-              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">In-Game Leader (IGL)</span>
-              <p className="text-xs text-gray-500">This player leads the team strategy</p>
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{t('igl')}</span>
+              <p className="text-xs text-gray-500">{t('iglDesc')}</p>
             </div>
           </label>
 
@@ -469,8 +472,8 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
               </div>
             </div>
             <div className="flex-1">
-              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
-              <p className="text-xs text-gray-500">Available as backup for the team</p>
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{t('substitute')}</span>
+              <p className="text-xs text-gray-500">{t('substituteDesc')}</p>
             </div>
           </label>
         </div>
@@ -483,14 +486,14 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <LinkIcon className="w-5 h-5 text-green-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Contact & Links</h2>
-            <p className="text-xs text-gray-400">External profiles and social links</p>
+            <h2 className="text-lg font-semibold text-white">{t('contactLinks')}</h2>
+            <p className="text-xs text-gray-400">{t('contactLinksDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Valorant Tracker URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('valorantTrackerUrl')}</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
@@ -501,7 +504,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('twitterUrl')}</label>
             <input
               type="url"
               value={formData.twitter_url}
@@ -520,7 +523,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           onClick={() => router.back()}
           className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
-          Cancel
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
@@ -530,12 +533,12 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              {playerId ? 'Updating...' : 'Creating...'}
+              {playerId ? t('updating') : t('creating')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              {playerId ? 'Update Player' : 'Create Player'}
+              {playerId ? t('updatePlayer') : t('createPlayer')}
             </>
           )}
         </button>

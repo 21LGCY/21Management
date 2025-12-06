@@ -9,6 +9,7 @@ import PraccsReviewSelection from './sections/PraccsReviewSelection'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, TeamCategory } from '@/lib/types/database'
 import { TimezoneOffset } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 interface ManagerTeamsClientProps {
   teamId: string
@@ -25,6 +26,12 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [currentTryouts, setCurrentTryouts] = useState<TryoutWeek[]>([])
   const [loadingTryouts, setLoadingTryouts] = useState(true)
+  const t = useTranslations('teams')
+  const tNav = useTranslations('nav')
+  const tCommon = useTranslations('common')
+  const tTryouts = useTranslations('tryouts')
+  const tStratMaps = useTranslations('stratMaps')
+  const tPracticeReviews = useTranslations('practiceReviews')
   
   const supabase = createClient()
 
@@ -72,9 +79,9 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          Team & Roster Management
+          {t('teamHub')}
         </h1>
-        <p className="text-gray-400">Manage {teamName || 'your team'}, schedules, and tryouts</p>
+        <p className="text-gray-400">{t('scheduleRosterStrats')}</p>
       </div>
 
       {/* Tabs Navigation */}
@@ -89,7 +96,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
-            Overview
+            {t('overview')}
           </button>
           <button
             onClick={() => setActiveTab('strat_map')}
@@ -100,7 +107,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             }`}
           >
             <Map className="w-4 h-4" />
-            Strat Maps
+            {t('strategyMaps')}
           </button>
           <button
             onClick={() => setActiveTab('review_praccs')}
@@ -111,7 +118,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            Practice Reviews
+            {t('practiceReviews')}
           </button>
         </nav>
       </div>
@@ -127,10 +134,10 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                   <Users className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <p className="text-sm text-primary/70 mb-1">Total Players</p>
+              <p className="text-sm text-primary/70 mb-1">{t('totalPlayers')}</p>
               <p className="text-3xl font-bold text-primary">{playerCount}</p>
               <Link href="/dashboard/manager/players" className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-medium transition group">
-                <span>View all</span>
+                <span>{tCommon('viewAll')}</span>
                 <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
@@ -141,10 +148,10 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                   <TrendingUp className="w-6 h-6 text-green-400" />
                 </div>
               </div>
-              <p className="text-sm text-green-300/70 mb-1">Active Tryouts</p>
+              <p className="text-sm text-green-300/70 mb-1">{t('activeTryouts')}</p>
               <p className="text-3xl font-bold text-green-400">{currentTryouts.length}</p>
               <Link href="/dashboard/manager/teams/tryouts" className="inline-flex items-center gap-1 text-xs text-green-300/70 hover:text-green-400 mt-2 font-medium transition group">
-                <span>Manage</span>
+                <span>{t('manage')}</span>
                 <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
@@ -155,10 +162,10 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                   <Calendar className="w-6 h-6 text-blue-400" />
                 </div>
               </div>
-              <p className="text-sm text-blue-300/70 mb-1">Schedule</p>
-              <p className="text-3xl font-bold text-blue-400">Week</p>
+              <p className="text-sm text-blue-300/70 mb-1">{tCommon('schedule')}</p>
+              <p className="text-3xl font-bold text-blue-400">{tCommon('week')}</p>
               <Link href="/dashboard/manager/teams/schedule" className="inline-flex items-center gap-1 text-xs text-blue-300/70 hover:text-blue-400 mt-2 font-medium transition group">
-                <span>View schedule</span>
+                <span>{t('viewScheduleLink')}</span>
                 <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
@@ -169,10 +176,10 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                   <Award className="w-6 h-6 text-purple-400" />
                 </div>
               </div>
-              <p className="text-sm text-purple-300/70 mb-1">Team Performance</p>
+              <p className="text-sm text-purple-300/70 mb-1">{t('teamPerformance')}</p>
               <p className="text-3xl font-bold text-purple-400">-</p>
               <Link href="/dashboard/manager/stats" className="inline-flex items-center gap-1 text-xs text-purple-300/70 hover:text-purple-400 mt-2 font-medium transition group">
-                <span>View stats</span>
+                <span>{t('viewStats')}</span>
                 <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>
@@ -187,8 +194,8 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                     <Calendar className="w-5 h-5 text-blue-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-white group-hover:text-blue-300 transition">Schedule</p>
-                    <p className="text-sm text-gray-400">Manage team schedule</p>
+                    <p className="font-semibold text-white group-hover:text-blue-300 transition">{tCommon('schedule')}</p>
+                    <p className="text-sm text-gray-400">{t('manageTeamSchedule')}</p>
                   </div>
                 </div>
               </button>
@@ -201,8 +208,8 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                     <Search className="w-5 h-5 text-green-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-white group-hover:text-green-300 transition">Manage Tryouts</p>
-                    <p className="text-sm text-gray-400">Scout new talent</p>
+                    <p className="font-semibold text-white group-hover:text-green-300 transition">{t('manageTryouts')}</p>
+                    <p className="text-sm text-gray-400">{t('scoutNewTalent')}</p>
                   </div>
                 </div>
               </button>
@@ -215,8 +222,8 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-white group-hover:text-primary transition">Player Roster</p>
-                    <p className="text-sm text-gray-400">View team members</p>
+                    <p className="font-semibold text-white group-hover:text-primary transition">{t('playerRoster')}</p>
+                    <p className="text-sm text-gray-400">{t('viewTeamMembers')}</p>
                   </div>
                 </div>
               </button>
@@ -231,12 +238,12 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
             <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-1">Active Tryout Sessions</h2>
-                  <p className="text-sm text-gray-400">Current and upcoming tryout weeks</p>
+                  <h2 className="text-xl font-semibold text-white mb-1">{t('activeTryoutSessions')}</h2>
+                  <p className="text-sm text-gray-400">{t('currentUpcomingTryouts')}</p>
                 </div>
                 <Link href="/dashboard/manager/teams/tryouts">
                   <button className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20">
-                    View All
+                    {tCommon('viewAll')}
                   </button>
                 </Link>
               </div>
@@ -264,7 +271,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                           </div>
                         </div>
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${getStatusColor(tryout.status)}`}>
-                          {tryout.status === 'in_progress' ? 'In Progress' : tryout.status.charAt(0).toUpperCase() + tryout.status.slice(1)}
+                          {tryout.status === 'in_progress' ? tCommon('inProgress') : tryout.status.charAt(0).toUpperCase() + tryout.status.slice(1)}
                         </span>
                       </div>
                       {tryout.notes && (
@@ -275,10 +282,10 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                 ) : (
                   <div className="text-center py-8">
                     <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-400 mb-4">No tryouts scheduled</p>
+                    <p className="text-gray-400 mb-4">{t('noTryoutsScheduled')}</p>
                     <Link href="/dashboard/manager/teams/tryouts">
                       <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                        Create Tryout
+                        {t('createTryout')}
                       </button>
                     </Link>
                   </div>

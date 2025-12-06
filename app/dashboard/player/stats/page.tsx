@@ -2,10 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import { Trophy, Target, Crosshair, Shield, Zap, Award, TrendingUp, BarChart3 } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 export default async function PlayerStatsPage() {
   const user = await requireRole(['player'])
   const supabase = await createClient()
+  const t = await getTranslations('stats')
+  const tMatches = await getTranslations('matches')
 
   // Get player data
   const { data: playerData } = await supabase
@@ -88,9 +91,9 @@ export default async function PlayerStatsPage() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-white mb-3">
-            Player Statistics
+            {t('playerStatistics')}
           </h1>
-          <p className="text-gray-400 text-lg">Track your performance and improvement over time</p>
+          <p className="text-gray-400 text-lg">{t('trackPerformance')}</p>
         </div>
 
         {/* Detailed Stats Grid */}
@@ -102,8 +105,8 @@ export default async function PlayerStatsPage() {
                 <Trophy className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">Top Agents</h2>
-                <p className="text-sm text-gray-500">Most played champions</p>
+                <h2 className="text-2xl font-bold text-white">{t('topAgents')}</h2>
+                <p className="text-sm text-gray-500">{t('mostPlayedChampions')}</p>
               </div>
             </div>
             
@@ -121,22 +124,22 @@ export default async function PlayerStatsPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-white text-lg">{agent.agent}</p>
-                          <p className="text-sm text-gray-500">{agent.games} matches played</p>
+                          <p className="text-sm text-gray-500">{agent.games} {t('matchesPlayed')}</p>
                         </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 text-center">
                         <p className="text-xl font-bold text-blue-400">{agent.avgKills}</p>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Kills</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">{t('kills')}</p>
                       </div>
                       <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3 text-center">
                         <p className="text-xl font-bold text-red-400">{agent.avgDeaths}</p>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Deaths</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">{t('deaths')}</p>
                       </div>
                       <div className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3 text-center">
                         <p className="text-xl font-bold text-purple-400">{agent.avgACS}</p>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">ACS</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">{t('acs')}</p>
                       </div>
                     </div>
                   </div>
@@ -145,8 +148,8 @@ export default async function PlayerStatsPage() {
             ) : (
               <div className="text-center py-16">
                 <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4 opacity-50" />
-                <p className="text-gray-500 text-lg">No agent data available</p>
-                <p className="text-gray-600 text-sm mt-2">Play matches to see your agent statistics</p>
+                <p className="text-gray-500 text-lg">{t('noAgentData')}</p>
+                <p className="text-gray-600 text-sm mt-2">{t('playMatchesToSeeAgents')}</p>
               </div>
             )}
           </div>
@@ -158,15 +161,15 @@ export default async function PlayerStatsPage() {
                 <BarChart3 className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">Performance Breakdown</h2>
-                <p className="text-sm text-gray-500">Average stats per match</p>
+                <h2 className="text-2xl font-bold text-white">{t('performanceBreakdown')}</h2>
+                <p className="text-sm text-gray-500">{t('avgStatsPerMatch')}</p>
               </div>
             </div>
 
             <div className="space-y-5">
               <div className="bg-dark/50 border border-gray-800 rounded-xl p-5 hover:border-blue-500/30 hover:bg-dark/70 transition-all duration-300">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">Kills</span>
+                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t('kills')}</span>
                   <span className="text-2xl font-bold text-blue-400">{avgKills.toFixed(1)}</span>
                 </div>
                 <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden">
@@ -179,7 +182,7 @@ export default async function PlayerStatsPage() {
 
               <div className="bg-dark/50 border border-gray-800 rounded-xl p-5 hover:border-red-500/30 hover:bg-dark/70 transition-all duration-300">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">Deaths</span>
+                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t('deaths')}</span>
                   <span className="text-2xl font-bold text-red-400">{avgDeaths.toFixed(1)}</span>
                 </div>
                 <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden">
@@ -192,7 +195,7 @@ export default async function PlayerStatsPage() {
 
               <div className="bg-dark/50 border border-gray-800 rounded-xl p-5 hover:border-green-500/30 hover:bg-dark/70 transition-all duration-300">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">Assists</span>
+                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t('assists')}</span>
                   <span className="text-2xl font-bold text-green-400">{avgAssists.toFixed(1)}</span>
                 </div>
                 <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden">
@@ -205,7 +208,7 @@ export default async function PlayerStatsPage() {
 
               <div className="bg-dark/50 border border-gray-800 rounded-xl p-5 hover:border-purple-500/30 hover:bg-dark/70 transition-all duration-300">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">Combat Score</span>
+                  <span className="text-sm font-medium text-gray-400 uppercase tracking-wider">{t('combatScore')}</span>
                   <span className="text-2xl font-bold text-purple-400">{Math.round(avgACS)}</span>
                 </div>
                 <div className="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden">
@@ -228,23 +231,23 @@ export default async function PlayerStatsPage() {
                   <Target className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Recent Match Performance</h2>
-                  <p className="text-sm text-gray-500">Last {Math.min(playerMatchStats?.length || 0, 10)} matches</p>
+                  <h2 className="text-2xl font-bold text-white">{t('recentMatchPerformance')}</h2>
+                  <p className="text-sm text-gray-500">{t('lastNMatches', { count: Math.min(playerMatchStats?.length || 0, 10) })}</p>
                 </div>
               </div>
               
               {/* Summary Stats */}
               <div className="flex items-center gap-4">
                 <div className="text-center px-6 py-3 bg-dark/70 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Win Rate</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">{t('winRate')}</p>
                   <p className="text-2xl font-bold text-white">{winRate}%</p>
                 </div>
                 <div className="text-center px-6 py-3 bg-dark/70 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Overall KDA</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">{t('overallKDA')}</p>
                   <p className="text-2xl font-bold text-white">{overallKDA}</p>
                 </div>
                 <div className="text-center px-6 py-3 bg-dark/70 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Avg ACS</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">{t('avgACS')}</p>
                   <p className="text-2xl font-bold text-white">{Math.round(avgACS)}</p>
                 </div>
               </div>
@@ -257,12 +260,12 @@ export default async function PlayerStatsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-gray-800">
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-4 pl-2">Date</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">Opponent</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">Agent</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">K/D/A</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">ACS</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4 pr-2">Result</th>
+                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-4 pl-2">{t('date')}</th>
+                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">{t('opponent')}</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">{t('agent')}</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">{t('kda')}</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4">{t('acs')}</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider pb-4 pr-2">{t('result')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -315,7 +318,9 @@ export default async function PlayerStatsPage() {
                               ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                               : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
                           }`}>
-                            {stat.match_history?.result || 'N/A'}
+                            {stat.match_history?.result === 'win' ? tMatches('win').toUpperCase() : 
+                             stat.match_history?.result === 'loss' ? tMatches('loss').toUpperCase() : 
+                             'N/A'}
                           </span>
                         </td>
                       </tr>
@@ -327,8 +332,8 @@ export default async function PlayerStatsPage() {
           ) : (
             <div className="text-center py-20">
               <Target className="w-16 h-16 text-gray-600 mx-auto mb-4 opacity-50" />
-              <p className="text-gray-500 text-lg font-medium">No match statistics available</p>
-              <p className="text-gray-600 text-sm mt-2">Stats will appear once matches are recorded</p>
+              <p className="text-gray-500 text-lg font-medium">{t('noMatchStats')}</p>
+              <p className="text-gray-600 text-sm mt-2">{t('statsWillAppear')}</p>
             </div>
           )}
         </div>

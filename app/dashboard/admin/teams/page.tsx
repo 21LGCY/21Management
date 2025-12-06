@@ -3,10 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import TeamManagementClient from './TeamManagementClient'
 import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
+import { getTranslations } from 'next-intl/server'
 
 export default async function TeamManagementPage() {
   const user = await requireRole(['admin'])
   const supabase = await createClient()
+  const t = await getTranslations('teams')
 
   // Get user's timezone
   const { data: userProfile } = await supabase
@@ -24,9 +26,9 @@ export default async function TeamManagementPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Team Management
+            {t('title')}
           </h1>
-          <p className="text-gray-400">Manage teams, schedules, matches, and statistics</p>
+          <p className="text-gray-400">{t('title')}</p>
         </div>
         
         <TeamManagementClient userTimezone={userTimezone} />

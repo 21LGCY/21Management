@@ -8,6 +8,7 @@ import { Edit, Trash2, UserPlus, Calendar, ExternalLink, User as UserIcon, Arrow
 import Image from 'next/image'
 import Link from 'next/link'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import { useTranslations } from 'next-intl'
 
 interface ScoutViewManagerProps {
   scout: ProfileTryout
@@ -21,14 +22,17 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('tryouts')
+  const tForm = useTranslations('tryouts.form')
+  const tCommon = useTranslations('common')
 
   const promoteToPlayer = async () => {
     if (!teamId) {
-      alert('Team information not available')
+      alert(tForm('teamNotAvailable'))
       return
     }
 
-    if (!confirm(`Are you sure you want to promote ${scout.in_game_name || scout.username} to player status and add them to your team?`)) return
+    if (!confirm(tForm('confirmPromote', { name: scout.in_game_name || scout.username }))) return
 
     setLoading(true)
     try {
@@ -63,19 +67,19 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
       if (tryoutError) throw tryoutError
 
       setCurrentScout({ ...currentScout, status: 'accepted' })
-      alert('Player successfully added to team!')
+      alert(tForm('playerAddedToTeam'))
       router.push('/dashboard/manager/teams/roster')
 
     } catch (error) {
       console.error('Error promoting player:', error)
-      alert('Failed to promote player. Please try again.')
+      alert(tForm('failedPromote'))
     } finally {
       setLoading(false)
     }
   }
 
   const deleteScout = async () => {
-    if (!confirm('Are you sure you want to delete this scout profile? This action cannot be undone.')) return
+    if (!confirm(tForm('confirmDeleteScout'))) return
 
     setLoading(true)
     try {
@@ -90,7 +94,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
       router.refresh()
     } catch (error) {
       console.error('Error deleting scout:', error)
-      alert('Failed to delete scout')
+      alert(tForm('failedDeleteScout'))
     } finally {
       setLoading(false)
     }
@@ -136,13 +140,13 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
 
   const getStatusLabel = (status: TryoutStatus) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Contacted'
-      case 'in_tryouts': return 'In Tryouts'
-      case 'substitute': return 'Substitute'
-      case 'rejected': return 'Rejected'
-      case 'left': return 'Left'
-      case 'accepted': return 'Player'
+      case 'not_contacted': return t('notContacted')
+      case 'contacted': return t('contacted')
+      case 'in_tryouts': return t('inTryouts')
+      case 'substitute': return t('substitute')
+      case 'rejected': return t('rejected')
+      case 'left': return t('left')
+      case 'accepted': return t('player')
     }
   }
 
@@ -157,9 +161,9 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
   if (!currentScout) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Scout profile not found</p>
+        <p className="text-gray-400 mb-4">{t('scoutNotFound')}</p>
         <Link href="/dashboard/manager/teams/tryouts" className="text-primary hover:underline">
-          Back to Tryouts
+          {t('backToTryouts')}
         </Link>
       </div>
     )
@@ -175,7 +179,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Tryouts</span>
+            <span>{tCommon('back')}</span>
           </Link>
         </div>
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -191,7 +195,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             <Link href={`/dashboard/manager/teams/tryouts/scouts/edit/${currentScout.id}`}>
               <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20">
                 <Edit className="w-4 h-4" />
-                <span>Edit</span>
+                <span>{tCommon('edit')}</span>
               </button>
             </Link>
             <button
@@ -199,7 +203,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
+              <span>{tCommon('delete')}</span>
             </button>
           </div>
         </div>
@@ -212,7 +216,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Profile Overview
+              {tForm('basicInfo')}
             </h2>
             
             <div className="flex items-start gap-6 mb-6">
@@ -222,12 +226,12 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-500 text-sm mb-1">Username</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('username')}</p>
                     <p className="text-white font-semibold text-lg">{currentScout.username}</p>
                   </div>
                   {currentScout.in_game_name && (
                     <div>
-                      <p className="text-gray-500 text-sm mb-1">In-Game Name</p>
+                      <p className="text-gray-500 text-sm mb-1">{tForm('inGameName')}</p>
                       <p className="text-white font-semibold text-lg">{currentScout.in_game_name}</p>
                     </div>
                   )}
@@ -238,7 +242,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             {/* Position and IGL */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Position</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('position')}</p>
                 {currentScout.position ? (
                   <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getRoleColor(currentScout.position)}`}>
                     {currentScout.position}
@@ -248,7 +252,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
                 )}
               </div>
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Status</p>
+                <p className="text-gray-500 text-sm mb-2">{t('status')}</p>
                 <div className="flex flex-wrap gap-2">
                   <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getStatusColor(currentScout.status)}`}>
                     {getStatusLabel(currentScout.status)}
@@ -265,7 +269,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             {/* Rank and Nationality */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Rank</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('rank')}</p>
                 <div className="flex items-center gap-3">
                   {getRankImage(currentScout.rank) && (
                     <Image
@@ -280,7 +284,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
                 </div>
               </div>
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Nationality</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('nationality')}</p>
                 {(() => {
                   const nationality = getNationalityDisplay(currentScout.nationality)
                   return nationality ? (
@@ -304,7 +308,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             {/* Agent Pool */}
             {currentScout.champion_pool && currentScout.champion_pool.length > 0 && (
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-3">Agent Pool</p>
+                <p className="text-gray-500 text-sm mb-3">{tForm('agentPool')}</p>
                 <div className="flex flex-wrap gap-2">
                   {currentScout.champion_pool.map((agent: string) => (
                     <span key={agent} className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary-dark/20 text-primary text-sm rounded-lg font-medium border border-primary/30">
@@ -320,13 +324,13 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Management
+              {tForm('management')}
             </h2>
             <div className="space-y-4">
               {/* Notes First */}
               {currentScout.notes && (
                 <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                  <p className="text-gray-500 text-sm mb-2">Notes</p>
+                  <p className="text-gray-500 text-sm mb-2">{t('notes')}</p>
                   <p className="text-white text-sm">
                     {currentScout.notes}
                   </p>
@@ -337,7 +341,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
               <div className="grid grid-cols-2 gap-4">
                 {currentScout.managed_by && (
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-1">Added By</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('addedBy')}</p>
                     <p className="text-white font-semibold">{currentScout.managed_by}</p>
                   </div>
                 )}
@@ -380,7 +384,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Team
+              {tForm('team')}
             </h3>
             <div className="flex items-center gap-3 p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
               <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-lg flex items-center justify-center border border-primary/30">
@@ -397,7 +401,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Account Info
+              {tForm('basicInfo')}
             </h3>
             <div className="space-y-4">
               <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
@@ -422,7 +426,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
             <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-                External Links
+                {tForm('contactLinks')}
               </h3>
               <div className="space-y-3">
                 {currentScout.valorant_tracker_url && (
@@ -449,7 +453,7 @@ export default function ScoutViewManager({ scout, teamId, team, managerId }: Sco
                 )}
                 {currentScout.links && (
                   <div className="p-3 bg-gray-800/30 rounded-lg border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-1">Other Links</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('otherLinks')}</p>
                     <p className="text-white text-sm">{currentScout.links}</p>
                   </div>
                 )}

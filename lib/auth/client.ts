@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/client'
 import Cookies from 'js-cookie'
+import { LOCALE_COOKIE, type Locale } from '@/lib/i18n'
 
 export interface AuthUser {
   user_id: string
   username: string
   role: 'admin' | 'manager' | 'player'
   avatar_url: string | null
+  locale?: Locale | null
 }
 
 const SESSION_COOKIE = 'esports_session'
@@ -27,9 +29,24 @@ export async function login(username: string, password: string): Promise<AuthUse
   
   const user = data[0] as AuthUser
   
+  // Fetch user's locale preference from their profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('locale')
+    .eq('id', user.user_id)
+    .single()
+  
+  // Add locale to user object
+  user.locale = profile?.locale || null
+  
   // Store session in cookies (7 days expiry)
   Cookies.set(SESSION_COOKIE, 'true', { expires: 7, secure: true, sameSite: 'strict' })
   Cookies.set(USER_COOKIE, JSON.stringify(user), { expires: 7, secure: true, sameSite: 'strict' })
+  
+  // If user has a saved locale preference, set the locale cookie
+  if (profile?.locale) {
+    Cookies.set(LOCALE_COOKIE, profile.locale, { expires: 365, secure: true, sameSite: 'strict' })
+  }
   
   return user
 }

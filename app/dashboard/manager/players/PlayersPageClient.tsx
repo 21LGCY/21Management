@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { Users, Search, Plus, Mail, Phone, MapPin, Trophy, Target, Award, Activity, Star } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -52,6 +53,8 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [rankFilter, setRankFilter] = useState('')
+  const t = useTranslations('players')
+  const tCommon = useTranslations('common')
 
   const filteredPlayers = useMemo(() => {
     return players.filter(player => {
@@ -77,9 +80,9 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Player Management
+            {t('title')}
           </h1>
-          <p className="text-lg text-gray-400">Manage and track your {team?.name || 'team'} roster</p>
+          <p className="text-lg text-gray-400">{t('manageAndTrackRoster', { teamName: team?.name || 'team' })}</p>
         </div>
 
         {/* Stats Overview */}
@@ -90,7 +93,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 <Users className="w-6 h-6 text-blue-400" />
               </div>
             </div>
-            <p className="text-sm text-blue-300/70 mb-1">Total Players</p>
+            <p className="text-sm text-blue-300/70 mb-1">{t('totalPlayers')}</p>
             <p className="text-3xl font-bold text-blue-400">{players.length}</p>
           </div>
 
@@ -100,7 +103,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 <Activity className="w-6 h-6 text-green-400" />
               </div>
             </div>
-            <p className="text-sm text-green-300/70 mb-1">Active Roster</p>
+            <p className="text-sm text-green-300/70 mb-1">{t('activeRoster')}</p>
             <p className="text-3xl font-bold text-green-400">{players.filter(p => !p.is_substitute).length}</p>
           </div>
 
@@ -110,7 +113,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 <Star className="w-6 h-6 text-purple-400" />
               </div>
             </div>
-            <p className="text-sm text-purple-300/70 mb-1">IGL</p>
+            <p className="text-sm text-purple-300/70 mb-1">{t('igl')}</p>
             <p className="text-3xl font-bold text-purple-400">{players.filter(p => p.is_igl).length}</p>
           </div>
 
@@ -120,7 +123,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 <Target className="w-6 h-6 text-orange-400" />
               </div>
             </div>
-            <p className="text-sm text-orange-300/70 mb-1">Substitutes</p>
+            <p className="text-sm text-orange-300/70 mb-1">{t('substitutes')}</p>
             <p className="text-3xl font-bold text-orange-400">{players.filter(p => p.is_substitute).length}</p>
           </div>
         </div>
@@ -132,7 +135,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search players in your team..."
+                placeholder={t('searchPlayersInTeam')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -143,7 +146,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               value={roleFilter}
               onChange={(value) => setRoleFilter(value)}
               options={[
-                { value: '', label: 'All Roles' },
+                { value: '', label: t('allRoles') },
                 ...roles.filter(role => role).map(role => ({ value: role as string, label: role as string }))
               ]}
               className="min-w-[150px]"
@@ -153,7 +156,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
               value={rankFilter}
               onChange={(value) => setRankFilter(value)}
               options={[
-                { value: '', label: 'All Ranks' },
+                { value: '', label: t('allRanks') },
                 ...ranks.filter(rank => rank).map(rank => ({ value: rank as string, label: rank as string }))
               ]}
               className="min-w-[150px]"
@@ -169,7 +172,11 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-400 text-sm font-medium">
-            Showing <span className="text-primary">{filteredPlayers.length}</span> of <span className="text-white">{players.length}</span> players
+            {t('showingOfPlayers', { filtered: filteredPlayers.length, total: players.length }).split(String(filteredPlayers.length))[0]}
+            <span className="text-primary">{filteredPlayers.length}</span>
+            {t('showingOfPlayers', { filtered: filteredPlayers.length, total: players.length }).split(String(filteredPlayers.length))[1]?.split(String(players.length))[0]}
+            <span className="text-white">{players.length}</span>
+            {t('showingOfPlayers', { filtered: filteredPlayers.length, total: players.length }).split(String(players.length))[1]}
           </p>
         </div>
 
@@ -198,7 +205,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                   </div>
                   <Link href={`/dashboard/manager/players/${player.id}`}>
                     <button className="px-3 py-1.5 bg-primary/20 hover:bg-primary/30 text-primary rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-primary/20">
-                      View
+                      {tCommon('view')}
                     </button>
                   </Link>
                 </div>
@@ -227,7 +234,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                   {/* Rank and Nationality */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
-                      <p className="text-gray-400 text-xs mb-1.5">Rank</p>
+                      <p className="text-gray-400 text-xs mb-1.5">{t('rankLabel')}</p>
                       <div className="flex items-center gap-2">
                         {getRankImage(player.rank) ? (
                           <img 
@@ -236,11 +243,11 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                             className="w-6 h-6"
                           />
                         ) : null}
-                        <p className="text-white font-semibold text-sm">{player.rank || 'Unranked'}</p>
+                        <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
                       </div>
                     </div>
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
-                      <p className="text-gray-400 text-xs mb-1.5">Nation</p>
+                      <p className="text-gray-400 text-xs mb-1.5">{t('nation')}</p>
                       <p className="text-white font-semibold text-sm">
                         {player.nationality ? (
                           <span className="flex items-center gap-1.5">
@@ -251,7 +258,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                             />
                             {player.nationality}
                           </span>
-                        ) : 'Unknown'}
+                        ) : t('unknown')}
                       </p>
                     </div>
                   </div>
@@ -259,7 +266,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                   {/* Agent Pool */}
                   {player.champion_pool && player.champion_pool.length > 0 && (
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
-                      <p className="text-gray-400 text-xs mb-2 font-medium">Main Agents</p>
+                      <p className="text-gray-400 text-xs mb-2 font-medium">{t('mainAgents')}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {player.champion_pool.slice(0, 3).map((agent: string) => (
                           <span key={agent} className="px-2.5 py-1 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs rounded-md font-medium border border-gray-700">
@@ -301,7 +308,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                           rel="noopener noreferrer"
                           className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs rounded-lg font-medium transition-all border border-primary/30"
                         >
-                          Tracker
+                          {t('tracker')}
                         </a>
                       )}
                       {player.twitter_url && (
@@ -321,7 +328,7 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 {/* Join Date */}
                 <div className="mt-4 pt-4 border-t border-gray-800">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400">Joined</span>
+                    <span className="text-gray-400">{t('joined')}</span>
                     <span className="text-gray-300 font-medium">{new Date(player.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                   </div>
                 </div>
@@ -333,12 +340,12 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                 <Users className="w-10 h-10 text-gray-400" />
               </div>
               <p className="text-gray-300 text-xl mb-2 font-semibold">
-                {players.length === 0 ? 'No players in your team' : 'No players match your search'}
+                {players.length === 0 ? t('noPlayersInTeam') : t('noPlayersMatchSearch')}
               </p>
               <p className="text-gray-500">
                 {players.length === 0 
-                  ? `Your roster for ${team?.name || 'your team'} is currently empty`
-                  : 'Try adjusting your search criteria or filters'}
+                  ? t('rosterCurrentlyEmpty', { teamName: team?.name || 'your team' })
+                  : t('tryAdjustingFilters')}
               </p>
             </div>
           )}

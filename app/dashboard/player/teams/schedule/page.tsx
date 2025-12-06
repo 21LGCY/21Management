@@ -4,10 +4,12 @@ import NavbarWrapper from '@/components/NavbarWrapper'
 import PlayerScheduleClient from './PlayerScheduleClient'
 import BackButton from '@/components/BackButton'
 import { TimezoneOffset } from '@/lib/types/database'
+import { getTranslations } from 'next-intl/server'
 
 export default async function PlayerSchedulePage() {
   const user = await requireRole(['player'])
   const supabase = await createClient()
+  const t = await getTranslations('schedule')
 
   // Get player's team info and timezone
   const { data: playerData } = await supabase
@@ -29,7 +31,7 @@ export default async function PlayerSchedulePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <BackButton fallbackHref="/dashboard/player/teams">
-            Back to Team Hub
+            {t('backToTeamHub')}
           </BackButton>
         </div>
         

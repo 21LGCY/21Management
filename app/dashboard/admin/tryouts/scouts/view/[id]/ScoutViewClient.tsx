@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import { useTranslations } from 'next-intl'
 
 interface ScoutViewClientProps {
   scoutId: string
@@ -42,18 +43,6 @@ const getStatusColor = (status: TryoutStatus) => {
   }
 }
 
-const getStatusLabel = (status: TryoutStatus) => {
-  switch (status) {
-    case 'not_contacted': return 'Not Contacted'
-    case 'contacted': return 'Contacted'
-    case 'in_tryouts': return 'In Tryouts'
-    case 'substitute': return 'Substitute'
-    case 'rejected': return 'Rejected'
-    case 'left': return 'Left'
-    case 'accepted': return 'Player'
-  }
-}
-
 const getRoleColor = (role?: ValorantRole) => {
   switch (role) {
     case 'Duelist': return 'bg-red-500/20 text-red-300 border-red-500/30'
@@ -71,6 +60,21 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('tryouts')
+  const tForm = useTranslations('tryouts.form')
+  const tCommon = useTranslations('common')
+
+  const getStatusLabel = (status: TryoutStatus) => {
+    switch (status) {
+      case 'not_contacted': return t('notContacted')
+      case 'contacted': return t('contacted')
+      case 'in_tryouts': return t('inTryouts')
+      case 'substitute': return t('substitute')
+      case 'rejected': return t('rejected')
+      case 'left': return t('left')
+      case 'accepted': return t('accepted')
+    }
+  }
 
   useEffect(() => {
     fetchScout()
@@ -94,7 +98,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
   }
 
   const deleteScout = async () => {
-    if (!confirm(`Are you sure you want to delete ${scout?.username}? This action cannot be undone.`)) return
+    if (!confirm(tForm('confirmDeleteScout'))) return
 
     try {
       const { error } = await supabase
@@ -108,7 +112,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
       router.refresh()
     } catch (error) {
       console.error('Error deleting scout:', error)
-      alert('Failed to delete scout')
+      alert(tForm('failedDeleteScout'))
     }
   }
 
@@ -123,9 +127,9 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
   if (!scout) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Scout profile not found</p>
+        <p className="text-gray-400 mb-4">{t('scoutNotFound')}</p>
         <Link href="/dashboard/admin/tryouts" className="text-primary hover:underline">
-          Back to Tryouts
+          {t('backToTryouts')}
         </Link>
       </div>
     )
@@ -141,7 +145,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Tryouts</span>
+            <span>{t('backToTryouts')}</span>
           </Link>
         </div>
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -157,7 +161,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             <Link href={`/dashboard/admin/tryouts/scouts/edit/${scoutId}`}>
               <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20">
                 <Edit className="w-4 h-4" />
-                <span>Edit</span>
+                <span>{tCommon('edit')}</span>
               </button>
             </Link>
             <button
@@ -165,7 +169,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
+              <span>{tCommon('delete')}</span>
             </button>
           </div>
         </div>
@@ -178,7 +182,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Profile Overview
+              {t('profileOverview')}
             </h2>
             
             <div className="flex items-start gap-6 mb-6">
@@ -188,12 +192,12 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-500 text-sm mb-1">Username</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('username')}</p>
                     <p className="text-white font-semibold text-lg">{scout.username}</p>
                   </div>
                   {scout.in_game_name && (
                     <div>
-                      <p className="text-gray-500 text-sm mb-1">In-Game Name</p>
+                      <p className="text-gray-500 text-sm mb-1">{tForm('inGameName')}</p>
                       <p className="text-white font-semibold text-lg">{scout.in_game_name}</p>
                     </div>
                   )}
@@ -204,17 +208,17 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             {/* Position and IGL */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Position</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('position')}</p>
                 {scout.position ? (
                   <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getRoleColor(scout.position)}`}>
                     {scout.position}
                   </span>
                 ) : (
-                  <p className="text-white font-semibold">Not set</p>
+                  <p className="text-white font-semibold">{t('notSet')}</p>
                 )}
               </div>
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Status</p>
+                <p className="text-gray-500 text-sm mb-2">{t('status')}</p>
                 <div className="flex flex-wrap gap-2">
                   <span className={`inline-block px-3 py-1.5 text-sm font-medium border rounded-lg ${getStatusColor(scout.status)}`}>
                     {getStatusLabel(scout.status)}
@@ -231,7 +235,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             {/* Rank and Nationality */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Rank</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('rank')}</p>
                 <div className="flex items-center gap-3">
                   {getRankImage(scout.rank) && (
                     <Image
@@ -242,11 +246,11 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                       className="object-contain"
                     />
                   )}
-                  <p className="text-white font-semibold">{scout.rank || 'Unranked'}</p>
+                  <p className="text-white font-semibold">{scout.rank || t('unranked')}</p>
                 </div>
               </div>
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">Nationality</p>
+                <p className="text-gray-500 text-sm mb-2">{tForm('nationality')}</p>
                 {(() => {
                   const nationality = getNationalityDisplay(scout.nationality)
                   return nationality ? (
@@ -261,7 +265,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                       <p className="text-white font-semibold">{nationality.name}</p>
                     </div>
                   ) : (
-                    <p className="text-white font-semibold">Not set</p>
+                    <p className="text-white font-semibold">{t('notSet')}</p>
                   )
                 })()}
               </div>
@@ -270,7 +274,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             {/* Agent Pool */}
             {scout.champion_pool && scout.champion_pool.length > 0 && (
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-3">Agent Pool</p>
+                <p className="text-gray-500 text-sm mb-3">{tForm('agentPool')}</p>
                 <div className="flex flex-wrap gap-2">
                   {scout.champion_pool.map((agent: string) => (
                     <span key={agent} className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary-dark/20 text-primary text-sm rounded-lg font-medium border border-primary/30">
@@ -286,13 +290,13 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Management
+              {tForm('management')}
             </h2>
             <div className="space-y-4">
               {/* Notes First */}
               {scout.notes && (
                 <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                  <p className="text-gray-500 text-sm mb-2">Notes</p>
+                  <p className="text-gray-500 text-sm mb-2">{t('notes')}</p>
                   <p className="text-white text-sm">
                     {scout.notes}
                   </p>
@@ -303,7 +307,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               <div className="grid grid-cols-2 gap-4">
                 {scout.managed_by && (
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-1">Added By</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('addedBy')}</p>
                     <p className="text-white font-semibold">{scout.managed_by}</p>
                   </div>
                 )}
@@ -311,17 +315,17 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                 {/* Contact Information */}
                 {(scout.contacted_by || scout.last_contact_date) && (
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-3">Contact Information</p>
+                    <p className="text-gray-500 text-sm mb-3">{t('contactInfo')}</p>
                     <div className="space-y-2">
                       {scout.contacted_by && (
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-xs">Contacted By:</span>
+                          <span className="text-gray-400 text-xs">{t('contactedByLabel')}</span>
                           <span className="text-white text-sm font-semibold">{scout.contacted_by}</span>
                         </div>
                       )}
                       {scout.last_contact_date && (
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-xs">Date:</span>
+                          <span className="text-gray-400 text-xs">{t('dateLabel')}</span>
                           <div className="flex items-center gap-2 text-white text-sm font-semibold">
                             <Calendar className="w-3.5 h-3.5" />
                             {new Date(scout.last_contact_date).toLocaleDateString('en-US', {
@@ -346,7 +350,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Team
+              {tForm('team')}
             </h3>
             <div className="flex items-center gap-3 p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
               <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-lg flex items-center justify-center border border-primary/30">
@@ -354,7 +358,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
               </div>
               <div>
                 <p className="text-white font-semibold">{scout.team_category}</p>
-                <p className="text-gray-400 text-sm">Tryout Candidate</p>
+                <p className="text-gray-400 text-sm">{t('tryoutCandidate')}</p>
               </div>
             </div>
           </div>
@@ -363,11 +367,11 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
           <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-              Account Info
+              {t('accountInfo')}
             </h3>
             <div className="space-y-4">
               <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-1">Created</p>
+                <p className="text-gray-500 text-sm mb-1">{t('created')}</p>
                 <p className="text-white font-semibold">
                   {new Date(scout.created_at).toLocaleDateString('en-US', { 
                     year: 'numeric', 
@@ -377,7 +381,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                 </p>
               </div>
               <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-1">Scout ID</p>
+                <p className="text-gray-500 text-sm mb-1">{t('scoutId')}</p>
                 <p className="text-white font-mono text-xs break-all">{scout.id}</p>
               </div>
             </div>
@@ -388,7 +392,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-                External Links
+                {t('externalLinks')}
               </h3>
               <div className="space-y-3">
                 {scout.valorant_tracker_url && (
@@ -399,7 +403,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                     className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-primary/50 transition-all group"
                   >
                     <ExternalLink className="w-4 h-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    <span className="text-gray-300 group-hover:text-white transition">Valorant Tracker</span>
+                    <span className="text-gray-300 group-hover:text-white transition">{t('valorantTracker')}</span>
                   </a>
                 )}
                 {scout.twitter_url && (
@@ -415,7 +419,7 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                 )}
                 {scout.links && (
                   <div className="p-3 bg-gray-800/30 rounded-lg border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-1">Other Links</p>
+                    <p className="text-gray-500 text-sm mb-1">{tForm('otherLinks')}</p>
                     <p className="text-white text-sm">{scout.links}</p>
                   </div>
                 )}

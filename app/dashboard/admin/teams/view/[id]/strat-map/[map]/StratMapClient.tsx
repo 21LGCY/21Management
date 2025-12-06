@@ -6,6 +6,7 @@ import { Team, ValorantMap, UserRole, StratType } from '@/lib/types/database'
 import { ArrowLeft, Map as MapIcon, Target, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import TeamCommunication from '../../TeamCommunication'
+import { useTranslations } from 'next-intl'
 
 interface StratMapClientProps {
   teamId: string
@@ -27,6 +28,9 @@ export default function StratMapClient({
   const [stratType, setStratType] = useState<StratType>('attack')
   const [selectedAgents, setSelectedAgents] = useState<string[]>([])
   const [showAgentMenu, setShowAgentMenu] = useState(false)
+  const t = useTranslations('stratMaps')
+  const tCommon = useTranslations('common')
+  const tTeams = useTranslations('teams')
   
   const supabase = createClient()
 
@@ -157,12 +161,12 @@ export default function StratMapClient({
   if (!team) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Team not found</p>
+        <p className="text-gray-400 mb-4">{tTeams('teamNotFound')}</p>
         <Link
           href="/dashboard/admin/teams"
           className="text-primary hover:underline"
         >
-          Back to Teams
+          {tTeams('backToTeams')}
         </Link>
       </div>
     )
@@ -181,7 +185,7 @@ export default function StratMapClient({
         <div className="flex items-center gap-3">
           <MapIcon className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold text-white">{mapName} Strategies</h1>
+            <h1 className="text-3xl font-bold text-white">{t('mapStrategies', { map: mapName })}</h1>
             <p className="text-gray-400">{team.name}</p>
           </div>
         </div>
@@ -194,7 +198,7 @@ export default function StratMapClient({
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-5 h-5 text-primary" />
-              <label className="text-sm font-medium text-gray-300">Type of Strat</label>
+              <label className="text-sm font-medium text-gray-300">{t('typeOfStrat')}</label>
             </div>
             <div className="flex gap-2">
               <button
@@ -205,7 +209,7 @@ export default function StratMapClient({
                     : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >
-                Attack
+                {t('attack')}
               </button>
               <button
                 onClick={() => setStratType('defense')}
@@ -215,7 +219,7 @@ export default function StratMapClient({
                     : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >
-                Defense
+                {t('defense')}
               </button>
             </div>
           </div>
@@ -224,7 +228,7 @@ export default function StratMapClient({
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-5 h-5 text-primary" />
-              <label className="text-sm font-medium text-gray-300">Team Composition</label>
+              <label className="text-sm font-medium text-gray-300">{t('teamComposition')}</label>
             </div>
 
             {/* Agent Selection Menu */}
@@ -233,7 +237,7 @@ export default function StratMapClient({
                 onClick={() => setShowAgentMenu(!showAgentMenu)}
                 className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-gray-400 hover:border-gray-700 transition text-left"
               >
-                {selectedAgents.length > 0 ? selectedAgents.join(', ') : 'Add agents to composition'}
+                {selectedAgents.length > 0 ? selectedAgents.join(', ') : t('addAgentsToComposition')}
               </button>
               
               {showAgentMenu && (
@@ -258,7 +262,7 @@ export default function StratMapClient({
             </div>
             
             <p className="text-xs text-gray-500 mt-1">
-              Select agents for this strategy composition
+              {t('selectAgentsHint')}
             </p>
           </div>
         </div>

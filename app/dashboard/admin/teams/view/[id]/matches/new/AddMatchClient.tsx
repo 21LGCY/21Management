@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface AddMatchClientProps {
   teamId: string
@@ -31,6 +32,8 @@ interface PlayerStats {
 export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
   
   const [loading, setLoading] = useState(false)
   const [players, setPlayers] = useState<UserProfile[]>([])
@@ -72,7 +75,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
   const addPlayerStat = () => {
     if (playerStats.length >= players.length) {
-      alert('All players have been added')
+      alert(t('allPlayersAdded'))
       return
     }
 
@@ -123,23 +126,23 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
     e.preventDefault()
     
     if (!opponentName.trim()) {
-      alert('Please enter opponent name')
+      alert(t('pleaseEnterOpponent'))
       return
     }
 
     if (playerStats.length === 0) {
-      alert('Please add at least one player')
+      alert(t('pleaseAddPlayer'))
       return
     }
 
     for (let i = 0; i < playerStats.length; i++) {
       const stat = playerStats[i]
       if (!stat.playerId) {
-        alert(`Please select a player for entry ${i + 1}`)
+        alert(t('pleaseSelectPlayerEntry', { number: i + 1 }))
         return
       }
       if (!stat.agentPlayed.trim()) {
-        alert(`Please enter agent for ${stat.playerName}`)
+        alert(t('pleaseEnterAgent', { name: stat.playerName }))
         return
       }
     }
@@ -147,7 +150,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
     const playerIds = playerStats.map(s => s.playerId)
     const uniqueIds = new Set(playerIds)
     if (playerIds.length !== uniqueIds.size) {
-      alert('Cannot add the same player multiple times')
+      alert(t('cannotAddSamePlayer'))
       return
     }
 
@@ -196,7 +199,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
       router.push(`/dashboard/admin/teams/view/${teamId}`)
     } catch (error) {
       console.error('Error saving match:', error)
-      alert('Failed to save match. Please try again.')
+      alert(t('failedSaveMatch'))
     } finally {
       setLoading(false)
     }
@@ -213,8 +216,8 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
   if (players.length === 0) {
     return (
       <div className="bg-dark-card border border-gray-800 rounded-lg p-8 text-center">
-        <p className="text-gray-400 mb-4">No players found in this team roster.</p>
-        <p className="text-gray-500">Add players to the team before recording matches.</p>
+        <p className="text-gray-400 mb-4">{t('noPlayersInTeam')}</p>
+        <p className="text-gray-500">{t('addPlayersBeforeRecording')}</p>
       </div>
     )
   }
@@ -225,19 +228,19 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
       <Link href={`/dashboard/admin/teams/view/${teamId}`}>
         <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
           <ArrowLeft className="w-4 h-4" />
-          Back to Team
+          {t('backToTeam')}
         </button>
       </Link>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Match Details */}
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Match Details</h2>
+          <h2 className="text-xl font-bold text-white mb-4">{t('matchDetails')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Opponent Name *
+                {t('opponentName')} *
               </label>
               <input
                 type="text"
@@ -250,7 +253,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Match Date & Time *
+                {t('matchDateTime')} *
               </label>
               <input
                 type="datetime-local"
@@ -263,7 +266,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Our Score *
+                {t('ourScore')} *
               </label>
               <input
                 type="number"
@@ -278,7 +281,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Opponent Score *
+                {t('opponentScore')} *
               </label>
               <input
                 type="number"
@@ -293,30 +296,30 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Map Name
+                {t('mapName')}
               </label>
               <input
                 type="text"
                 value={mapName}
                 onChange={(e) => setMapName(e.target.value)}
-                placeholder="e.g., Ascent, Haven, Bind"
+                placeholder={t('mapPlaceholder')}
                 className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Match Type *
+                {t('matchType')} *
               </label>
               <CustomSelect
                 value={matchType}
                 onChange={(value) => setMatchType(value as MatchType)}
                 options={[
-                  { value: 'Scrim', label: 'Scrim' },
-                  { value: 'Tournament', label: 'Tournament' },
-                  { value: 'Qualifier', label: 'Qualifier' },
-                  { value: 'League', label: 'League' },
-                  { value: 'Other', label: 'Other' }
+                  { value: 'Scrim', label: t('scrim') },
+                  { value: 'Tournament', label: t('tournament') },
+                  { value: 'Qualifier', label: t('qualifier') },
+                  { value: 'League', label: t('league') },
+                  { value: 'Other', label: t('other') }
                 ]}
               />
             </div>
@@ -324,20 +327,20 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Notes
+              {t('notes')}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              placeholder="Additional notes about the match..."
+              placeholder={t('notesPlaceholder')}
               className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
             />
           </div>
 
           <div className="mt-4 p-4 bg-dark rounded-lg border border-gray-700">
             <p className="text-sm text-gray-400">
-              Result: <span className={`font-bold ${
+              {t('result')}: <span className={`font-bold ${
                 calculateResult() === 'win' ? 'text-green-400' :
                 calculateResult() === 'loss' ? 'text-red-400' :
                 'text-yellow-400'
@@ -351,7 +354,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
         {/* Player Statistics */}
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Player Statistics</h2>
+            <h2 className="text-xl font-bold text-white">{t('playerStatistics')}</h2>
             <button
               type="button"
               onClick={addPlayerStat}
@@ -359,14 +362,14 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
               disabled={playerStats.length >= players.length}
             >
               <Plus className="w-4 h-4" />
-              Add Player
+              {t('addPlayer')}
             </button>
           </div>
 
           {playerStats.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              <p>No player statistics added yet.</p>
-              <p className="text-sm mt-2">Click "Add Player" to record player performance.</p>
+              <p>{t('noStatsAdded')}</p>
+              <p className="text-sm mt-2">{t('clickAddPlayer')}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -381,13 +384,13 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                   </button>
 
                   <h3 className="text-lg font-semibold text-white mb-4">
-                    Player {index + 1}
+                    {t('player')} {index + 1}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Player *
+                        {t('player')} *
                       </label>
                       <select
                         value={stat.playerId}
@@ -395,7 +398,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                         className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                         required
                       >
-                        <option value="">Select Player</option>
+                        <option value="">{t('selectPlayer')}</option>
                         {players
                           .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
                           .map(player => (
@@ -408,20 +411,20 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Agent Played *
+                        {t('agent')} *
                       </label>
                       <input
                         type="text"
                         value={stat.agentPlayed}
                         onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                        placeholder="e.g., Jett, Sage"
+                        placeholder={t('agentPlaceholder')}
                         className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Kills</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('kills')}</label>
                       <input
                         type="number"
                         min="0"
@@ -432,7 +435,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Deaths</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('deaths')}</label>
                       <input
                         type="number"
                         min="0"
@@ -443,7 +446,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Assists</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('assists')}</label>
                       <input
                         type="number"
                         min="0"
@@ -454,7 +457,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">ACS</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('acs')}</label>
                       <input
                         type="number"
                         min="0"
@@ -465,7 +468,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Headshot %</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('headshotPercent')}</label>
                       <input
                         type="number"
                         min="0"
@@ -478,7 +481,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">First Kills</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('firstKills')}</label>
                       <input
                         type="number"
                         min="0"
@@ -489,7 +492,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">First Deaths</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('firstDeaths')}</label>
                       <input
                         type="number"
                         min="0"
@@ -500,7 +503,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Plants</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('plants')}</label>
                       <input
                         type="number"
                         min="0"
@@ -511,7 +514,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Defuses</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('defuses')}</label>
                       <input
                         type="number"
                         min="0"
@@ -536,7 +539,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
               disabled={loading}
             >
               <X className="w-4 h-4" />
-              Cancel
+              {tCommon('cancel')}
             </button>
           </Link>
           <button
@@ -545,7 +548,7 @@ export default function AddMatchClient({ teamId, teamName }: AddMatchClientProps
             disabled={loading || playerStats.length === 0}
           >
             <Save className="w-4 h-4" />
-            {loading ? 'Saving...' : 'Save Match'}
+            {loading ? tCommon('saving') : t('saveMatch')}
           </button>
         </div>
       </form>

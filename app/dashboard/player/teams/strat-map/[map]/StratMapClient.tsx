@@ -6,6 +6,7 @@ import { Team, ValorantMap, UserRole, StratType } from '@/lib/types/database'
 import { ArrowLeft, Map as MapIcon, Target, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import TeamCommunication from '@/app/dashboard/admin/teams/view/[id]/TeamCommunication'
+import { useTranslations } from 'next-intl'
 
 interface StratMapClientProps {
   teamId: string
@@ -25,6 +26,7 @@ export default function StratMapClient({
   const [team, setTeam] = useState<Team | null>(null)
   const [loading, setLoading] = useState(true)
   const [stratType, setStratType] = useState<StratType>('attack')
+  const t = useTranslations('stratMaps')
   
   const supabase = createClient()
 
@@ -60,12 +62,12 @@ export default function StratMapClient({
   if (!team) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Team not found</p>
+        <p className="text-gray-400 mb-4">{t('teamNotFound')}</p>
         <Link
           href="/dashboard/player/teams"
           className="text-primary hover:underline"
         >
-          Back to Team Hub
+          {t('backToTeamHub')}
         </Link>
       </div>
     )
@@ -84,7 +86,7 @@ export default function StratMapClient({
         <div className="flex items-center gap-3">
           <MapIcon className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold text-white">{mapName} Strategies</h1>
+            <h1 className="text-3xl font-bold text-white">{mapName} {t('strategies')}</h1>
             <p className="text-gray-400">{team.name}</p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function StratMapClient({
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-5 h-5 text-primary" />
-              <label className="text-sm font-medium text-gray-300">Type of Strat</label>
+              <label className="text-sm font-medium text-gray-300">{t('typeOfStrat')}</label>
             </div>
             <div className="flex gap-2">
               <button
@@ -108,7 +110,7 @@ export default function StratMapClient({
                     : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >
-                Attack
+                {t('attack')}
               </button>
               <button
                 onClick={() => setStratType('defense')}
@@ -118,7 +120,7 @@ export default function StratMapClient({
                     : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
                 }`}
               >
-                Defense
+                {t('defense')}
               </button>
             </div>
           </div>
@@ -129,7 +131,7 @@ export default function StratMapClient({
           <div className="flex items-start gap-2 text-sm text-gray-400">
             <Users className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <p>
-              <span className="text-gray-300 font-medium">Note:</span> Team compositions can be managed by your Staff
+              <span className="text-gray-300 font-medium">Note:</span> {t('teamCompsManaged')}
             </p>
           </div>
         </div>

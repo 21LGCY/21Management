@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { TeamCategory, ProfileTryout } from '@/lib/types/database'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface NewTryoutWeekFormManagerProps {
   team: any
@@ -21,6 +22,9 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const supabase = createClient()
+  const t = useTranslations('tryouts.weekForm')
+  const tTryouts = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
 
   const [formData, setFormData] = useState({
     team_category: teamCategory as TeamCategory,
@@ -101,12 +105,12 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
     e.preventDefault()
     
     if (selectedPlayers.size === 0) {
-      alert('Please select at least one player')
+      alert(t('selectAtLeastOne'))
       return
     }
 
     if (!formData.week_start || !formData.week_end) {
-      alert('Please select start and end dates')
+      alert(t('selectDates'))
       return
     }
 
@@ -146,7 +150,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       router.push(`/dashboard/manager/teams/tryouts/${week.id}`)
     } catch (error) {
       console.error('Error creating tryout week:', error)
-      alert('Failed to create tryout week')
+      alert(t('failedCreate'))
     } finally {
       setLoading(false)
     }
@@ -178,13 +182,13 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Contacted'
-      case 'in_tryouts': return 'In Tryouts'
-      case 'substitute': return 'Substitute'
-      case 'rejected': return 'Rejected'
-      case 'left': return 'Left'
-      case 'accepted': return 'Player'
+      case 'not_contacted': return tTryouts('notContacted')
+      case 'contacted': return tTryouts('contacted')
+      case 'in_tryouts': return tTryouts('inTryouts')
+      case 'substitute': return tTryouts('substitute')
+      case 'rejected': return tTryouts('rejected')
+      case 'left': return tTryouts('left')
+      case 'accepted': return tTryouts('player')
       default: return status
     }
   }
@@ -201,8 +205,8 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
     return (
       <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 text-center">
         <Calendar className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-yellow-300 mb-2">Team Category Not Found</h3>
-        <p className="text-yellow-400">Unable to determine team category for "{team?.name}". Contact an administrator.</p>
+        <h3 className="text-lg font-bold text-yellow-300 mb-2">{tTryouts('teamCategoryNotFound')}</h3>
+        <p className="text-yellow-400">{tTryouts('unableToDetermineCategory', { teamName: team?.name })}</p>
       </div>
     )
   }
@@ -216,14 +220,14 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
           className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Tryouts</span>
+          <span>{tCommon('back')}</span>
         </Link>
         <div className="border-l-4 border-primary pl-4">
           <h1 className="flex items-center gap-3 text-3xl font-bold text-white">
             <Calendar className="w-8 h-8 text-primary" />
-            Create Tryout Week - {getTeamLabel(teamCategory)}
+            {t('createTryoutWeekTitle', { team: getTeamLabel(teamCategory) })}
           </h1>
-          <p className="text-gray-400 mt-2">Schedule a full week of tryouts for {team.name}</p>
+          <p className="text-gray-400 mt-2">{t('scheduleWeek', { team: team.name })}</p>
         </div>
       </div>
 
@@ -235,8 +239,8 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               <Calendar className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Week Information</h2>
-              <p className="text-xs text-gray-400">Schedule details and description</p>
+              <h2 className="text-lg font-semibold text-white">{t('weekInfo')}</h2>
+              <p className="text-xs text-gray-400">{t('weekInfoDesc')}</p>
             </div>
           </div>
           
@@ -244,7 +248,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
             {/* Team Category - Read Only */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Team
+                {tTryouts('form.team')}
               </label>
               <input
                 type="text"
@@ -257,29 +261,29 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
             {/* Week Label */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Title (visible to staff and players)
+                {t('title')}
               </label>
               <input
                 type="text"
                 value={formData.week_label}
                 onChange={handleInputChange('week_label')}
-                placeholder="e.g., Week 1, January Tryouts"
+                placeholder={t('titlePlaceholder')}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
               <p className="text-xs text-gray-500 mt-2">
-                Optional - Helps identify this session easily
+                {t('titleHint')}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description (visible to staff and players)
+                {t('description')}
               </label>
               <textarea
                 value={formData.notes}
                 onChange={handleInputChange('notes')}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none"
-                placeholder="e.g., Players present in the session with roles"
+                placeholder={t('descriptionPlaceholder')}
               />
             </div>
 
@@ -287,7 +291,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Session Start <span className="text-gray-500 font-normal">(always set to Monday)</span>
+                  {t('sessionStart')} <span className="text-gray-500 font-normal">{t('sessionStartHint')}</span>
                 </label>
                 <input
                   type="date"
@@ -299,7 +303,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Session End (automatic week)
+                  {t('sessionEnd')}
                 </label>
                 <input
                   type="date"
@@ -321,8 +325,8 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               <Users className="w-5 h-5 text-blue-400" />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold text-white">Select Players</h2>
-              <p className="text-xs text-gray-400">{selectedPlayers.size} player{selectedPlayers.size !== 1 ? 's' : ''} selected</p>
+              <h2 className="text-lg font-semibold text-white">{t('selectPlayers')}</h2>
+              <p className="text-xs text-gray-400">{t('playersSelected', { count: selectedPlayers.size })}</p>
             </div>
             <button
               type="button"
@@ -330,7 +334,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               className="px-4 py-2 text-sm border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:border-gray-600 transition-all"
               disabled={filteredPlayers.length === 0}
             >
-              {selectedPlayers.size === filteredPlayers.length && filteredPlayers.length > 0 ? 'Deselect All' : 'Select All'}
+              {selectedPlayers.size === filteredPlayers.length && filteredPlayers.length > 0 ? t('deselectAll') : t('selectAll')}
             </button>
           </div>
 
@@ -343,7 +347,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search for a player..."
+                placeholder={t('searchPlayer')}
                 className="w-full pl-10 px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
@@ -354,10 +358,10 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
                 value={statusFilter}
                 onChange={(value) => setStatusFilter(value)}
                 options={[
-                  { value: 'all', label: 'All Statuses' },
-                  { value: 'in_tryouts', label: 'In Tryouts' },
-                  { value: 'contacted', label: 'Contacted' },
-                  { value: 'substitute', label: 'Substitute' }
+                  { value: 'all', label: t('allStatuses') },
+                  { value: 'in_tryouts', label: tTryouts('inTryouts') },
+                  { value: 'contacted', label: tTryouts('contacted') },
+                  { value: 'substitute', label: tTryouts('substitute') }
                 ]}
                 className="min-w-[180px]"
               />
@@ -367,9 +371,9 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
           {/* Results Summary */}
           {(searchTerm || statusFilter !== 'all') && (
             <div className="mb-4 text-sm text-gray-400">
-              {filteredPlayers.length} player{filteredPlayers.length !== 1 ? 's' : ''} found
-              {searchTerm && ` for "${searchTerm}"`}
-              {statusFilter !== 'all' && ` with status "${getStatusLabel(statusFilter)}"`}
+              {t('playersFound', { count: filteredPlayers.length })}
+              {searchTerm && ` ${t('forSearch', { term: searchTerm })}`}
+              {statusFilter !== 'all' && ` ${t('withStatus', { status: getStatusLabel(statusFilter) })}`}
             </div>
           )}
 
@@ -378,13 +382,13 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
               {players.length === 0 ? (
                 <>
-                  <p>No players available for this team</p>
-                  <p className="text-sm mt-1">Players with "Rejected" or "Left" status are excluded</p>
+                  <p>{t('noPlayersAvailable')}</p>
+                  <p className="text-sm mt-1">{t('playersExcluded')}</p>
                 </>
               ) : (
                 <>
-                  <p>No players found</p>
-                  <p className="text-sm mt-1">Try modifying your search criteria</p>
+                  <p>{t('noPlayersFound')}</p>
+                  <p className="text-sm mt-1">{t('tryModifying')}</p>
                 </>
               )}
             </div>
@@ -434,11 +438,11 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             <Save className="w-4 h-4" />
-            {loading ? 'Creating...' : 'Create Tryout Week'}
+            {loading ? tCommon('creating') : t('createTryoutWeek')}
           </button>
           <Link href="/dashboard/manager/teams/tryouts">
             <button type="button" className="px-6 py-3 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-700 transition-all">
-              Cancel
+              {tCommon('cancel')}
             </button>
           </Link>
         </div>

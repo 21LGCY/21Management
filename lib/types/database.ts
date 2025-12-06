@@ -1,5 +1,6 @@
 export type UserRole = 'admin' | 'manager' | 'player'
 export type TimezoneOffset = 'UTC+0' | 'UTC+1' | 'UTC+2' | 'UTC+3'
+export type Locale = 'en' | 'fr'
 export type ValorantRole = 'Duelist' | 'Initiator' | 'Controller' | 'Flex' | 'Sentinel' | 'Staff'
 export type StaffRole = 'Coach' | 'Manager' | 'Analyst'
 export type ValorantRank = 
@@ -51,6 +52,7 @@ export interface UserProfile {
   avatar_url?: string
   team_id?: string
   timezone?: TimezoneOffset // User's timezone for schedule display (default: UTC+1)
+  locale?: Locale // User's preferred language (default: 'en')
   
   // Player-specific fields (only populated when role = 'player')
   in_game_name?: string

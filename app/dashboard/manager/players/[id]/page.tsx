@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
 import { Edit, Mail, Phone, ExternalLink, Crown, User } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -29,6 +30,8 @@ interface PlayerDetailPageProps {
 export default async function PlayerDetailPage({ params }: PlayerDetailPageProps) {
   // Require manager role and get team access
   const { user, teamId, team } = await requireManagerTeamAccess()
+  const t = await getTranslations('players')
+  const tCommon = await getTranslations('common')
   
   const supabase = await createClient()
 
@@ -58,7 +61,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Back to Players
+              {t('backToPlayers')}
             </Link>
           </div>
           <div className="flex items-center justify-between">
@@ -71,7 +74,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
             <Link href={`/dashboard/manager/players/${player.id}/edit`}>
               <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
                 <Edit className="w-4 h-4" />
-                Edit Player
+                {t('editPlayer')}
               </button>
             </Link>
           </div>
@@ -82,7 +85,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Overview */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Profile Overview</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t('profileOverview')}</h2>
               
               <div className="flex items-start gap-6 mb-6">
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center overflow-hidden">
@@ -95,12 +98,12 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                 <div className="flex-1">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-gray-400 text-sm">Username</p>
+                      <p className="text-gray-400 text-sm">{tCommon('username')}</p>
                       <p className="text-white font-medium">{player.username}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">In-Game Name</p>
-                      <p className="text-white font-medium">{player.in_game_name || 'Not set'}</p>
+                      <p className="text-gray-400 text-sm">{t('inGameName')}</p>
+                      <p className="text-white font-medium">{player.in_game_name || t('notSet')}</p>
                     </div>
                   </div>
                 </div>
@@ -116,12 +119,12 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                 {player.is_igl && (
                   <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-lg font-medium flex items-center gap-1">
                     <Crown className="w-4 h-4" />
-                    In-Game Leader
+                    {t('inGameLeader')}
                   </span>
                 )}
                 {player.is_substitute && (
                   <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-sm rounded-lg font-medium">
-                    Substitute Player
+                    {t('substitutePlayer')}
                   </span>
                 )}
                 {player.nationality && (
@@ -139,11 +142,11 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
 
             {/* Gaming Information */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Gaming Information</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t('gamingInfo')}</h2>
               
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Current Rank</p>
+                  <p className="text-gray-400 text-sm mb-1">{t('currentRank')}</p>
                   <div className="flex items-center gap-2">
                     {getRankImage(player.rank) && (
                       <img 
@@ -152,11 +155,11 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                         className="w-8 h-8"
                       />
                     )}
-                    <p className="text-white font-medium text-lg">{player.rank || 'Unranked'}</p>
+                    <p className="text-white font-medium text-lg">{player.rank || t('unranked')}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Peak Rank</p>
+                  <p className="text-gray-400 text-sm mb-1">{t('peakRank')}</p>
                   <div className="flex items-center gap-2">
                     {getRankImage(player.peak_rank) && (
                       <img 
@@ -165,7 +168,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                         className="w-8 h-8"
                       />
                     )}
-                    <p className="text-white font-medium text-lg">{player.peak_rank || 'Not recorded'}</p>
+                    <p className="text-white font-medium text-lg">{player.peak_rank || t('notRecorded')}</p>
                   </div>
                 </div>
               </div>
@@ -173,7 +176,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
               {/* Agent Pool */}
               {player.champion_pool && player.champion_pool.length > 0 && (
                 <div>
-                  <p className="text-gray-400 text-sm mb-3">Agent Pool</p>
+                  <p className="text-gray-400 text-sm mb-3">{t('championPool')}</p>
                   <div className="flex flex-wrap gap-2">
                     {player.champion_pool.map((agent: string) => (
                       <span key={agent} className="px-3 py-1 bg-gray-700 text-gray-300 text-sm rounded-lg">
@@ -187,23 +190,23 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
 
             {/* Performance Stats */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Performance Overview</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t('performanceOverview')}</h2>
               
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-dark rounded-lg border border-gray-700">
                   <p className="text-2xl font-bold text-primary">{player.wins || 0}</p>
-                  <p className="text-gray-400 text-sm">Wins</p>
+                  <p className="text-gray-400 text-sm">{t('wins')}</p>
                 </div>
                 <div className="text-center p-4 bg-dark rounded-lg border border-gray-700">
                   <p className="text-2xl font-bold text-red-400">{player.losses || 0}</p>
-                  <p className="text-gray-400 text-sm">Losses</p>
+                  <p className="text-gray-400 text-sm">{t('losses')}</p>
                 </div>
                 <div className="text-center p-4 bg-dark rounded-lg border border-gray-700">
                   <p className="text-2xl font-bold text-yellow-400">
                     {player.wins && player.losses ? 
                       Math.round((player.wins / (player.wins + player.losses)) * 100) : 0}%
                   </p>
-                  <p className="text-gray-400 text-sm">Win Rate</p>
+                  <p className="text-gray-400 text-sm">{t('winRate')}</p>
                 </div>
               </div>
             </div>
@@ -213,14 +216,14 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
           <div className="space-y-6">
             {/* Contact Information */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Contact Information</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('contactInfo')}</h3>
               
               <div className="space-y-3">
                 {player.email && (
                   <div className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700">
                     <Mail className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-gray-400 text-xs">Email</p>
+                      <p className="text-gray-400 text-xs">{tCommon('email')}</p>
                       <p className="text-white text-sm">{player.email}</p>
                     </div>
                   </div>
@@ -230,7 +233,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                   <div className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700">
                     <Phone className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-gray-400 text-xs">Phone</p>
+                      <p className="text-gray-400 text-xs">{tCommon('phone')}</p>
                       <p className="text-white text-sm">{player.phone}</p>
                     </div>
                   </div>
@@ -241,7 +244,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
             {/* External Links */}
             {(player.valorant_tracker_url || player.twitter_url) && (
               <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">External Links</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{t('externalLinks')}</h3>
                 
                 <div className="space-y-3">
                   {player.valorant_tracker_url && (
@@ -253,8 +256,8 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                     >
                       <ExternalLink className="w-5 h-5 text-primary" />
                       <div>
-                        <p className="text-white text-sm font-medium">Valorant Tracker</p>
-                        <p className="text-gray-400 text-xs">View detailed stats</p>
+                        <p className="text-white text-sm font-medium">{t('valorantTracker')}</p>
+                        <p className="text-gray-400 text-xs">{t('viewDetailedStats')}</p>
                       </div>
                     </a>
                   )}
@@ -269,7 +272,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                       <ExternalLink className="w-5 h-5 text-primary" />
                       <div>
                         <p className="text-white text-sm font-medium">Twitter</p>
-                        <p className="text-gray-400 text-xs">Follow on social media</p>
+                        <p className="text-gray-400 text-xs">{t('followOnSocial')}</p>
                       </div>
                     </a>
                   )}
@@ -279,15 +282,15 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
 
             {/* Team Information */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Team Information</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('teamInfo')}</h3>
               
               <div className="space-y-3">
                 <div>
-                  <p className="text-gray-400 text-xs">Team</p>
+                  <p className="text-gray-400 text-xs">{tCommon('team')}</p>
                   <p className="text-white font-medium">{team?.name}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs">Joined</p>
+                  <p className="text-gray-400 text-xs">{t('joined')}</p>
                   <p className="text-white font-medium">
                     {new Date(player.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',

@@ -4,15 +4,16 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, Users, Target, Trophy, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { TimezoneOffset, DEFAULT_TIMEZONE, convertTimeSlotToUserTimezone, getTimezoneShort, getDayName } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 // Activity types with their icons and colors
 const activityTypes = {
-  practice: { name: 'Practice', icon: Trophy, color: 'text-blue-400' },
-  individual_training: { name: 'Individual Training', icon: Users, color: 'text-green-400' },
-  group_training: { name: 'Group Training', icon: Users, color: 'text-purple-400' },
-  official_match: { name: 'Official Match', icon: Trophy, color: 'text-yellow-400' },
-  tournament: { name: 'Tournament', icon: Trophy, color: 'text-red-400' },
-  meeting: { name: 'Team Meeting', icon: MessageSquare, color: 'text-indigo-400' }
+  practice: { icon: Trophy, color: 'text-blue-400' },
+  individual_training: { icon: Users, color: 'text-green-400' },
+  group_training: { icon: Users, color: 'text-purple-400' },
+  official_match: { icon: Trophy, color: 'text-yellow-400' },
+  tournament: { icon: Trophy, color: 'text-red-400' },
+  meeting: { icon: MessageSquare, color: 'text-indigo-400' }
 }
 
 interface ScheduleActivity {
@@ -35,6 +36,21 @@ interface SchedulePreviewProps {
 export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZONE }: SchedulePreviewProps) {
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const t = useTranslations('schedule')
+  const tCommon = useTranslations('common')
+  const tDays = useTranslations('days')
+
+  // Helper to translate day number to day name
+  const translateDay = (dayOfWeek: number) => {
+    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    return tDays(dayKeys[dayOfWeek] as any)
+  }
+
+  // Helper to get translated activity type name
+  const getActivityTypeName = (type: keyof typeof activityTypes) => {
+    const typeKey = type as string
+    return t(`activityTypes.${typeKey}` as any)
+  }
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -68,8 +84,8 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
       <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
-            <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+            <h2 className="text-xl font-semibold text-white mb-1">{t('weeklySchedule')}</h2>
+            <p className="text-sm text-gray-400">{t('upcomingActivities')}</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-8">
@@ -83,14 +99,14 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
     <div className="bg-dark-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-white mb-1">Weekly Schedule</h2>
-          <p className="text-sm text-gray-400">Your team's upcoming activities</p>
+          <h2 className="text-xl font-semibold text-white mb-1">{t('weeklySchedule')}</h2>
+          <p className="text-sm text-gray-400">{t('upcomingActivities')}</p>
         </div>
         <Link 
           href="/dashboard/manager/teams/schedule"
           className="px-4 py-2 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition text-sm shadow-lg shadow-primary/20 flex items-center gap-2"
         >
-          Manage Schedule
+          {t('title')}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -115,7 +131,7 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium text-white truncate group-hover:text-primary transition-colors">{activity.title}</h3>
                         <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded flex-shrink-0">
-                          {activityType?.name || activity.type}
+                          {getActivityTypeName(activity.type)}
                         </span>
                       </div>
                       {activity.description && (
@@ -124,14 +140,14 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
                       <div className="flex items-center gap-4 text-sm text-gray-400">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{getDayName(activity.day_of_week)}</span>
+                          <span>{translateDay(activity.day_of_week)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           <span>{convertTimeSlotToUserTimezone(activity.time_slot, userTimezone)}</span>
                           <span className="text-xs text-gray-500">({getTimezoneShort(userTimezone)})</span>
                           {activity.duration > 1 && (
-                            <span className="text-xs">• {activity.duration}h</span>
+                            <span className="text-xs">• {activity.duration}{t('hours').charAt(0)}</span>
                           )}
                         </div>
                       </div>
@@ -144,10 +160,10 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
         ) : (
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-400 mb-4">No activities scheduled</p>
+            <p className="text-gray-400 mb-4">{t('noActivities')}</p>
             <Link href="/dashboard/manager/teams/schedule">
               <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
-                Create Schedule
+                {t('addActivity')}
               </button>
             </Link>
           </div>
@@ -158,7 +174,7 @@ export default function SchedulePreview({ teamId, userTimezone = DEFAULT_TIMEZON
         <div className="mt-4 pt-4 border-t border-gray-800">
           <Link href="/dashboard/manager/teams/schedule">
             <button className="w-full text-center text-sm text-gray-400 hover:text-primary transition-colors">
-              View full schedule →
+              {tCommon('viewAllArrow')}
             </button>
           </Link>
         </div>

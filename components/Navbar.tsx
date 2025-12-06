@@ -6,6 +6,7 @@ import { LogOut, Menu, X, Users, Shield, Search, Home, TrendingUp, Settings, Use
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import type { UserRole } from '@/lib/types/database'
 import { createClient } from '@/lib/supabase/client'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
@@ -23,6 +24,8 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl || null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const t = useTranslations('nav')
+  const tRoles = useTranslations('roles')
 
   // Only fetch avatar if not provided and we have a userId - avoid unnecessary API calls
   useEffect(() => {
@@ -92,7 +95,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Users
+                    {t('users')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -102,7 +105,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Shield className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Teams
+                    {t('teams')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -112,7 +115,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Statistics
+                    {t('statistics')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -122,7 +125,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Tryouts
+                    {t('tryouts')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -138,7 +141,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Players
+                    {t('players')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -148,7 +151,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Shield className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Team Hub
+                    {t('teamHub')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -158,7 +161,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Statistics
+                    {t('statistics')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -174,7 +177,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <BarChart3 className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Stats
+                    {t('stats')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -184,7 +187,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Team
+                    {t('team')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -194,7 +197,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 >
                   <Calendar className="w-4 h-4 group-hover:text-primary transition-colors" />
                   <span className="relative">
-                    Availability
+                    {t('availability')}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-dark group-hover:w-full transition-all duration-300"></span>
                   </span>
                 </Link>
@@ -231,7 +234,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-primary-dark/20 text-primary text-xs font-semibold capitalize border border-primary/30 shadow-lg shadow-primary/10">
-                  {role}
+                  {tRoles(role)}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -258,7 +261,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                       )}
                       <div>
                         <p className="font-semibold text-white">{username}</p>
-                        <p className="text-xs text-gray-400 capitalize">{role} Account</p>
+                        <p className="text-xs text-gray-400 capitalize">{tRoles(role)} {t('accountSettings').split(' ')[0]}</p>
                       </div>
                     </div>
                   </div>
@@ -271,8 +274,8 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                     >
                       <Settings className="w-4 h-4 group-hover:text-primary transition-colors" />
                       <div className="text-left flex-1">
-                        <p className="text-sm font-medium">Account Settings</p>
-                        <p className="text-xs text-gray-500">Manage your account</p>
+                        <p className="text-sm font-medium">{t('accountSettings')}</p>
+                        <p className="text-xs text-gray-500">{t('manageAccount')}</p>
                       </div>
                     </Link>
                   </div>
@@ -286,7 +289,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all group"
                     >
                       <LogOut className="w-4 h-4" />
-                      <p className="text-sm font-medium">Logout</p>
+                      <p className="text-sm font-medium">{t('logout')}</p>
                     </button>
                   </div>
                 </div>
@@ -319,7 +322,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Users
+                  {t('users')}
                 </Link>
                 <Link 
                   href="/dashboard/admin/teams"
@@ -327,7 +330,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Shield className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Teams
+                  {t('teams')}
                 </Link>
                 <Link 
                   href="/dashboard/admin/tryouts"
@@ -335,7 +338,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Tryouts
+                  {t('tryouts')}
                 </Link>
               </div>
             )}
@@ -349,7 +352,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Players
+                  {t('players')}
                 </Link>
                 <Link 
                   href="/dashboard/manager/teams"
@@ -357,7 +360,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Shield className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Team Hub
+                  {t('teamHub')}
                 </Link>
                 <Link 
                   href="/dashboard/manager/stats"
@@ -365,7 +368,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <TrendingUp className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Statistics
+                  {t('statistics')}
                 </Link>
               </div>
             )}
@@ -379,7 +382,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <BarChart3 className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Stats
+                  {t('stats')}
                 </Link>
                 <Link 
                   href="/dashboard/player/teams"
@@ -387,7 +390,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
-                  Team
+                  {t('team')}
                 </Link>
               </div>
             )}
@@ -413,7 +416,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                     <span className="text-white font-medium">{username}</span>
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   </div>
-                  <span className="text-xs text-gray-400 capitalize">{role}</span>
+                  <span className="text-xs text-gray-400 capitalize">{tRoles(role)}</span>
                 </div>
               </div>
               
@@ -423,7 +426,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Settings className="w-4 h-4 group-hover:text-primary transition-colors" />
-                Account Settings
+                {t('accountSettings')}
               </Link>
             </div>
 
@@ -435,7 +438,7 @@ export default function Navbar({ role, username, userId, avatarUrl: initialAvata
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              {t('logout')}
             </button>
           </div>
         </div>

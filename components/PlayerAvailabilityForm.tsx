@@ -6,6 +6,7 @@ import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import QuickFillButtons from '@/components/QuickFillButtons'
 import { TimeSlots, TimezoneOffset } from '@/lib/types/database'
 import { ORG_TIMEZONE, getTimezoneShort } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 interface PlayerAvailabilityFormProps {
   playerId: string
@@ -72,6 +73,8 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations('availability')
+  const tCommon = useTranslations('common')
   
   // Initialize with current week in Paris timezone
   const getInitialWeek = () => {
@@ -117,7 +120,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       }
     } catch (error) {
       console.error('Error fetching availability:', error)
-      setError('Failed to load your availability')
+      setError(t('failedToLoad'))
     } finally {
       setLoading(false)
       setFetching(false)
@@ -131,7 +134,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
     )
 
     if (!hasSlots) {
-      setError('Please select at least one time slot when you are available')
+      setError(t('selectAtLeastOne'))
       return
     }
 
@@ -164,7 +167,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       }
     } catch (error) {
       console.error('Error saving availability:', error)
-      setError('Failed to save your availability. Please try again.')
+      setError(t('failedToSave'))
     } finally {
       setSaving(false)
     }
@@ -225,7 +228,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
       {fetching && (
         <div className="absolute top-0 right-0 z-10 bg-dark-card/90 border border-primary/30 rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
           <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
-          <span className="text-sm text-gray-300">Loading week...</span>
+          <span className="text-sm text-gray-300">{tCommon('loading')}</span>
         </div>
       )}
       
@@ -237,8 +240,8 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
               <Calendar className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-white">Weekly Availability</h3>
-              <p className="text-sm text-gray-400">Fill in your availability for the week</p>
+              <h3 className="text-xl font-semibold text-white">{t('title')}</h3>
+              <p className="text-sm text-gray-400">{t('submitAvailability')}</p>
             </div>
           </div>
           
@@ -248,10 +251,10 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
               disabled={!canGoPrev}
               className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ← Previous
+              {t('previous')}
             </button>
             <div className="text-center min-w-[200px]">
-              <p className="text-sm text-gray-400">Week of</p>
+              <p className="text-sm text-gray-400">{t('weekOf')}</p>
               <p className="text-white font-medium">{formatWeekRange()}</p>
             </div>
             <button
@@ -259,7 +262,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
               disabled={!canGoNext}
               className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next →
+              {t('next')}
             </button>
           </div>
         </div>
@@ -269,35 +272,16 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-blue-400 mt-0.5" />
             <div>
-              <p className="text-blue-300 text-sm font-medium">How it works</p>
+              <p className="text-blue-300 text-sm font-medium">{t('howItWorks')}</p>
               <p className="text-blue-300/70 text-sm mt-1">
                 {isReadOnly 
-                  ? 'This week is in the past and cannot be edited. You can view it for reference.'
+                  ? t('instructionsReadOnly')
                   : userRole === 'player'
-                  ? 'Click and drag to select the time slots when you are available. You can fill availability for the current week and up to 2 weeks ahead.'
-                  : 'Click and drag to select the time slots when you are available. Your manager will use this to schedule team activities.'
+                  ? t('instructionsPlayer')
+                  : t('instructionsManager')
                 }
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* Timezone Notice */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 mt-3">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <p className="text-gray-400 text-sm">
-              {userTimezone !== ORG_TIMEZONE ? (
-                <>
-                  Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span> (your timezone).
-                  Data is stored in CET for consistency.
-                </>
-              ) : (
-                <>
-                  <span className="text-primary font-medium">Times are in CET (Paris)</span> — the organization's reference timezone.
-                </>
-              )}
-            </p>
           </div>
         </div>
       </div>
@@ -337,7 +321,7 @@ export default function PlayerAvailabilityForm({ playerId, teamId, onSaved, user
         <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-400" />
-            <p className="text-green-300 text-sm">Availability saved successfully!</p>
+            <p className="text-green-300 text-sm">{t('submitted')}</p>
           </div>
         </div>
       )}

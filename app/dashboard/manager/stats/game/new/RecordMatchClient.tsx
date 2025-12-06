@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface RecordMatchClientProps {
   teamId: string
@@ -30,6 +31,9 @@ interface PlayerStats {
 export default function RecordMatchClient({ teamId, teamName }: RecordMatchClientProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('matches')
+  const tStats = useTranslations('stats')
+  const tCommon = useTranslations('common')
   
   const [loading, setLoading] = useState(false)
   const [players, setPlayers] = useState<UserProfile[]>([])
@@ -71,7 +75,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
 
   const addPlayerStat = () => {
     if (playerStats.length >= players.length) {
-      alert('All players have been added')
+      alert(t('allPlayersAdded'))
       return
     }
 
@@ -152,7 +156,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
     const playerIds = playerStats.map(s => s.playerId)
     const uniqueIds = new Set(playerIds)
     if (playerIds.length !== uniqueIds.size) {
-      alert('Cannot add the same player multiple times')
+      alert(t('duplicatePlayer'))
       return
     }
 
@@ -199,7 +203,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
       router.push('/dashboard/manager/stats')
     } catch (error) {
       console.error('Error saving match:', error)
-      alert('Failed to save match. Please try again.')
+      alert(t('failedSaveMatch'))
     } finally {
       setLoading(false)
     }
@@ -216,8 +220,8 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
   if (players.length === 0) {
     return (
       <div className="bg-dark-card border border-gray-800 rounded-lg p-8 text-center">
-        <p className="text-gray-400 mb-4">No players found in this team roster.</p>
-        <p className="text-gray-500">Add players to the team before recording matches.</p>
+        <p className="text-gray-400 mb-4">{t('noPlayersInTeam')}</p>
+        <p className="text-gray-500">{t('addPlayersFirst')}</p>
       </div>
     )
   }
@@ -229,11 +233,11 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
         <Link href="/dashboard/manager/stats">
           <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
             <ArrowLeft className="w-4 h-4" />
-            Back to Statistics
+            {t('backToStatistics')}
           </button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-white">Record Match</h1>
+          <h1 className="text-3xl font-bold text-white">{t('recordMatch')}</h1>
           <p className="text-gray-400">{teamName}</p>
         </div>
       </div>
@@ -241,12 +245,12 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Match Details */}
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Match Details</h2>
+          <h2 className="text-xl font-bold text-white mb-4">{t('matchDetails')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Opponent Name *
+                {t('opponentName')} *
               </label>
               <input
                 type="text"
@@ -272,7 +276,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Our Score *
+                {t('ourScore')} *
               </label>
               <input
                 type="number"
@@ -287,7 +291,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Opponent Score *
+                {t('opponentScore')} *
               </label>
               <input
                 type="number"
@@ -360,7 +364,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
         {/* Player Statistics */}
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Player Statistics</h2>
+            <h2 className="text-xl font-bold text-white">{t('playerStatistics')}</h2>
             <button
               type="button"
               onClick={addPlayerStat}
@@ -368,7 +372,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
               disabled={playerStats.length >= players.length}
             >
               <Plus className="w-4 h-4" />
-              Add Player
+              {t('addPlayer')}
             </button>
           </div>
 
@@ -563,7 +567,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
               disabled={loading}
             >
               <X className="w-4 h-4" />
-              Cancel
+              {tCommon('cancel')}
             </button>
           </Link>
           <button
@@ -572,7 +576,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
             disabled={loading || playerStats.length === 0}
           >
             <Save className="w-4 h-4" />
-            {loading ? 'Saving...' : 'Save Match'}
+            {loading ? tCommon('saving') : t('saveMatch')}
           </button>
         </div>
       </form>

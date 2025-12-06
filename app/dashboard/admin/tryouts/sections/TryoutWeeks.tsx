@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, PlayerAvailability, TeamCategory } from '@/lib/types/database'
 import Link from 'next/link'
 import ActionButton from '@/components/ActionButton'
+import { useTranslations } from 'next-intl'
 
 type TryoutWeekWithStats = TryoutWeek & {
   availabilities?: PlayerAvailability[]
@@ -21,6 +22,8 @@ export default function TryoutWeeks() {
   const [loading, setLoading] = useState(true)
   const [selectedTeam, setSelectedTeam] = useState<TeamCategory>('21L')
   const supabase = createClient()
+  const t = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     fetchTryoutWeeks()
@@ -118,7 +121,7 @@ export default function TryoutWeeks() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Loading tryout weeks...</div>
+        <div className="text-white">{tCommon('loading')}</div>
       </div>
     )
   }
@@ -130,13 +133,12 @@ export default function TryoutWeeks() {
         <div>
           <h2 className="flex items-center gap-3 text-2xl font-bold text-white">
             <Calendar className="w-6 h-6 text-primary" />
-            Tryout Weeks
+            {t('tryoutWeeks')}
           </h2>
-          <p className="text-gray-400 mt-1">Manage tryout sessions and track player availability</p>
         </div>
         <Link href="/dashboard/admin/tryouts/new">
           <ActionButton icon={Plus}>
-            Create Tryout Week
+            {t('addTryoutWeek')}
           </ActionButton>
         </Link>
       </div>
@@ -162,12 +164,12 @@ export default function TryoutWeeks() {
       {tryoutWeeks.length === 0 ? (
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-12 text-center shadow-xl">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Sessions</h3>
-          <p className="text-gray-400 mb-6">Create a tryout week for {getTeamLabel(selectedTeam)}</p>
+          <h3 className="text-xl font-semibold text-white mb-2">{t('noTryoutWeeks')}</h3>
+          <p className="text-gray-400 mb-6">{t('createFirstWeek')}</p>
           <Link href="/dashboard/admin/tryouts/new">
             <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all mx-auto shadow-lg hover:shadow-primary/20 font-semibold">
               <Plus className="w-4 h-4" />
-              <span>Create</span>
+              <span>{tCommon('create')}</span>
             </button>
           </Link>
         </div>
@@ -199,7 +201,7 @@ export default function TryoutWeeks() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Users className="w-4 h-4" />
-                  {week.stats?.total || 0} players
+                  {week.stats?.total || 0} {t('players')}
                 </div>
               </div>
 
@@ -209,14 +211,14 @@ export default function TryoutWeeks() {
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <div>
                     <div className="text-2xl font-bold text-green-400">{week.stats?.responded || 0}</div>
-                    <div className="text-xs text-gray-400">Responded</div>
+                    <div className="text-xs text-gray-400">{t('responded')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-yellow-400" />
                   <div>
                     <div className="text-2xl font-bold text-yellow-400">{week.stats?.pending || 0}</div>
-                    <div className="text-xs text-gray-400">Pending</div>
+                    <div className="text-xs text-gray-400">{t('pending')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -225,7 +227,7 @@ export default function TryoutWeeks() {
                     <div className="text-2xl font-bold text-blue-400">
                       {week.stats?.responded || 0}/{week.stats?.total || 0}
                     </div>
-                    <div className="text-xs text-gray-400">Response Rate</div>
+                    <div className="text-xs text-gray-400">{t('responseRate')}</div>
                   </div>
                 </div>
               </div>

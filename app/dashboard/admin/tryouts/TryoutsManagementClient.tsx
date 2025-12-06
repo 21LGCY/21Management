@@ -6,8 +6,11 @@ import { ProfileTryout, TryoutStatus, ValorantRole, ValorantRank } from '@/lib/t
 import { Plus, Edit, Trash2, Search, Eye, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 export default function TryoutsManagementClient() {
+  const t = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -37,7 +40,7 @@ export default function TryoutsManagementClient() {
   }
 
   const deleteTryout = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this tryout profile?')) return
+    if (!confirm(t('confirmDeleteTryoutProfile'))) return
 
     try {
       const { error } = await supabase
@@ -112,27 +115,27 @@ export default function TryoutsManagementClient() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">Not Contacted</p>
+          <p className="text-sm text-gray-400 mb-1">{t('notContacted')}</p>
           <p className="text-2xl font-bold text-gray-300">{stats.notContacted}</p>
         </div>
         <div className="bg-dark-card border border-blue-800/50 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">Contacted</p>
+          <p className="text-sm text-gray-400 mb-1">{t('contacted')}</p>
           <p className="text-2xl font-bold text-blue-300">{stats.contacted}</p>
         </div>
         <div className="bg-dark-card border border-yellow-800/50 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">In Tryouts</p>
+          <p className="text-sm text-gray-400 mb-1">{t('inTryouts')}</p>
           <p className="text-2xl font-bold text-yellow-300">{stats.inTryouts}</p>
         </div>
         <div className="bg-dark-card border border-green-800/50 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">Players</p>
+          <p className="text-sm text-gray-400 mb-1">{t('players')}</p>
           <p className="text-2xl font-bold text-green-300">{stats.accepted}</p>
         </div>
         <div className="bg-dark-card border border-purple-800/50 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">Substitutes</p>
+          <p className="text-sm text-gray-400 mb-1">{t('substitutes')}</p>
           <p className="text-2xl font-bold text-purple-300">{stats.substitute}</p>
         </div>
         <div className="bg-dark-card border border-red-800/50 rounded-lg p-4">
-          <p className="text-sm text-gray-400 mb-1">Rejected</p>
+          <p className="text-sm text-gray-400 mb-1">{t('rejected')}</p>
           <p className="text-2xl font-bold text-red-300">{stats.rejected}</p>
         </div>
       </div>
@@ -144,7 +147,7 @@ export default function TryoutsManagementClient() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search tryout profiles..."
+              placeholder={t('searchTryoutProfiles')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
@@ -155,14 +158,14 @@ export default function TryoutsManagementClient() {
             value={statusFilter}
             onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
             options={[
-              { value: 'all', label: 'All Statuses' },
-              { value: 'not_contacted', label: 'Not Contacted' },
-              { value: 'contacted', label: 'Contacted/Pending' },
-              { value: 'in_tryouts', label: 'In Tryouts' },
-              { value: 'accepted', label: 'Player' },
-              { value: 'substitute', label: 'Substitute' },
-              { value: 'rejected', label: 'Rejected' },
-              { value: 'left', label: 'Left' }
+              { value: 'all', label: t('allStatuses') },
+              { value: 'not_contacted', label: t('notContacted') },
+              { value: 'contacted', label: t('contactedPending') },
+              { value: 'in_tryouts', label: t('inTryouts') },
+              { value: 'accepted', label: t('player') },
+              { value: 'substitute', label: t('substitute') },
+              { value: 'rejected', label: t('rejected') },
+              { value: 'left', label: t('left') }
             ]}
             className=""
           />
@@ -171,13 +174,13 @@ export default function TryoutsManagementClient() {
             value={roleFilter}
             onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
             options={[
-              { value: 'all', label: 'All Roles' },
-              { value: 'Duelist', label: 'Duelist' },
-              { value: 'Initiator', label: 'Initiator' },
-              { value: 'Controller', label: 'Controller' },
-              { value: 'Sentinel', label: 'Sentinel' },
-              { value: 'Flex', label: 'Flex' },
-              { value: 'Staff', label: 'Staff' }
+              { value: 'all', label: t('allRoles') },
+              { value: 'Duelist', label: t('duelist') },
+              { value: 'Initiator', label: t('initiator') },
+              { value: 'Controller', label: t('controller') },
+              { value: 'Sentinel', label: t('sentinel') },
+              { value: 'Flex', label: t('flex') },
+              { value: 'Staff', label: t('staffRole') }
             ]}
             className=""
           />
@@ -187,7 +190,7 @@ export default function TryoutsManagementClient() {
             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
-            Add Tryout
+            {t('addTryout')}
           </Link>
         </div>
       </div>
@@ -199,25 +202,25 @@ export default function TryoutsManagementClient() {
             <thead className="bg-dark border-b border-gray-800">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Player
+                  {t('player')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Status
+                  {t('status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Role
+                  {tCommon('role')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Rank
+                  {tCommon('rank')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Managed By
+                  {t('managedBy')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Last Contact
+                  {t('lastContact')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Actions
+                  {tCommon('actions')}
                 </th>
               </tr>
             </thead>
@@ -225,7 +228,7 @@ export default function TryoutsManagementClient() {
               {filteredTryouts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
-                    No tryout profiles found
+                    {t('noTryoutsFound')}
                   </td>
                 </tr>
               ) : (
@@ -304,7 +307,7 @@ export default function TryoutsManagementClient() {
 
       {/* Stats */}
       <div className="text-sm text-gray-400">
-        Showing {filteredTryouts.length} of {tryouts.length} tryout profiles
+        {t('showingTryouts', { showing: filteredTryouts.length, total: tryouts.length })}
       </div>
     </div>
   )

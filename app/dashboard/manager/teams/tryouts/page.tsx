@@ -2,9 +2,12 @@ import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import Navbar from '@/components/Navbar'
 import BackButton from '@/components/BackButton'
 import TryoutsManagerClient from './TryoutsManagerClient'
+import { getTranslations } from 'next-intl/server'
 
 export default async function ManagerTryoutsPage() {
   const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
+  const t = await getTranslations('tryouts')
+  const tNav = await getTranslations('nav')
 
   return (
     <div className="min-h-screen bg-dark">
@@ -14,13 +17,13 @@ export default async function ManagerTryoutsPage() {
         <div className="mb-8">
           <div className="mb-4">
             <BackButton fallbackHref="/dashboard/manager/teams/roster">
-              Back to Roster Management
+              {t('backToRoster')}
             </BackButton>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Tryouts & Scouting
+            {t('tryoutsAndScouting')}
           </h1>
-          <p className="text-gray-400">Manage tryouts and scout players for {team?.name || 'your team'}</p>
+          <p className="text-gray-400">{t('manageScouts', { team: team?.name || tNav('team') })}</p>
         </div>
         
         <TryoutsManagerClient teamId={teamId} team={team} teamCategory={teamCategory} />

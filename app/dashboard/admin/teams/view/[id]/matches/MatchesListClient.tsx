@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MatchHistory } from '@/lib/types/database'
 import { ArrowLeft, Plus, Calendar, Trophy, TrendingUp, TrendingDown, Edit, Trash2, Eye, Target } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface MatchesListClientProps {
   teamId: string
@@ -15,6 +16,8 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
   const [matches, setMatches] = useState<MatchHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'win' | 'loss' | 'draw'>('all')
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
   }
 
   const deleteMatch = async (matchId: string) => {
-    if (!confirm('Are you sure you want to delete this match? All player statistics will also be deleted.')) return
+    if (!confirm(t('confirmDeleteMatchWithStats'))) return
 
     try {
       const { error } = await supabase
@@ -51,7 +54,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
       setMatches(matches.filter(m => m.id !== matchId))
     } catch (error) {
       console.error('Error deleting match:', error)
-      alert('Failed to delete match')
+      alert(t('failedDeleteMatch'))
     }
   }
 
@@ -88,17 +91,17 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
             </button>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent truncate">{teamName} - Matches</h1>
-            <p className="text-gray-400 mt-1">View and manage all match history</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent truncate">{teamName} - {t('matches')}</h1>
+            <p className="text-gray-400 mt-1">{t('manageMatchHistory')}</p>
           </div>
         </div>
 
         <Link
           href={`/dashboard/admin/teams/view/${teamId}/matches/new`}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 flex-shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 flex-shrink-0 whitespace-nowrap"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Match</span>
+          <span>{t('addMatch')}</span>
         </Link>
       </div>
 
@@ -107,7 +110,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-400 mb-1">Total Matches</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">{t('totalMatches')}</p>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
             </div>
             <Trophy className="w-8 h-8 text-gray-400" />
@@ -117,7 +120,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-green-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-400 mb-1">Wins</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">{t('wins')}</p>
               <p className="text-2xl font-bold text-green-400">{stats.wins}</p>
             </div>
             <TrendingUp className="w-8 h-8 text-green-400" />
@@ -127,7 +130,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-red-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-400 mb-1">Losses</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">{t('losses')}</p>
               <p className="text-2xl font-bold text-red-400">{stats.losses}</p>
             </div>
             <TrendingDown className="w-8 h-8 text-red-400" />
@@ -137,7 +140,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-yellow-500/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-400 mb-1">Draws</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">{t('draws')}</p>
               <p className="text-2xl font-bold text-yellow-400">{stats.draws}</p>
             </div>
             <Target className="w-8 h-8 text-yellow-400" />
@@ -147,7 +150,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-800 rounded-xl p-5 hover:border-primary/30 transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-400 mb-1">Win Rate</p>
+              <p className="text-sm font-semibold text-gray-400 mb-1">{t('winRate')}</p>
               <p className="text-2xl font-bold text-primary">{stats.winRate}%</p>
             </div>
             <TrendingUp className="w-8 h-8 text-primary" />
@@ -165,7 +168,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
               : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
-          All
+          {tCommon('all')}
         </button>
         <button
           onClick={() => setFilter('win')}
@@ -175,7 +178,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
               : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
-          Wins
+          {t('wins')}
         </button>
         <button
           onClick={() => setFilter('loss')}
@@ -185,7 +188,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
               : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
-          Losses
+          {t('losses')}
         </button>
         <button
           onClick={() => setFilter('draw')}
@@ -195,7 +198,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
               : 'bg-dark-card text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700'
           }`}
         >
-          Draws
+          {t('draws')}
         </button>
       </div>
 
@@ -251,7 +254,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                   </div>
 
                   {match.map_name && (
-                    <p className="text-sm text-gray-400 truncate">Map: {match.map_name}</p>
+                    <p className="text-sm text-gray-400 truncate">{t('map')}: {match.map_name}</p>
                   )}
 
                   {match.notes && (
@@ -263,7 +266,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                   <Link href={`/dashboard/admin/teams/view/${teamId}/matches/${match.id}`}>
                     <button 
                       className="p-2 text-primary hover:bg-primary/10 rounded transition"
-                      title="View Stats"
+                      title={t('viewStats')}
                     >
                       <Eye className="w-5 h-5" />
                     </button>
@@ -271,7 +274,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                   <Link href={`/dashboard/admin/teams/view/${teamId}/matches/${match.id}/edit`}>
                     <button 
                       className="p-2 text-gray-400 hover:bg-gray-700 rounded transition"
-                      title="Edit Match"
+                      title={t('editMatch')}
                     >
                       <Edit className="w-5 h-5" />
                     </button>
@@ -279,7 +282,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                   <button
                     onClick={() => deleteMatch(match.id)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded transition"
-                    title="Delete Match"
+                    title={t('deleteMatch')}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -292,13 +295,13 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
             <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-400 text-lg font-semibold mb-2">
               {matches.length === 0 
-                ? 'No matches recorded yet' 
-                : `No ${filter} matches found`}
+                ? t('noMatchesRecorded')
+                : t('noFilteredMatches', { filter })}
             </p>
             <p className="text-gray-500 mb-6">
               {matches.length === 0
-                ? 'Start tracking team performance by adding the first match'
-                : 'Try selecting a different filter'}
+                ? t('startTrackingPerformance')
+                : t('tryDifferentFilter')}
             </p>
             {matches.length === 0 && (
               <Link
@@ -306,7 +309,7 @@ export default function MatchesListClient({ teamId, teamName }: MatchesListClien
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add First Match</span>
+                <span>{t('addFirstMatch')}</span>
               </Link>
             )}
           </div>

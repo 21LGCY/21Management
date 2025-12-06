@@ -3,10 +3,12 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import MatchesClient from './MatchesClient'
+import { getTranslations } from 'next-intl/server'
 
 export default async function MatchesPage() {
   const user = await requireRole(['admin'])
   const supabase = await createClient()
+  const t = await getTranslations('matches')
 
   // Fetch all teams
   const { data: teams } = await supabase
@@ -21,9 +23,9 @@ export default async function MatchesPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Match History
+            {t('title')}
           </h1>
-          <p className="text-gray-400">View and manage all team matches</p>
+          <p className="text-gray-400">{t('viewManageMatches')}</p>
         </div>
 
         <MatchesClient teams={teams || []} />

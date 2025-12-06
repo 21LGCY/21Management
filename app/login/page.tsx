@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { login } from '@/lib/auth/client'
 import { LogIn } from 'lucide-react'
 import Image from 'next/image'
@@ -12,6 +13,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const t = useTranslations('auth')
+  const tCommon = useTranslations('common')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,8 +48,8 @@ export default function LoginPage() {
               className="w-30 h-30"
             />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-300">Management</h2>
-          <p className="mt-4 text-gray-400">Sign in to your account</p>
+          <h2 className="text-2xl font-semibold text-gray-300">{tCommon('management')}</h2>
+          <p className="mt-4 text-gray-400">{t('signInDescription')}</p>
         </div>
 
         {/* Login Form */}
@@ -60,7 +63,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                Username
+                {t('username')}
               </label>
               <input
                 id="username"
@@ -70,13 +73,13 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder="Enter your username"
+                placeholder={t('usernamePlaceholder')}
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+                {t('password')}
               </label>
               <input
                 id="password"
@@ -86,7 +89,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder="Enter your password"
+                placeholder={t('passwordPlaceholder')}
               />
             </div>
 
@@ -100,7 +103,7 @@ export default function LoginPage() {
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  Sign In
+                  {t('signIn')}
                 </>
               )}
             </button>
@@ -109,7 +112,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500">
-          If you have any problems, contact the admins on Discord.
+          {t('contactAdmins')}
         </p>
       </div>
     </div>

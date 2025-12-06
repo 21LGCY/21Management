@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ValorantRole, ValorantRank, TryoutStatus } from '@/lib/types/database'
 import { Save, X } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface TryoutFormProps {
   tryoutId?: string
@@ -55,6 +56,10 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const t = useTranslations('forms')
+  const tCommon = useTranslations('common')
+  const tTryouts = useTranslations('tryouts')
+  const tPlayers = useTranslations('players')
   
   const [formData, setFormData] = useState({
     username: '',
@@ -160,7 +165,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
       router.refresh()
     } catch (error: any) {
       console.error('Error saving tryout:', error)
-      alert(error.message || 'Error saving tryout profile')
+      alert(error.message || t('errorSavingTryout'))
     } finally {
       setLoading(false)
     }
@@ -188,11 +193,11 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Basic Information</h3>
+          <h3 className="text-lg font-semibold text-white">{t('basicInfo')}</h3>
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username *
+              {t('username')} *
             </label>
             <input
               type="text"
@@ -205,19 +210,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              In-Game Name
+              {t('inGameName')}
             </label>
             <input
               type="text"
@@ -229,14 +222,14 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Role
+              {t('rolePosition')}
             </label>
             <CustomSelect
               value={formData.position}
               onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
-              placeholder="Select Role"
+              placeholder={t('selectRole')}
               options={[
-                { value: '', label: 'Select Role' },
+                { value: '', label: t('selectRole') },
                 ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
               ]}
             />
@@ -251,25 +244,25 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
               className="w-4 h-4 text-primary bg-dark-card border-gray-800 rounded focus:ring-primary"
             />
             <label htmlFor="is_igl" className="ml-2 text-sm font-medium text-gray-300">
-              IGL (In-Game Leader)
+              {t('igl')}
             </label>
           </div>
         </div>
 
         {/* Player Details */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Player Details</h3>
+          <h3 className="text-lg font-semibold text-white">{t('playerDetails')}</h3>
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nationality
+              {t('nationality')}
             </label>
             <CustomSelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
-              placeholder="Select Country"
+              placeholder={t('nationality')}
               options={[
-                { value: '', label: 'Select Country' },
+                { value: '', label: t('nationality') },
                 ...EUROPEAN_COUNTRIES.map(country => ({ value: country.code, label: country.name }))
               ]}
             />
@@ -277,14 +270,14 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Rank
+              {t('rank')}
             </label>
             <CustomSelect
               value={formData.rank}
               onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
-              placeholder="Select Rank"
+              placeholder={t('selectRank')}
               options={[
-                { value: '', label: 'Select Rank' },
+                { value: '', label: t('selectRank') },
                 ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
               ]}
             />
@@ -292,7 +285,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Champion Pool
+              {t('agentPool')}
             </label>
             <div className="flex gap-2 mb-2">
               <input
@@ -300,7 +293,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
                 value={championInput}
                 onChange={(e) => setChampionInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addChampion())}
-                placeholder="Add agent name..."
+                placeholder={t('selectAgent')}
                 className="flex-1 px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
               />
               <button
@@ -308,7 +301,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
                 onClick={addChampion}
                 className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
               >
-                Add
+                {tCommon('add')}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -332,7 +325,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Valorant Tracker URL
+              {t('valorantTrackerUrl')}
             </label>
             <input
               type="url"
@@ -345,7 +338,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Twitter/X URL
+              {t('twitterUrl')}
             </label>
             <input
               type="url"
@@ -359,30 +352,30 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
         {/* Recruitment Status */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Recruitment Status</h3>
+          <h3 className="text-lg font-semibold text-white">{t('recruitmentStatus')}</h3>
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contact Status *
+              {t('status')} *
             </label>
             <CustomSelect
               value={formData.contact_status}
               onChange={(value) => setFormData({ ...formData, contact_status: value as TryoutStatus })}
               options={[
-                { value: 'not_contacted', label: 'Not Contacted' },
-                { value: 'contacted', label: 'Contacted' },
-                { value: 'in_tryouts', label: 'In Tryouts' },
-                { value: 'accepted', label: 'Player' },
-                { value: 'substitute', label: 'Substitute' },
-                { value: 'rejected', label: 'Rejected' },
-                { value: 'left', label: 'Left' }
+                { value: 'not_contacted', label: tTryouts('notContacted') },
+                { value: 'contacted', label: tTryouts('contacted') },
+                { value: 'in_tryouts', label: tTryouts('inTryouts') },
+                { value: 'accepted', label: tTryouts('accepted') },
+                { value: 'substitute', label: tTryouts('substitute') },
+                { value: 'rejected', label: tTryouts('rejected') },
+                { value: 'left', label: tTryouts('left') }
               ]}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Last Contact Date
+              {t('lastContactDate')}
             </label>
             <input
               type="date"
@@ -394,26 +387,25 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Managed By
+              {t('managedBy')}
             </label>
             <input
               type="text"
               value={formData.managed_by}
               onChange={(e) => setFormData({ ...formData, managed_by: e.target.value })}
-              placeholder="Staff member name"
+              placeholder={t('selectManager')}
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contacted By
+              {tTryouts('contactedBy')}
             </label>
             <input
               type="text"
               value={formData.contacted_by}
               onChange={(e) => setFormData({ ...formData, contacted_by: e.target.value })}
-              placeholder="Staff member name"
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             />
           </div>
@@ -421,24 +413,24 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
 
         {/* Additional Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Additional Information</h3>
+          <h3 className="text-lg font-semibold text-white">{t('additionalInfo')}</h3>
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Notes
+              {t('notes')}
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
-              placeholder="Internal notes about the player..."
+              placeholder={t('notesPlaceholder')}
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary resize-none"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Additional Links
+              {tTryouts('links')}
             </label>
             <textarea
               value={formData.links}
@@ -458,7 +450,7 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
           onClick={() => router.back()}
           className="px-6 py-2 bg-dark-card border border-gray-800 hover:border-gray-700 text-white rounded-lg transition"
         >
-          Cancel
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
@@ -468,12 +460,12 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              Saving...
+              {tCommon('saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              {tryoutId ? 'Update Tryout' : 'Create Tryout'}
+              {tryoutId ? t('updateTryout') : t('createTryout')}
             </>
           )}
         </button>

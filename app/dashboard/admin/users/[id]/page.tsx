@@ -1,9 +1,11 @@
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import UserForm from '@/components/UserForm'
+import { getTranslations } from 'next-intl/server'
 
 export default async function EditUserPage({ params }: { params: { id: string } }) {
   const user = await requireRole(['admin'])
+  const t = await getTranslations('users')
 
   return (
     <div className="min-h-screen bg-dark">
@@ -12,9 +14,9 @@ export default async function EditUserPage({ params }: { params: { id: string } 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Edit User
+            {t('editUser')}
           </h1>
-          <p className="text-gray-400">Update user profile and settings</p>
+          <p className="text-gray-400">{t('updateUserSettings')}</p>
         </div>
         
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">

@@ -2,13 +2,15 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Save, Loader2, Lock, Eye, EyeOff, Upload, Trash2, Image as ImageIcon, Globe } from 'lucide-react'
+import { ArrowLeft, User, Save, Loader2, Lock, Eye, EyeOff, Upload, Trash2, Image as ImageIcon, Globe, Languages } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { deleteUserAvatar } from '@/lib/cloudinary/delete'
 import { optimizeAvatar } from '@/lib/cloudinary/optimize'
 import { TIMEZONE_OPTIONS, TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
+import { LOCALE_OPTIONS, type Locale, defaultLocale, LOCALE_COOKIE } from '@/lib/i18n'
 import CustomSelect from '@/components/CustomSelect'
 
 interface Profile {
@@ -19,6 +21,7 @@ interface Profile {
   created_at: string
   avatar_url?: string | null
   timezone?: TimezoneOffset | null
+  locale?: Locale | null
 }
 
 interface SettingsClientProps {
@@ -30,9 +33,16 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
   const router = useRouter()
   const supabase = createClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations()
+  const tSettings = useTranslations('settings')
+  const tAuth = useTranslations('auth')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
+  const tErrors = useTranslations('errors')
   
   const [username, setUsername] = useState(profile.username)
   const [timezone, setTimezone] = useState<TimezoneOffset>(profile.timezone || DEFAULT_TIMEZONE)
+  const [locale, setLocale] = useState<Locale>(profile.locale || defaultLocale)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -57,12 +67,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     try {
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ username, timezone })
+        .update({ username, timezone, locale })
         .eq('id', userId)
 
       if (updateError) throw updateError
 
-      // Update the cookie with new username and timezone
+      // Update the cookie with new username, timezone, and locale
       const userCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('esports_user='))
@@ -71,8 +81,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]))
         userData.username = username
         userData.timezone = timezone
+        userData.locale = locale
         document.cookie = `esports_user=${JSON.stringify(userData)}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`
       }
+
+      // Update locale cookie for i18n
+      document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${365 * 24 * 60 * 60}; secure; samesite=strict`
 
       setSuccess(true)
       setTimeout(() => {
@@ -80,7 +94,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         router.refresh()
       }, 1000)
     } catch (err: any) {
-      setError(err.message || 'failed to update account settings')
+      setError(err.message || tSettings('failedUpdate'))
     } finally {
       setLoading(false)
     }
@@ -93,19 +107,19 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     setSuccess(false)
 
     if (!currentPassword) {
-      setError('Please enter your current password')
+      setError(tAuth('enterCurrentPassword'))
       setLoading(false)
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError('New passwords does not match')
+      setError(tAuth('passwordsDoNotMatch'))
       setLoading(false)
       return
     }
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long')
+      setError(tAuth('passwordMinLength'))
       setLoading(false)
       return
     }
@@ -149,12 +163,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file')
+      setError(tErrors('imageOnly'))
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be less than 5MB')
+      setError(tErrors('maxFileSize'))
       return
     }
 
@@ -296,24 +310,24 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            {tNav('backToDashboard')}
           </Link>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Account Settings
+            {tSettings('title')}
           </h1>
-          <p className="text-gray-400 mt-2">Manage your account information</p>
+          <p className="text-gray-400 mt-2">{tSettings('description')}</p>
         </div>
 
         {/* Settings Form */}
         <div className="space-y-6">
           {/* Profile Section */}
           <div className="bg-dark-card border border-gray-800 rounded-xl p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-4">Profile Information</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">{tSettings('profileInfo')}</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username Field */}
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                  Username
+                  {tSettings('username')}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -331,7 +345,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
               {/* Role Field (Read-only) */}
               <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-2">
-                  Role
+                  {tSettings('role')}
                 </label>
                 <input
                   type="text"
@@ -340,13 +354,30 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                   disabled
                   className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed capitalize"
                 />
-                <p className="text-xs text-gray-500 mt-1">Role is managed by administrators</p>
+                <p className="text-xs text-gray-500 mt-1">{tSettings('roleManaged')}</p>
+              </div>
+
+              {/* Language Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Languages className="w-4 h-4" />
+                    {tSettings('language')}
+                  </div>
+                </label>
+                <CustomSelect
+                  value={locale}
+                  onChange={(value) => setLocale(value as Locale)}
+                  options={LOCALE_OPTIONS}
+                  placeholder={tSettings('language')}
+                />
+                <p className="text-xs text-gray-500 mt-2">{tSettings('languageDescription')}</p>
               </div>
 
               {/* Timezone Field */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Timezone
+                  {tSettings('timezone')}
                 </label>
                 <CustomSelect
                   value={timezone}
@@ -355,26 +386,26 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                     value: opt.value,
                     label: `${opt.label} - ${opt.regions}`
                   }))}
-                  placeholder="Select timezone"
+                  placeholder={tSettings('timezone')}
                 />
-                <p className="text-xs text-gray-500 mt-2">Schedule times will be displayed in your timezone</p>
+                <p className="text-xs text-gray-500 mt-2">{tSettings('timezoneDescription')}</p>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || (username === profile.username && timezone === (profile.timezone || DEFAULT_TIMEZONE))}
+                disabled={loading || (username === profile.username && timezone === (profile.timezone || DEFAULT_TIMEZONE) && locale === (profile.locale || defaultLocale))}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Saving...
+                    {tCommon('saving')}
                   </>
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    Save Changes
+                    {tCommon('save')}
                   </>
                 )}
               </button>
@@ -383,7 +414,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
 
           {/* Avatar Section */}
           <div className="bg-dark-card border border-gray-800 rounded-xl p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-4">Profile Picture</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">{tSettings('profilePicture')}</h2>
             
             {/* Current/Preview Avatar */}
             <div className="flex flex-col items-center mb-6">
@@ -404,14 +435,14 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
               </div>
               
               {previewUrl && (
-                <p className="text-sm text-gray-400 mb-2">Preview - Click upload to save</p>
+                <p className="text-sm text-gray-400 mb-2">{tSettings('previewNote')}</p>
               )}
             </div>
 
             {/* File Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Select Image
+                {tSettings('selectImage')}
               </label>
               <input
                 ref={fileInputRef}
@@ -420,7 +451,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                 onChange={handleFileSelect}
                 className="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:cursor-pointer hover:file:bg-primary-dark transition-all"
               />
-              <p className="text-xs text-gray-500 mt-1">Max file size: 5MB. Supported formats: JPG, PNG, GIF</p>
+              <p className="text-xs text-gray-500 mt-1">{tSettings('maxFileSize')}</p>
             </div>
 
             {/* Action Buttons */}
@@ -433,12 +464,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                 {uploadingAvatar ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Uploading...
+                    {tCommon('uploading')}
                   </>
                 ) : (
                   <>
                     <Upload className="w-5 h-5" />
-                    Upload Avatar
+                    {tSettings('uploadAvatar')}
                   </>
                 )}
               </button>
@@ -457,12 +488,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
 
           {/* Password Section */}
           <div className="bg-dark-card border border-gray-800 rounded-xl p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-4">Change Password</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">{tSettings('changePassword')}</h2>
             <form onSubmit={handlePasswordChange} className="space-y-6">
               {/* Current Password Field */}
               <div>
                 <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                  Current Password
+                  {tAuth('currentPassword')}
                 </label>
                 <div className="flex items-center bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                   <span className="pl-3 text-gray-500">
@@ -489,7 +520,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
               {/* New Password Field */}
               <div>
                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                  New Password
+                  {tAuth('newPassword')}
                 </label>
                 <div className="flex items-center bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                   <span className="pl-3 text-gray-500">
@@ -512,13 +543,13 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                     {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
+                <p className="text-xs text-gray-500 mt-1">{tAuth('passwordMinLength')}</p>
               </div>
 
               {/* Confirm Password Field */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirm New Password
+                  {tAuth('confirmPassword')}
                 </label>
                 <div className="flex items-center bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                   <span className="pl-3 text-gray-500">
@@ -551,12 +582,12 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Updating...
+                    {tCommon('updating')}
                   </>
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    Update Password
+                    {tAuth('updatePassword')}
                   </>
                 )}
               </button>
@@ -572,7 +603,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
           
           {success && (
             <div className="p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm">
-              Settings updated successfully!
+              {tSettings('settingsUpdated')}
             </div>
           )}
         </div>

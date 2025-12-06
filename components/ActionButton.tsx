@@ -20,7 +20,7 @@ export default function ActionButton({
   variant = 'primary',
   className = ''
 }: ActionButtonProps) {
-  const baseStyles = "group relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 ease-out"
+  const baseStyles = "group relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 ease-out whitespace-nowrap"
   
   const variants = {
     primary: `

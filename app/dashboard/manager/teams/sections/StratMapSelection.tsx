@@ -4,6 +4,7 @@ import { ValorantMap } from '@/lib/types/database'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Map as MapIcon } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface StratMapSelectionProps {
   teamId: string
@@ -25,14 +26,16 @@ const VALORANT_MAPS: ValorantMap[] = [
 ]
 
 export default function StratMapSelection({ teamId }: StratMapSelectionProps) {
+  const t = useTranslations('stratMaps')
+
   return (
     <div className="space-y-6">
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <MapIcon className="w-6 h-6 text-primary" />
           <div>
-            <h2 className="text-2xl font-bold text-white">Strat Maps</h2>
-            <p className="text-gray-400 text-sm">Select a map to view and discuss strategies</p>
+            <h2 className="text-2xl font-bold text-white">{t('title')}</h2>
+            <p className="text-gray-400 text-sm">{t('description')}</p>
           </div>
         </div>
 

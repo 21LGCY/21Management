@@ -6,6 +6,7 @@ import { Team, UserProfile, PlayerMatchStats } from '@/lib/types/database'
 import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp, ChevronUp, ChevronDown, Search, Medal } from 'lucide-react'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
+import { useTranslations } from 'next-intl'
 
 interface StatisticsClientProps {
   teams: Team[]
@@ -80,6 +81,8 @@ const RankBadge = memo(function RankBadge({ rank }: { rank: number }) {
 
 export default function StatisticsClient({ teams }: StatisticsClientProps) {
   const supabase = createClient()
+  const t = useTranslations('stats')
+  const tRoles = useTranslations('roles')
   const [viewMode, setViewMode] = useState<ViewMode>('all')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
   const [stats, setStats] = useState<PlayerAggregatedStats[]>([])
@@ -226,7 +229,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
     <div className="space-y-6">
       {/* View Mode Selector */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
-        <p className="text-sm text-gray-400 mb-3 font-medium">Filter Statistics</p>
+        <p className="text-sm text-gray-400 mb-3 font-medium">{t('filterStatistics')}</p>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => {
@@ -240,7 +243,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            All Players
+            {t('allPlayers')}
           </button>
 
           <button
@@ -254,14 +257,14 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
             }`}
           >
             <UsersIcon className="w-4 h-4" />
-            By Team
+            {t('byTeam')}
           </button>
         </div>
 
         {/* Team Selector */}
         {viewMode === 'team' && (
           <div className="mt-5 pt-5 border-t border-gray-800">
-            <p className="text-sm text-gray-400 mb-3 font-medium">Select Team</p>
+            <p className="text-sm text-gray-400 mb-3 font-medium">{t('selectTeam')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {teams.map(team => {
                 const teamColors = getTeamColors(team.tag || team.name)
@@ -348,7 +351,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
               })}
             </div>
             {teams.length === 0 && (
-              <p className="text-gray-500 text-sm text-center py-4">No teams available</p>
+              <p className="text-gray-500 text-sm text-center py-4">{t('noTeamsAvailable')}</p>
             )}
           </div>
         )}
@@ -372,8 +375,8 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
               <Trophy className="w-8 h-8 text-gray-600" />
             </div>
           </div>
-          <p className="text-gray-400 text-lg font-medium">No statistics available</p>
-          <p className="text-gray-500 text-sm mt-2">Record some matches to see player statistics</p>
+          <p className="text-gray-400 text-lg font-medium">{t('noStatisticsAvailable')}</p>
+          <p className="text-gray-500 text-sm mt-2">{t('recordMatchesToSee')}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -385,7 +388,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10" />
                 <input
                   type="text"
-                  placeholder="Search players..."
+                  placeholder={t('searchPlayers')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition"
@@ -394,12 +397,12 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
               
               {/* Sort Options */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-gray-500 font-medium">Sort:</span>
+                <span className="text-xs text-gray-500 font-medium">{t('sort')}:</span>
                 {([
-                  { field: 'averageACS' as SortField, label: 'ACS' },
-                  { field: 'kda' as SortField, label: 'KDA' },
-                  { field: 'totalKills' as SortField, label: 'Kills' },
-                  { field: 'matchesPlayed' as SortField, label: 'Matches' },
+                  { field: 'averageACS' as SortField, label: t('acs') },
+                  { field: 'kda' as SortField, label: t('kda') },
+                  { field: 'totalKills' as SortField, label: t('kills') },
+                  { field: 'matchesPlayed' as SortField, label: t('matches') },
                 ]).map(({ field, label }) => (
                   <button
                     key={field}
@@ -464,20 +467,20 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
                       <h3 className="text-white font-semibold text-lg truncate">
                         {stat.player.in_game_name || stat.player.username}
                       </h3>
-                      <p className="text-sm text-gray-500">{stat.player.position || 'Player'}</p>
+                      <p className="text-sm text-gray-500">{stat.player.position ? tRoles(stat.player.position.toLowerCase() as any) : tRoles('player')}</p>
                     </div>
 
                     {/* Stats Grid - Desktop */}
                     <div className="hidden lg:grid grid-cols-5 gap-6 flex-shrink-0">
                       {/* Matches */}
                       <div className="text-center w-20">
-                        <p className="text-xs text-gray-500 uppercase mb-1">Matches</p>
+                        <p className="text-xs text-gray-500 uppercase mb-1">{t('matches')}</p>
                         <p className="text-xl font-bold text-white">{stat.matchesPlayed}</p>
                       </div>
 
                       {/* K/D/A */}
                       <div className="text-center w-24">
-                        <p className="text-xs text-gray-500 uppercase mb-1">K / D / A</p>
+                        <p className="text-xs text-gray-500 uppercase mb-1">{t('kda')}</p>
                         <div className="flex items-center justify-center gap-1 text-lg font-bold">
                           <span className="text-green-400">{stat.totalKills}</span>
                           <span className="text-gray-600">/</span>
@@ -489,7 +492,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
                       {/* KDA Ratio */}
                       <div className="text-center w-20">
-                        <p className="text-xs text-gray-500 uppercase mb-1">KDA</p>
+                        <p className="text-xs text-gray-500 uppercase mb-1">{t('kdRatio')}</p>
                         <p className={`text-xl font-bold ${
                           stat.kda >= 2 ? 'text-green-400' :
                           stat.kda >= 1 ? 'text-yellow-400' :
@@ -499,13 +502,13 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
                       {/* Kills/Match */}
                       <div className="text-center w-20">
-                        <p className="text-xs text-gray-500 uppercase mb-1">K/Match</p>
+                        <p className="text-xs text-gray-500 uppercase mb-1">{t('killsPerMatch')}</p>
                         <p className="text-xl font-bold text-white">{stat.killsPerMatch}</p>
                       </div>
 
                       {/* ACS */}
                       <div className="text-center w-24">
-                        <p className="text-xs text-gray-500 uppercase mb-1">Avg ACS</p>
+                        <p className="text-xs text-gray-500 uppercase mb-1">{t('avgACS')}</p>
                         <div className="space-y-1">
                           <div className="flex items-center justify-center gap-1">
                             <TrendingUp className={`w-4 h-4 ${
@@ -537,19 +540,19 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
                   {/* Mobile Stats Row */}
                   <div className="lg:hidden mt-4 pt-4 border-t border-gray-800 grid grid-cols-4 gap-2 text-center">
                     <div>
-                      <p className="text-[10px] text-gray-500 uppercase">Matches</p>
+                      <p className="text-[10px] text-gray-500 uppercase">{t('matches')}</p>
                       <p className="text-sm font-bold text-white">{stat.matchesPlayed}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-500 uppercase">Kills</p>
+                      <p className="text-[10px] text-gray-500 uppercase">{t('kills')}</p>
                       <p className="text-sm font-bold text-green-400">{stat.totalKills}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-500 uppercase">Deaths</p>
+                      <p className="text-[10px] text-gray-500 uppercase">{t('deaths')}</p>
                       <p className="text-sm font-bold text-red-400">{stat.totalDeaths}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-500 uppercase">KDA</p>
+                      <p className="text-[10px] text-gray-500 uppercase">{t('kdRatio')}</p>
                       <p className={`text-sm font-bold ${
                         stat.kda >= 2 ? 'text-green-400' : stat.kda >= 1 ? 'text-yellow-400' : 'text-red-400'
                       }`}>{stat.kda}</p>
@@ -563,8 +566,8 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
           {/* Summary Footer */}
           {displayedStats.length > 0 && (
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center text-sm text-gray-500">
-              Showing <span className="text-white font-medium">{displayedStats.length}</span> players
-              {searchQuery && <span> matching &quot;{searchQuery}&quot;</span>}
+              {t('showingPlayers', { count: displayedStats.length })}
+              {searchQuery && <span> {t('matching')} &quot;{searchQuery}&quot;</span>}
             </div>
           )}
         </div>

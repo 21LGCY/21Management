@@ -4,12 +4,15 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
 import PlayerForm from '@/components/PlayerForm'
+import { getTranslations } from 'next-intl/server'
 
 interface EditPlayerPageProps {
   params: { id: string }
 }
 
 export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
+  const t = await getTranslations('players')
+  
   // Require manager role and get team access
   const { user, teamId, team } = await requireManagerTeamAccess()
   
@@ -35,13 +38,13 @@ export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
         <div className="mb-8">
           <div className="mb-4">
             <BackButton fallbackHref={`/dashboard/manager/players/${player.id}`}>
-              Back to Player Details
+              {t('backToPlayerDetails')}
             </BackButton>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Edit Player
+            {t('editPlayer')}
           </h1>
-          <p className="text-gray-400">Update {player.in_game_name || player.username}'s information</p>
+          <p className="text-gray-400">{t('updatePlayerInfo', { name: player.in_game_name || player.username })}</p>
         </div>
         
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">

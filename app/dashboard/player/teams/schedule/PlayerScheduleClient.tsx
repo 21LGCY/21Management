@@ -5,36 +5,37 @@ import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumb
 import { createClient } from '@/lib/supabase/client'
 import { TimezoneOffset } from '@/lib/types/database'
 import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, getDayNumber } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
-// Activity types with colors and icons (higher contrast)
-const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
+// Activity types with colors and icons (higher contrast) - names are translation keys
+const activityTypeConfig: { [key: string]: { icon: any; color: string; nameKey: string } } = {
   practice: {
-    name: 'Practice',
+    nameKey: 'practice',
     icon: Dumbbell,
     color: 'bg-blue-500/30 text-blue-300 border-blue-400/50'
   },
   individual_training: {
-    name: 'Individual Training',
+    nameKey: 'individual_training',
     icon: Target,
     color: 'bg-green-500/30 text-green-300 border-green-400/50'
   },
   group_training: {
-    name: 'Group Training',
+    nameKey: 'group_training',
     icon: Users,
     color: 'bg-purple-500/30 text-purple-300 border-purple-400/50'
   },
   official_match: {
-    name: 'Official Match',
+    nameKey: 'official_match',
     icon: Trophy,
     color: 'bg-yellow-500/30 text-yellow-300 border-yellow-400/50'
   },
   tournament: {
-    name: 'Tournament',
+    nameKey: 'tournament',
     icon: Trophy,
     color: 'bg-red-500/30 text-red-300 border-red-400/50'
   },
   meeting: {
-    name: 'Team Meeting',
+    nameKey: 'meeting',
     icon: BookOpen,
     color: 'bg-indigo-500/30 text-indigo-300 border-indigo-400/50'
   }
@@ -52,7 +53,7 @@ const generateTimeSlots = () => {
 
 // Time slots in ORG_TIMEZONE (CET)
 const orgTimeSlots = generateTimeSlots()
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 
 interface ScheduleActivity {
   id: string
@@ -129,12 +130,22 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
   const [weekDates, setWeekDates] = useState<string[]>([])
   const [selectedActivity, setSelectedActivity] = useState<ScheduleActivity | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
+  const t = useTranslations('schedule')
 
   // Convert time slots to user's timezone for display
   const displayTimeSlots = orgTimeSlots.map(slot => ({
     org: slot, // Original CET time (used for matching activities)
     display: convertTimeSlotToUserTimezone(slot, userTimezone) // Converted for user display
   }))
+
+  // Helper to get translated day name
+  const getDayName = (index: number) => t(`days.${dayKeys[index]}`)
+  
+  // Helper to get translated activity type name
+  const getActivityTypeName = (type: string) => {
+    const config = activityTypeConfig[type]
+    return config ? t(`activityTypes.${config.nameKey}`) : type
+  }
 
   useEffect(() => {
     setWeekDates(getWeekDates(currentWeekOffset))
@@ -160,8 +171,11 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
     setLoading(false)
   }
 
-  const getActivityForSlot = (day: string, timeSlot: string, date: string): ScheduleActivity | undefined => {
-    const dayNumber = getDayNumber(day)
+  const getActivityForSlot = (dayKey: string, timeSlot: string, date: string): ScheduleActivity | undefined => {
+    // Convert day key to English day name for getDayNumber
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    const dayIndex = dayKeys.indexOf(dayKey as typeof dayKeys[number])
+    const dayNumber = getDayNumber(dayNames[dayIndex])
     return activities.find(activity => {
       // If activity has a specific date, match by exact date
       if (activity.activity_date) {
@@ -172,8 +186,8 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
     })
   }
 
-  const getActivityType = (type: string) => {
-    return activityTypes[type] || null
+  const getActivityConfig = (type: string) => {
+    return activityTypeConfig[type] || null
   }
 
   const goToPreviousWeek = () => {
@@ -205,7 +219,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading schedule...</div>
+        <div className="text-gray-400">{t('loadingSchedule')}</div>
       </div>
     )
   }
@@ -215,17 +229,17 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">{teamName} Schedule</h1>
-          <p className="text-gray-400">View your team's training and match schedule</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{t('teamScheduleTitle', { teamName })}</h1>
+          <p className="text-gray-400">{t('description')}</p>
         </div>
         {/* Timezone indicator */}
         <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 border border-gray-700 rounded-lg">
           <Globe className="w-4 h-4 text-primary" />
           <span className="text-sm text-gray-300">
             {userTimezone !== ORG_TIMEZONE ? (
-              <>Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
+              <>{t('timesShownIn')} <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
             ) : (
-              <span className="text-gray-400">CET (Org timezone)</span>
+              <span className="text-gray-400">{t('orgTimezone')}</span>
             )}
           </span>
         </div>
@@ -248,7 +262,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
 
           <div className="flex items-center gap-4">
             <div className="text-center">
-              <div className="text-sm text-gray-400 mb-1">Current Week</div>
+              <div className="text-sm text-gray-400 mb-1">{t('currentWeek')}</div>
               <div className="text-lg font-semibold text-white">
                 {(() => {
                   const monday = getMondayOfWeek(currentWeekOffset)
@@ -263,7 +277,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                 onClick={goToCurrentWeek}
                 className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all text-sm font-medium"
               >
-                Go to Current Week
+                {t('goToCurrentWeek')}
               </button>
             )}
           </div>
@@ -291,17 +305,17 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
               <div className="p-3 bg-gray-800/80 sticky left-0 z-10">
                 <div className="flex items-center gap-2 text-gray-300">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Time</span>
+                  <span className="text-sm font-semibold">{t('time')}</span>
                 </div>
               </div>
-              {daysOfWeek.map((day, index) => {
+              {dayKeys.map((dayKey, index) => {
                 // Parse the date string as UTC to avoid timezone shifts
                 const [year, month, dayNum] = weekDates[index].split('-').map(Number)
                 const date = new Date(Date.UTC(year, month - 1, dayNum))
                 
                 return (
-                  <div key={day} className="p-3 text-center border-l border-gray-700">
-                    <div className="text-sm font-semibold text-white">{day}</div>
+                  <div key={dayKey} className="p-3 text-center border-l border-gray-700">
+                    <div className="text-sm font-semibold text-white">{getDayName(index)}</div>
                     <div className="text-xs text-gray-300 mt-1">
                       {formatDateShort(date)}
                     </div>
@@ -317,13 +331,13 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                   <div className="p-3 text-sm font-medium text-gray-300 bg-gray-800/60 sticky left-0 z-10 border-r border-gray-700">
                     {displayTime}
                   </div>
-                  {daysOfWeek.map((day, dayIndex) => {
-                    const activity = getActivityForSlot(day, timeSlot, weekDates[dayIndex])
-                    const activityInfo = activity ? getActivityType(activity.type) : null
+                  {dayKeys.map((dayKey, dayIndex) => {
+                    const activity = getActivityForSlot(dayKey, timeSlot, weekDates[dayIndex])
+                    const activityInfo = activity ? getActivityConfig(activity.type) : null
 
                     return (
                       <div
-                        key={`${day}-${timeSlot}`}
+                        key={`${dayKey}-${timeSlot}`}
                         className="p-2 min-h-[80px] border-l border-gray-700/50 bg-gray-900/20"
                       >
                         {activity && activityInfo && (
@@ -367,13 +381,13 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
       <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6 shadow-lg">
         <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5" />
-          Activity Types
+          {t('activityType')}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Object.entries(activityTypes).map(([key, { icon: Icon, color, name }]) => (
+          {Object.entries(activityTypeConfig).map(([key, { icon: Icon, color, nameKey }]) => (
             <div key={key} className={`p-3 rounded-lg border-2 ${color} flex items-center gap-2 shadow-md`}>
               <Icon className="w-5 h-5" />
-              <span className="text-sm font-semibold">{name}</span>
+              <span className="text-sm font-semibold">{t(`activityTypes.${nameKey}`)}</span>
             </div>
           ))}
         </div>
@@ -390,7 +404,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
-              const activityInfo = getActivityType(selectedActivity.type)
+              const activityInfo = getActivityConfig(selectedActivity.type)
               if (!activityInfo) return null
               const Icon = activityInfo.icon
               const iconColor = activityInfo.color.includes('text-blue') ? 'text-blue-400' : 
@@ -404,6 +418,10 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                              activityInfo.color.includes('text-yellow') ? 'bg-yellow-500/20' : 
                              activityInfo.color.includes('text-red') ? 'bg-red-500/20' : 'bg-indigo-500/20'
               
+              // For modal day display
+              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+              const dayIndex = dayNames.findIndex((_, idx) => getDayNumber(dayNames[idx]) === selectedActivity.day_of_week)
+              
               return (
                 <>
                   {/* Modal Header */}
@@ -416,7 +434,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                         <div className="flex-1">
                           <h2 className="text-xl font-semibold text-white mb-2">{selectedActivity.title}</h2>
                           <span className="inline-block px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm">
-                            {activityInfo.name}
+                            {getActivityTypeName(selectedActivity.type)}
                           </span>
                         </div>
                       </div>
@@ -440,7 +458,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                         <span>
                           {selectedActivity.activity_date 
                             ? formatDateShort(new Date(selectedActivity.activity_date))
-                            : daysOfWeek.find((_, idx) => getDayNumber(daysOfWeek[idx]) === selectedActivity.day_of_week)}
+                            : dayIndex >= 0 ? getDayName(dayIndex) : ''}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -452,7 +470,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{selectedActivity.duration} {selectedActivity.duration === 1 ? 'hour' : 'hours'}</span>
+                        <span>{selectedActivity.duration} {selectedActivity.duration === 1 ? t('hours').slice(0, -1) : t('hours')}</span>
                       </div>
                     </div>
 
@@ -470,7 +488,7 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                       onClick={closeActivityModal}
                       className="w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors font-medium"
                     >
-                      Close
+                      {t('close')}
                     </button>
                   </div>
                 </>

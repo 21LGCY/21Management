@@ -8,6 +8,7 @@ import { X, User, Gamepad2, Link as LinkIcon, Settings, Save } from 'lucide-reac
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
+import { useTranslations } from 'next-intl'
 
 const VALORANT_AGENTS = [
   'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
@@ -79,6 +80,10 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
   const [championInput, setChampionInput] = useState('')
   const [adminUsers, setAdminUsers] = useState<Array<{ id: string; username: string }>>([])
   const [managerUsers, setManagerUsers] = useState<Array<{ id: string; username: string }>>([])
+  const t = useTranslations('tryouts')
+  const tForm = useTranslations('tryouts.form')
+  const tCommon = useTranslations('common')
+  const tRoles = useTranslations('roles')
   const [formData, setFormData] = useState({
     username: '',
     team_category: '21L' as TeamCategory,
@@ -135,7 +140,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
       }
     } catch (error) {
       console.error('Error fetching scout:', error)
-      alert('Failed to load scout profile')
+      alert(tForm('errorLoading'))
     } finally {
       setLoading(false)
     }
@@ -198,7 +203,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
       router.refresh()
     } catch (error) {
       console.error('Error updating scout profile:', error)
-      alert('Failed to update scout profile. Please try again.')
+      alert(tForm('errorUpdating'))
     } finally {
       setSaving(false)
     }
@@ -238,15 +243,15 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             <User className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
-            <p className="text-xs text-gray-400">Scout identity and team assignment</p>
+            <h2 className="text-lg font-semibold text-white">{tForm('basicInfo')}</h2>
+            <p className="text-xs text-gray-400">{tForm('basicInfoDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username <span className="text-red-400">*</span>
+              {tForm('username')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -254,13 +259,13 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="Discord username"
+              placeholder={tForm('discordUsername')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Team <span className="text-red-400">*</span>
+              {tForm('team')} <span className="text-red-400">*</span>
             </label>
             <CustomSelect
               value={formData.team_category}
@@ -275,18 +280,18 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">In-Game Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('inGameName')}</label>
             <input
               type="text"
               value={formData.in_game_name}
               onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="IGN"
+              placeholder={tForm('ign')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('nationality')}</label>
             <SearchableCountrySelect
               value={formData.nationality}
               onChange={(value) => setFormData({ ...formData, nationality: value })}
@@ -303,38 +308,38 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             <Gamepad2 className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Game Information</h2>
-            <p className="text-xs text-gray-400">In-game details and agent pool</p>
+            <h2 className="text-lg font-semibold text-white">{tForm('gameInfo')}</h2>
+            <p className="text-xs text-gray-400">{tForm('gameInfoDesc')}</p>
           </div>
         </div>
         
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Position</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('position')}</label>
               <CustomSelect
                 value={formData.position}
                 onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
                 options={[
-                  { value: '', label: 'Select' },
-                  { value: 'Duelist', label: 'Duelist' },
-                  { value: 'Controller', label: 'Controller' },
-                  { value: 'Initiator', label: 'Initiator' },
-                  { value: 'Sentinel', label: 'Sentinel' },
-                  { value: 'Flex', label: 'Flex' },
-                  { value: 'Staff', label: 'Staff' }
+                  { value: '', label: tForm('select') },
+                  { value: 'Duelist', label: tRoles('duelist') },
+                  { value: 'Controller', label: tRoles('controller') },
+                  { value: 'Initiator', label: tRoles('initiator') },
+                  { value: 'Sentinel', label: tRoles('sentinel') },
+                  { value: 'Flex', label: tRoles('flex') },
+                  { value: 'Staff', label: tRoles('staff') }
                 ]}
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Rank</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('rank')}</label>
               <CustomSelect
                 value={formData.rank}
                 onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
                 options={[
-                  { value: '', label: 'Select' },
+                  { value: '', label: tForm('select') },
                   { value: 'Ascendant 1', label: 'Ascendant 1' },
                   { value: 'Ascendant 2', label: 'Ascendant 2' },
                   { value: 'Ascendant 3', label: 'Ascendant 3' },
@@ -358,20 +363,20 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
               />
             </div>
             <div className="flex-1">
-              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
-              <p className="text-xs text-gray-500">This player leads the team strategy</p>
+              <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{tForm('inGameLeader')}</span>
+              <p className="text-xs text-gray-500">{tForm('iglMarked')}</p>
             </div>
           </label>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Agent Pool</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('agentPool')}</label>
             <div className="space-y-3">
               <div className="flex gap-2">
                 <CustomSelect
                   value={championInput}
                   onChange={(value) => setChampionInput(value)}
                   options={[
-                    { value: '', label: 'Select agent...' },
+                    { value: '', label: tForm('selectAgent') },
                     ...VALORANT_AGENTS.map(agent => ({
                       value: agent,
                       label: agent
@@ -385,7 +390,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
                   disabled={!championInput}
                   className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30"
                 >
-                  Add
+                  {tCommon('add')}
                 </button>
               </div>
               {formData.champion_pool.length > 0 && (
@@ -409,7 +414,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
               )}
               {formData.champion_pool.length === 0 && (
                 <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                  <p className="text-sm text-gray-500">No agents added yet</p>
+                  <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
                 </div>
               )}
             </div>
@@ -424,14 +429,14 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             <LinkIcon className="w-5 h-5 text-green-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Contact & Links</h2>
-            <p className="text-xs text-gray-400">External profiles and social links</p>
+            <h2 className="text-lg font-semibold text-white">{tForm('contactLinks')}</h2>
+            <p className="text-xs text-gray-400">{tForm('contactLinksDesc')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Tracker URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('trackerUrl')}</label>
             <input
               type="url"
               value={formData.valorant_tracker_url}
@@ -442,7 +447,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('twitterUrl')}</label>
             <input
               type="url"
               value={formData.twitter_url}
@@ -453,13 +458,13 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Other Links</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('otherLinks')}</label>
             <input
               type="text"
               value={formData.links}
               onChange={(e) => setFormData({ ...formData, links: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="YouTube, portfolio, etc."
+              placeholder={tForm('otherLinksPlaceholder')}
             />
           </div>
         </div>
@@ -472,38 +477,38 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             <Settings className="w-5 h-5 text-orange-400" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Management</h2>
-            <p className="text-xs text-gray-400">Tracking and administrative details</p>
+            <h2 className="text-lg font-semibold text-white">{tForm('management')}</h2>
+            <p className="text-xs text-gray-400">{tForm('managementDesc')}</p>
           </div>
         </div>
         
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('status')}</label>
               <CustomSelect
                 value={formData.status}
                 onChange={(value) => setFormData({ ...formData, status: value as TryoutStatus })}
                 options={[
-                  { value: 'not_contacted', label: 'Not Contacted' },
-                  { value: 'contacted', label: 'Contacted' },
-                  { value: 'in_tryouts', label: 'In Tryouts' },
-                  { value: 'substitute', label: 'Substitute' },
-                  { value: 'rejected', label: 'Rejected' },
-                  { value: 'left', label: 'Left' },
-                  { value: 'accepted', label: 'Player' }
+                  { value: 'not_contacted', label: t('notContacted') },
+                  { value: 'contacted', label: t('contacted') },
+                  { value: 'in_tryouts', label: t('inTryouts') },
+                  { value: 'substitute', label: t('substitute') },
+                  { value: 'rejected', label: t('rejected') },
+                  { value: 'left', label: t('left') },
+                  { value: 'accepted', label: t('player') }
                 ]}
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Added By</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('addedBy')}</label>
               <CustomSelect
                 value={formData.managed_by}
                 onChange={(value) => setFormData({ ...formData, managed_by: value })}
                 options={[
-                  { value: '', label: 'None' },
+                  { value: '', label: tForm('none') },
                   ...adminUsers.map(user => ({
                     value: user.username,
                     label: `Admin: ${user.username}`
@@ -518,12 +523,12 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Contacted By</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('contactedBy')}</label>
               <CustomSelect
                 value={formData.contacted_by}
                 onChange={(value) => setFormData({ ...formData, contacted_by: value })}
                 options={[
-                  { value: '', label: 'None' },
+                  { value: '', label: tForm('none') },
                   ...adminUsers.map(user => ({
                     value: user.username,
                     label: `Admin: ${user.username}`
@@ -540,7 +545,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
 
           {formData.contacted_by && (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Contact Date</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{tForm('contactDate')}</label>
               <input
                 type="date"
                 value={formData.contacted_by_date}
@@ -551,13 +556,13 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('notes')}</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-              placeholder="Internal notes..."
+              placeholder={tForm('internalNotes')}
             />
           </div>
         </div>
@@ -569,7 +574,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           href={`/dashboard/admin/tryouts/scouts/view/${scoutId}`}
           className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
-          Cancel
+          {tCommon('cancel')}
         </Link>
         <button
           type="submit"
@@ -579,12 +584,12 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
           {saving ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              Saving...
+              {tCommon('saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Changes
+              {tCommon('saveChanges')}
             </>
           )}
         </button>

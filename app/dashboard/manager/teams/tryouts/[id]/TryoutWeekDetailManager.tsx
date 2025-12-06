@@ -9,6 +9,7 @@ import { TryoutWeek, PlayerAvailability, ProfileTryout, TeamCategory, TimezoneOf
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import { ORG_TIMEZONE } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 interface TryoutWeekDetailManagerProps {
   weekId: string
@@ -35,6 +36,9 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
   const [editedNotes, setEditedNotes] = useState('')
   const [savingInfo, setSavingInfo] = useState(false)
   const supabase = createClient()
+  const t = useTranslations('tryouts.weekDetail')
+  const tTryouts = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
 
   // Filter players in Add Players modal based on search
   const filteredAvailablePlayers = useMemo(() => {
@@ -336,12 +340,12 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Contacted'
-      case 'in_tryouts': return 'In Tryouts'
-      case 'substitute': return 'Substitute'
-      case 'rejected': return 'Rejected'
-      case 'accepted': return 'Player'
+      case 'not_contacted': return tTryouts('notContacted')
+      case 'contacted': return tTryouts('contacted')
+      case 'in_tryouts': return tTryouts('inTryouts')
+      case 'substitute': return tTryouts('substitute')
+      case 'rejected': return tTryouts('rejected')
+      case 'accepted': return tTryouts('player')
       default: return status
     }
   }
@@ -349,7 +353,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">{tCommon('loading')}</div>
       </div>
     )
   }
@@ -357,7 +361,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
   if (!week) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Tryout week not found</div>
+        <div className="text-white">{t('weekNotFound')}</div>
       </div>
     )
   }
@@ -377,7 +381,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
           className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group mb-4"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Tryouts</span>
+          <span>{t('backToTryouts')}</span>
         </Link>
         
         <div className="flex items-start justify-between gap-4">
@@ -385,21 +389,21 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
             {isEditingInfo ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">Session Title</label>
+                  <label className="text-sm text-gray-400 mb-2 block">{t('sessionTitle')}</label>
                   <input
                     type="text"
                     value={editedTitle}
                     onChange={(e) => setEditedTitle(e.target.value)}
-                    placeholder="Ex: January 2025 Tryouts"
+                    placeholder={t('titlePlaceholder')}
                     className="w-full bg-dark border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">Description / Notes</label>
+                  <label className="text-sm text-gray-400 mb-2 block">{t('descriptionNotes')}</label>
                   <textarea
                     value={editedNotes}
                     onChange={(e) => setEditedNotes(e.target.value)}
-                    placeholder="Notes or instructions for this session..."
+                    placeholder={t('descriptionPlaceholder')}
                     rows={3}
                     className="w-full bg-dark border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                   />
@@ -411,7 +415,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
-                    {savingInfo ? 'Saving...' : 'Save'}
+                    {savingInfo ? tCommon('saving') : tCommon('save')}
                   </button>
                   <button
                     onClick={handleCancelEdit}
@@ -419,7 +423,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                     className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
                   >
                     <X className="w-4 h-4" />
-                    Cancel
+                    {tCommon('cancel')}
                   </button>
                 </div>
               </div>
@@ -457,7 +461,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                   className="flex items-center gap-2 px-4 py-2 border border-green-700 text-green-400 rounded-lg hover:bg-green-500/20 transition"
                 >
                   <UserPlus className="w-4 h-4" />
-                  Add Players
+                  {t('addPlayers')}
                 </button>
                 <button
                   onClick={handleRefresh}
@@ -465,7 +469,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                   className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  {refreshing ? tCommon('loading') : t('refresh')}
                 </button>
                 <button
                   onClick={handleDelete}
@@ -486,21 +490,21 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
             <CheckCircle className="w-6 h-6 text-green-400" />
             <div className="text-3xl font-bold text-green-400">{stats.responded}</div>
           </div>
-          <div className="text-sm text-gray-400">Responded</div>
+          <div className="text-sm text-gray-400">{t('responded')}</div>
         </div>
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-6 h-6 text-yellow-400" />
             <div className="text-3xl font-bold text-yellow-400">{stats.pending}</div>
           </div>
-          <div className="text-sm text-gray-400">Pending</div>
+          <div className="text-sm text-gray-400">{tTryouts('pending')}</div>
         </div>
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-6 h-6 text-blue-400" />
             <div className="text-3xl font-bold text-blue-400">{stats.responded}/{stats.total}</div>
           </div>
-          <div className="text-sm text-gray-400">Response Rate</div>
+          <div className="text-sm text-gray-400">{t('responseRate')}</div>
         </div>
       </div>
 
@@ -516,7 +520,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            Heatmap View
+            {t('viewHeatmap')}
           </button>
           <button
             onClick={() => setViewMode('individual')}
@@ -527,7 +531,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
             }`}
           >
             <User className="w-4 h-4" />
-            Individual Players
+            {t('viewIndividual')}
           </button>
         </div>
       </div>
@@ -542,7 +546,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
       {/* Individual Players View */}
       {viewMode === 'individual' && week && (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Individual Player Availability</h2>
+          <h2 className="text-xl font-semibold text-white mb-6">{t('playerAvailabilities')}</h2>
           
           <div className="space-y-6">
             {availabilities.map((availability) => {
@@ -557,23 +561,23 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       <User className="w-5 h-5 text-purple-400" />
                       <div>
                         <div className="flex items-center gap-3">
-                          <div className="text-white font-medium">{player?.username || 'Unknown Player'}</div>
+                          <div className="text-white font-medium">{player?.username || tCommon('unknownPlayer')}</div>
                           <span className={`px-2 py-0.5 rounded-full text-xs border ${
                             responded 
                               ? 'border-green-400 text-green-400' 
                               : 'border-yellow-400 text-yellow-400'
                           }`}>
-                            {responded ? 'Responded' : 'Pending'}
+                            {responded ? t('responded') : tTryouts('pending')}
                           </span>
                         </div>
                         {responded && (
                           <div className="text-sm text-gray-400 mt-1">
-                            {slotsCount} slot{slotsCount !== 1 ? 's' : ''} selected
+                            {t('slotsSelected', { count: slotsCount })}
                           </div>
                         )}
                         {availability.submitted_at && (
                           <div className="text-xs text-gray-500 mt-1">
-                            Submitted: {formatDateTime(availability.submitted_at)}
+                            {t('submitted', { date: formatDateTime(availability.submitted_at) })}
                           </div>
                         )}
                       </div>
@@ -586,12 +590,12 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       {copiedToken === availability.token ? (
                         <>
                           <CheckCircle className="w-4 h-4" />
-                          Copied!
+                          {t('copied')}
                         </>
                       ) : (
                         <>
                           <Copy className="w-4 h-4" />
-                          Copy Link
+                          {t('copyLink')}
                         </>
                       )}
                     </button>
@@ -611,7 +615,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
 
                   {!responded && (
                     <div className="mt-4 text-center py-8 text-gray-400">
-                      Player has not submitted their availability yet
+                      {t('notSubmittedYet')}
                     </div>
                   )}
                 </div>
@@ -628,9 +632,9 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">Add Players</h3>
+                <h3 className="text-2xl font-bold text-white mb-1">{t('addPlayers')}</h3>
                 <p className="text-sm text-gray-400">
-                  Session: {week?.week_label || 'Untitled'} • {team.name}
+                  {t('session')}: {week?.week_label || tCommon('untitled')} • {team.name}
                 </p>
               </div>
               <button
@@ -647,9 +651,9 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                   <div className="w-16 h-16 rounded-full bg-dark flex items-center justify-center mx-auto mb-4">
                     <User className="w-8 h-8 text-gray-600" />
                   </div>
-                  <p className="text-gray-300 font-medium mb-2">No players available</p>
+                  <p className="text-gray-300 font-medium mb-2">{t('noPlayersAvailable')}</p>
                   <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                    All eligible players from this team are already in this tryout session.
+                    {t('allPlayersInSession')}
                   </p>
                 </div>
               </div>
@@ -663,7 +667,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       type="text"
                       value={playerSearchTerm}
                       onChange={(e) => setPlayerSearchTerm(e.target.value)}
-                      placeholder="Search by name, role or nationality..."
+                      placeholder={t('searchByNameRoleNationality')}
                       className="w-full pl-11 bg-dark border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
@@ -671,7 +675,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                   {/* Results Counter */}
                   {playerSearchTerm && (
                     <div className="mt-2 text-sm text-gray-400">
-                      {filteredAvailablePlayers.length} player{filteredAvailablePlayers.length !== 1 ? 's' : ''} found
+                      {t('playersFound', { count: filteredAvailablePlayers.length })}
                     </div>
                   )}
                 </div>
@@ -683,9 +687,9 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       <div className="w-16 h-16 rounded-full bg-dark flex items-center justify-center mx-auto mb-4">
                         <Search className="w-8 h-8 text-gray-600" />
                       </div>
-                      <p className="text-gray-300 font-medium mb-2">No results</p>
+                      <p className="text-gray-300 font-medium mb-2">{t('noResults')}</p>
                       <p className="text-sm text-gray-500">
-                        No players match your search
+                        {t('noPlayersMatchSearch')}
                       </p>
                     </div>
                   </div>
@@ -724,7 +728,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                                 
                                 <div className="flex flex-wrap items-center gap-2 text-sm">
                                   <span className="text-gray-400 capitalize">
-                                    {player.position || 'Undefined'}
+                                    {player.position || t('undefined')}
                                   </span>
                                   {player.nationality && (
                                     <>
@@ -751,9 +755,9 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                 {/* Footer Actions */}
                 <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-800">
                   <div className="text-sm">
-                    <span className="text-gray-400">Selection: </span>
+                    <span className="text-gray-400">{t('selection')}: </span>
                     <span className="text-white font-semibold">
-                      {selectedPlayersToAdd.length} player{selectedPlayersToAdd.length !== 1 ? 's' : ''}
+                      {selectedPlayersToAdd.length} {selectedPlayersToAdd.length !== 1 ? t('players') : t('player')}
                     </span>
                   </div>
                   
@@ -763,7 +767,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       disabled={addingPlayers}
                       className="px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
                     >
-                      Cancel
+                      {t('cancel')}
                     </button>
                     <button
                       onClick={handleAddPlayers}
@@ -771,7 +775,7 @@ export default function TryoutWeekDetailManager({ weekId, team, teamCategory, us
                       className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <UserPlus className="w-4 h-4" />
-                      {addingPlayers ? 'Adding...' : `Add (${selectedPlayersToAdd.length})`}
+                      {addingPlayers ? t('adding') : t('addCount', { count: selectedPlayersToAdd.length })}
                     </button>
                   </div>
                 </div>

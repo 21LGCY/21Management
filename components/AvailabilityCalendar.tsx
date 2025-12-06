@@ -13,6 +13,7 @@ import {
   formatHourRange,
   getDateForDay
 } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 interface AvailabilityCalendarProps {
   weekStart: string
@@ -75,6 +76,19 @@ TimeSlot.displayName = 'TimeSlot'
 function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false, userTimezone = ORG_TIMEZONE }: AvailabilityCalendarProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragValue, setDragValue] = useState<boolean | null>(null)
+  const t = useTranslations('availability')
+  const tDays = useTranslations('days')
+
+  // Day keys for translation
+  const dayKeys: Record<DayOfWeek, string> = {
+    monday: 'mon',
+    tuesday: 'tue',
+    wednesday: 'wed',
+    thursday: 'thu',
+    friday: 'fri',
+    saturday: 'sat',
+    sunday: 'sun'
+  }
 
   // Calculate display hours based on user timezone
   // ORG hours are 15-23 (3PM-11PM CET), shift for user's timezone
@@ -144,7 +158,7 @@ function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false
           <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg">
             <Globe className="w-4 h-4 text-primary" />
             <span className="text-sm text-gray-300">
-              Times shown in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span> (your timezone)
+              {t('timesShownIn')} <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span> {t('yourTimezone')}
             </span>
           </div>
         )}
@@ -152,12 +166,12 @@ function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false
         {/* Header with Days */}
         <div className="grid grid-cols-8 gap-2 mb-2">
           <div className="text-sm font-medium text-gray-400 flex items-center justify-center">
-            Time
+            {t('time')}
           </div>
           {DAYS.map((day, index) => (
             <div key={day} className="text-center">
               <div className="text-sm font-semibold text-white">
-                {DAY_LABELS[day]}
+                {tDays(dayKeys[day] as any)}
               </div>
               <div className="text-xs text-gray-500">
                 {getDateForDay(weekStart, index)}
@@ -199,16 +213,16 @@ function AvailabilityCalendar({ weekStart, timeSlots, onChange, readOnly = false
         <div className="flex items-center justify-center gap-6 mt-6 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-green-500/20 border-2 border-green-500/50"></div>
-            <span className="text-gray-400">Available</span>
+            <span className="text-gray-400">{t('available')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-dark border-2 border-gray-700"></div>
-            <span className="text-gray-400">Not Available</span>
+            <span className="text-gray-400">{t('notAvailable')}</span>
           </div>
           {!readOnly && (
             <div className="flex items-center gap-2 text-gray-500">
               <CalendarIcon className="w-4 h-4" />
-              <span>Click to toggle • Drag to select multiple</span>
+              <span>{t('clickToToggle')} • {t('dragToSelect')}</span>
             </div>
           )}
         </div>

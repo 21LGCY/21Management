@@ -6,6 +6,7 @@ import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/t
 import { Globe, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 // VALORANT European Zones mapping
 const VALORANT_ZONES: Record<string, string[]> = {
@@ -32,6 +33,8 @@ export default function ZonesInterface() {
   const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
 
   const supabase = createClient()
+  const t = useTranslations('tryouts')
+  const tRoles = useTranslations('roles')
 
   useEffect(() => {
     fetchTryouts()
@@ -137,13 +140,13 @@ export default function ZonesInterface() {
 
   const getStatusLabel = (status: TryoutStatus) => {
     switch (status) {
-      case 'substitute': return 'substitute'
-      case 'in_tryouts': return 'Tryout'
-      case 'contacted': return 'Contacted'
-      case 'not_contacted': return 'not_contacted'
-      case 'rejected': return 'rejected'
-      case 'left': return 'left'
-      case 'accepted': return 'Player'
+      case 'substitute': return t('substitute')
+      case 'in_tryouts': return t('inTryouts')
+      case 'contacted': return t('contacted')
+      case 'not_contacted': return t('notContacted')
+      case 'rejected': return t('rejected')
+      case 'left': return t('left')
+      case 'accepted': return t('player')
     }
   }
 
@@ -180,10 +183,10 @@ export default function ZonesInterface() {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             <Globe className="w-7 h-7 text-primary" />
-            VALORANT Zones
+            {t('valorantZones')}
           </h2>
           <p className="text-gray-400 mt-1">
-            Geographic distribution: [ {totalPlayersWithNationality} players with nationality ]
+            {t('geoDistribution', { count: totalPlayersWithNationality })}
           </p>
         </div>
 
@@ -194,7 +197,7 @@ export default function ZonesInterface() {
             value={teamFilter}
             onChange={(value) => setTeamFilter(value as TeamCategory | 'all')}
             options={[
-              { value: 'all', label: 'All Teams' },
+              { value: 'all', label: t('allCategories') },
               { value: '21L', label: '21L' },
               { value: '21GC', label: '21GC' },
               { value: '21ACA', label: '21 ACA' }
@@ -207,14 +210,14 @@ export default function ZonesInterface() {
             value={statusFilter}
             onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
             options={[
-              { value: 'all', label: 'All Status' },
-              { value: 'not_contacted', label: 'Not Contacted' },
-              { value: 'contacted', label: 'Contacted' },
-              { value: 'in_tryouts', label: 'In Tryouts' },
-              { value: 'substitute', label: 'Substitute' },
-              { value: 'rejected', label: 'Rejected' },
-              { value: 'left', label: 'Left' },
-              { value: 'accepted', label: 'Player' }
+              { value: 'all', label: t('allStatus') },
+              { value: 'not_contacted', label: t('notContacted') },
+              { value: 'contacted', label: t('contacted') },
+              { value: 'in_tryouts', label: t('inTryouts') },
+              { value: 'substitute', label: t('substitute') },
+              { value: 'rejected', label: t('rejected') },
+              { value: 'left', label: t('left') },
+              { value: 'accepted', label: t('player') }
             ]}
             className="min-w-[160px]"
           />
@@ -224,12 +227,12 @@ export default function ZonesInterface() {
             value={roleFilter}
             onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
             options={[
-              { value: 'all', label: 'All Roles' },
-              { value: 'Duelist', label: 'Duelist' },
-              { value: 'Initiator', label: 'Initiator' },
-              { value: 'Controller', label: 'Controller' },
-              { value: 'Sentinel', label: 'Sentinel' },
-              { value: 'Flex', label: 'Flex' }
+              { value: 'all', label: t('allRoles') },
+              { value: 'Duelist', label: tRoles('duelist') },
+              { value: 'Initiator', label: tRoles('initiator') },
+              { value: 'Controller', label: tRoles('controller') },
+              { value: 'Sentinel', label: tRoles('sentinel') },
+              { value: 'Flex', label: tRoles('flex') }
             ]}
             className="min-w-[140px]"
           />
@@ -240,9 +243,9 @@ export default function ZonesInterface() {
       {zoneStats.length === 0 ? (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
           <Globe className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <div className="text-gray-400 mb-2">No nationality data available</div>
+          <div className="text-gray-400 mb-2">{t('noNationalityData')}</div>
           <p className="text-gray-500 text-sm">
-            Add nationalities to player profiles to see zone distribution
+            {t('addNationalitiesToSeeZones')}
           </p>
         </div>
       ) : (
@@ -260,7 +263,7 @@ export default function ZonesInterface() {
                   <div className="flex items-center gap-2 text-gray-400">
                     <Users className="w-4 h-4" />
                     <span className="text-2xl font-bold text-white">{stat.count}</span>
-                    <span className="text-sm">Players</span>
+                    <span className="text-sm">{t('players')}</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -281,7 +284,7 @@ export default function ZonesInterface() {
 
               {/* Player List */}
               <div className="space-y-2">
-                <div className="text-xs text-gray-500 mb-2">Players:</div>
+                <div className="text-xs text-gray-500 mb-2">{t('playersLabel')}</div>
                 {stat.players.slice(0, 5).map(player => (
                   <div
                     key={player.id}
@@ -309,7 +312,7 @@ export default function ZonesInterface() {
                 ))}
                 {stat.players.length > 5 && (
                   <div className="text-xs text-gray-500 mt-1 pl-2">
-                    +{stat.players.length - 5} more
+                    {t('more', { count: stat.players.length - 5 })}
                   </div>
                 )}
               </div>
@@ -322,7 +325,7 @@ export default function ZonesInterface() {
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-          VALORANT Zone Definitions
+          {t('zoneDefinitions')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           {Object.entries(VALORANT_ZONES).map(([zone, countries]) => (

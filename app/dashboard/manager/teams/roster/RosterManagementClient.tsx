@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Users, Search, Filter, Crown, Shield, UserMinus, Edit, Eye } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 // Utility function to get rank image
 const getRankImage = (rank: string | undefined | null): string | null => {
@@ -54,6 +55,8 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'main' | 'substitute'>('all')
   const [sortBy, setSortBy] = useState<'name' | 'role' | 'rank' | 'joined'>('name')
+  const t = useTranslations('roster')
+  const tCommon = useTranslations('common')
 
   // Filter and sort players
   const filteredAndSortedPlayers = useMemo(() => {
@@ -100,7 +103,7 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search players..."
+              placeholder={t('searchPlayers')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-primary focus:outline-none"
@@ -111,9 +114,9 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
             value={filterType}
             onChange={(value) => setFilterType(value as 'all' | 'main' | 'substitute')}
             options={[
-              { value: 'all', label: `All Players (${players.length})` },
-              { value: 'main', label: `Main Players (${mainRoster.length})` },
-              { value: 'substitute', label: `Substitutes (${substitutes.length})` }
+              { value: 'all', label: `${t('allPlayers')} (${players.length})` },
+              { value: 'main', label: `${t('mainPlayers')} (${mainRoster.length})` },
+              { value: 'substitute', label: `${t('substitutes')} (${substitutes.length})` }
             ]}
           />
 
@@ -121,17 +124,17 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
             value={sortBy}
             onChange={(value) => setSortBy(value as 'name' | 'role' | 'rank' | 'joined')}
             options={[
-              { value: 'name', label: 'Sort by Name' },
-              { value: 'role', label: 'Sort by Role' },
-              { value: 'rank', label: 'Sort by Rank' },
-              { value: 'joined', label: 'Sort by Join Date' }
+              { value: 'name', label: t('sortByName') },
+              { value: 'role', label: t('sortByRole') },
+              { value: 'rank', label: t('sortByRank') },
+              { value: 'joined', label: t('sortByJoinDate') }
             ]}
           />
         </div>
 
         <div className="flex items-center justify-between">
           <p className="text-gray-400 text-sm">
-            Showing {filteredAndSortedPlayers.length} of {players.length} players
+            {t('showingOfPlayers', { count: filteredAndSortedPlayers.length, total: players.length })}
           </p>
         </div>
       </div>
@@ -139,7 +142,7 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
       {/* Roster Display */}
       <div className="bg-dark-card border border-gray-800 rounded-lg">
         <div className="p-6 border-b border-gray-800">
-          <h2 className="text-xl font-semibold text-white">Team Roster</h2>
+          <h2 className="text-xl font-semibold text-white">{t('title')}</h2>
         </div>
 
         {filteredAndSortedPlayers.length > 0 ? (
@@ -220,7 +223,7 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
                         )}
 
                         {/* Join Date */}
-                        <span>Joined {new Date(player.created_at).toLocaleDateString()}</span>
+                        <span>{t('joined')} {new Date(player.created_at).toLocaleDateString()}</span>
                       </div>
 
                       {/* Agent Pool */}
@@ -267,12 +270,12 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
           <div className="p-12 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-400 text-lg mb-2">
-              {players.length === 0 ? 'No players in your team' : 'No players match your search'}
+              {players.length === 0 ? t('noPlayersInTeam') : t('noPlayersMatch')}
             </p>
             <p className="text-gray-500 mb-4">
               {players.length === 0 
-                ? `Your roster for ${team?.name || 'your team'} is currently empty`
-                : 'Try adjusting your search criteria'
+                ? t('rosterEmpty', { teamName: team?.name || 'your team' })
+                : t('tryAdjustingSearch')
               }
             </p>
           </div>
@@ -282,28 +285,28 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
       {/* Roster Summary */}
       {players.length > 0 && (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Roster Summary</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">{t('rosterSummary')}</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-white">{mainRoster.length}</p>
-              <p className="text-sm text-gray-400">Main Players</p>
+              <p className="text-sm text-gray-400">{t('mainPlayers')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-400">{substitutes.length}</p>
-              <p className="text-sm text-gray-400">Substitutes</p>
+              <p className="text-sm text-gray-400">{t('substitutes')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-400">
                 {players.filter(p => p.is_igl).length}
               </p>
-              <p className="text-sm text-gray-400">IGLs</p>
+              <p className="text-sm text-gray-400">{t('igls')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-400">
                 {new Set(players.map(p => p.position).filter(Boolean)).size}
               </p>
-              <p className="text-sm text-gray-400">Roles Covered</p>
+              <p className="text-sm text-gray-400">{t('rolesCovered')}</p>
             </div>
           </div>
         </div>

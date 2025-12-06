@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TeamCategory, TryoutStatus, ValorantRole } from '@/lib/types/database'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 // VALORANT European Zones mapping (same as admin)
 const VALORANT_ZONES: Record<string, string[]> = {
@@ -35,6 +36,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
   const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
   const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
   const supabase = createClient()
+  const t = useTranslations('tryouts')
 
   useEffect(() => {
     fetchTryouts()
@@ -137,13 +139,13 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
 
   const getStatusLabel = (status: TryoutStatus) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Pending'
-      case 'in_tryouts': return 'Trying Out'
-      case 'accepted': return 'Player'
-      case 'substitute': return 'Sub'
-      case 'rejected': return 'Rejected'
-      case 'left': return 'Left'
+      case 'not_contacted': return t('notContacted')
+      case 'contacted': return t('pending')
+      case 'in_tryouts': return t('tryingOut')
+      case 'accepted': return t('player')
+      case 'substitute': return t('sub')
+      case 'rejected': return t('rejected')
+      case 'left': return t('left')
       default: return status
     }
   }
@@ -182,8 +184,8 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
     return (
       <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 text-center">
         <Globe className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-yellow-300 mb-2">Team Category Not Found</h3>
-        <p className="text-yellow-400">Unable to determine team category for "{team?.name}". Contact an administrator.</p>
+        <h3 className="text-lg font-bold text-yellow-300 mb-2">{t('teamCategoryNotFound')}</h3>
+        <p className="text-yellow-400">{t('unableToDetermineCategory', { teamName: team?.name })}</p>
       </div>
     )
   }
@@ -195,10 +197,10 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             <Globe className="w-7 h-7 text-primary" />
-            VALORANT Zones - {getTeamLabel(teamCategory)}
+            {t('valorantZonesTitle', { team: getTeamLabel(teamCategory) })}
           </h2>
           <p className="text-gray-400 mt-1">
-            Geographic distribution: [ {totalPlayersWithNationality} players with nationality ]
+            {t('geoDistribution', { count: totalPlayersWithNationality })}
           </p>
         </div>
 
@@ -209,14 +211,14 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
             value={statusFilter}
             onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
             options={[
-              { value: 'all', label: 'All Status' },
-              { value: 'not_contacted', label: 'Not Contacted' },
-              { value: 'contacted', label: 'Contacted' },
-              { value: 'in_tryouts', label: 'In Tryouts' },
-              { value: 'accepted', label: 'Player' },
-              { value: 'substitute', label: 'Substitute' },
-              { value: 'rejected', label: 'Rejected' },
-              { value: 'left', label: 'Left' }
+              { value: 'all', label: t('allStatus') },
+              { value: 'not_contacted', label: t('notContacted') },
+              { value: 'contacted', label: t('contacted') },
+              { value: 'in_tryouts', label: t('inTryouts') },
+              { value: 'accepted', label: t('player') },
+              { value: 'substitute', label: t('substitute') },
+              { value: 'rejected', label: t('rejected') },
+              { value: 'left', label: t('left') }
             ]}
             className="min-w-[160px]"
           />
@@ -226,7 +228,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
             value={roleFilter}
             onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
             options={[
-              { value: 'all', label: 'All Roles' },
+              { value: 'all', label: t('allRoles') },
               { value: 'Duelist', label: 'Duelist' },
               { value: 'Initiator', label: 'Initiator' },
               { value: 'Controller', label: 'Controller' },
@@ -242,7 +244,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       {/* Team Info */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
         <p className="text-white">
-          Analyzing geographic zones for: <span className="font-semibold text-primary">{team?.name}</span>
+          {t('analyzingZonesFor')} <span className="font-semibold text-primary">{team?.name}</span>
           <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
             {teamCategory}
           </span>
@@ -253,9 +255,9 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
       {zoneStats.length === 0 ? (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
           <Globe className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <div className="text-gray-400 mb-2">No nationality data available</div>
+          <div className="text-gray-400 mb-2">{t('noNationalityData')}</div>
           <p className="text-gray-500 text-sm">
-            Add nationalities to player profiles to see zone distribution
+            {t('addNationalitiesToSeeZones')}
           </p>
         </div>
       ) : (
@@ -273,7 +275,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
                   <div className="flex items-center gap-2 text-gray-400">
                     <Users className="w-4 h-4" />
                     <span className="text-2xl font-bold text-white">{stat.count}</span>
-                    <span className="text-sm">Players</span>
+                    <span className="text-sm">{t('players')}</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -294,7 +296,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
 
               {/* Player List */}
               <div className="space-y-2">
-                <div className="text-xs text-gray-500 mb-2">Players:</div>
+                <div className="text-xs text-gray-500 mb-2">{t('playersLabel')}</div>
                 {stat.players.slice(0, 5).map(player => (
                   <div
                     key={player.id}
@@ -322,7 +324,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
                 ))}
                 {stat.players.length > 5 && (
                   <div className="text-xs text-gray-500 mt-1 pl-2">
-                    +{stat.players.length - 5} more
+                    {t('more', { count: stat.players.length - 5 })}
                   </div>
                 )}
               </div>
@@ -333,7 +335,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
 
       {/* Zone Legend */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-white mb-4">VALORANT Zone Definitions</h3>
+        <h3 className="text-xl font-bold text-white mb-4">{t('zoneDefinitions')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           {Object.entries(VALORANT_ZONES).map(([zone, countries]) => (
             <div key={zone} className="text-gray-400">

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Team, UserProfile, MatchType } from '@/lib/types/database'
 import { X, Save, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface RecordMatchModalProps {
   teams: Team[]
@@ -30,6 +31,8 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
   const [loading, setLoading] = useState(false)
   const [players, setPlayers] = useState<UserProfile[]>([])
   const [loadingPlayers, setLoadingPlayers] = useState(false)
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
 
   // Match details
   const [selectedTeam, setSelectedTeam] = useState('')
@@ -76,7 +79,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
   const addPlayerStat = () => {
     if (playerStats.length >= players.length) {
-      alert('All players have been added')
+      alert(t('allPlayersAdded'))
       return
     }
 
@@ -125,28 +128,28 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
     e.preventDefault()
     
     if (!selectedTeam) {
-      alert('Please select a team')
+      alert(t('pleaseSelectTeam'))
       return
     }
 
     if (!opponentName.trim()) {
-      alert('Please enter opponent name')
+      alert(t('pleaseEnterOpponent'))
       return
     }
 
     if (playerStats.length === 0) {
-      alert('Please add at least one player')
+      alert(t('pleaseAddPlayer'))
       return
     }
 
     for (let i = 0; i < playerStats.length; i++) {
       const stat = playerStats[i]
       if (!stat.playerId) {
-        alert(`Please select a player for entry ${i + 1}`)
+        alert(t('pleaseSelectPlayerEntry', { number: i + 1 }))
         return
       }
       if (!stat.agentPlayed.trim()) {
-        alert(`Please enter agent for ${stat.playerName}`)
+        alert(t('pleaseEnterAgent', { name: stat.playerName }))
         return
       }
     }
@@ -154,7 +157,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
     const playerIds = playerStats.map(s => s.playerId)
     const uniqueIds = new Set(playerIds)
     if (playerIds.length !== uniqueIds.size) {
-      alert('Cannot add the same player multiple times')
+      alert(t('cannotAddSamePlayer'))
       return
     }
 
@@ -201,7 +204,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
       onSuccess()
     } catch (error) {
       console.error('Error saving match:', error)
-      alert('Failed to save match. Please try again.')
+      alert(t('failedSaveMatch'))
     } finally {
       setLoading(false)
     }
@@ -213,8 +216,8 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
         {/* Header */}
         <div className="sticky top-0 bg-dark-card border-b border-gray-800 p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Record Match</h2>
-            <p className="text-gray-400 text-sm mt-1">Record match results and player statistics</p>
+            <h2 className="text-2xl font-bold text-white">{t('recordMatch')}</h2>
+            <p className="text-gray-400 text-sm mt-1">{t('recordMatchDesc')}</p>
           </div>
           <button
             onClick={onClose}
@@ -230,13 +233,13 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
           {/* Team Selection */}
           <div className="bg-dark border border-gray-700 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Select Team *
+              {t('selectTeam')} *
             </label>
             <CustomSelect
               value={selectedTeam}
               onChange={(value) => setSelectedTeam(value)}
               options={[
-                { value: '', label: 'Choose a team...' },
+                { value: '', label: t('chooseTeam') },
                 ...teams.map(team => ({
                   value: team.id,
                   label: team.name
@@ -245,10 +248,10 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
               className="w-full"
             />
             {loadingPlayers && (
-              <p className="text-sm text-gray-400 mt-2">Loading players...</p>
+              <p className="text-sm text-gray-400 mt-2">{t('loadingPlayers')}</p>
             )}
             {selectedTeam && !loadingPlayers && players.length === 0 && (
-              <p className="text-sm text-yellow-400 mt-2">No players found in this team.</p>
+              <p className="text-sm text-yellow-400 mt-2">{t('noPlayersInTeam')}</p>
             )}
           </div>
 
@@ -256,12 +259,12 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
           {selectedTeam && players.length > 0 && (
             <>
               <div className="bg-dark border border-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Match Details</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{t('matchDetails')}</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Opponent Name *
+                      {t('opponentName')} *
                     </label>
                     <input
                       type="text"
@@ -274,7 +277,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Match Date & Time *
+                      {t('matchDateTime')} *
                     </label>
                     <input
                       type="datetime-local"
@@ -287,7 +290,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Our Score *
+                      {t('ourScore')} *
                     </label>
                     <input
                       type="number"
@@ -302,7 +305,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Opponent Score *
+                      {t('opponentScore')} *
                     </label>
                     <input
                       type="number"
@@ -317,30 +320,30 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Map Name
+                      {t('map')}
                     </label>
                     <input
                       type="text"
                       value={mapName}
                       onChange={(e) => setMapName(e.target.value)}
-                      placeholder="e.g., Ascent, Haven"
+                      placeholder={t('mapPlaceholder')}
                       className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Match Type *
+                      {t('matchType')} *
                     </label>
                     <CustomSelect
                       value={matchType}
                       onChange={(value) => setMatchType(value as MatchType)}
                       options={[
-                        { value: 'Scrim', label: 'Scrim' },
-                        { value: 'Tournament', label: 'Tournament' },
-                        { value: 'Qualifier', label: 'Qualifier' },
-                        { value: 'League', label: 'League' },
-                        { value: 'Other', label: 'Other' }
+                        { value: 'Scrim', label: t('scrim') },
+                        { value: 'Tournament', label: tCommon('tournament') },
+                        { value: 'Qualifier', label: t('qualifier') },
+                        { value: 'League', label: t('league') },
+                        { value: 'Other', label: t('other') }
                       ]}
                       className="w-full"
                     />
@@ -349,25 +352,25 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
 
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Notes
+                    {t('notes')}
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
-                    placeholder="Additional notes..."
+                    placeholder={t('notesPlaceholder')}
                     className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                   />
                 </div>
 
                 <div className="mt-4 p-3 bg-dark rounded-lg border border-gray-700">
                   <p className="text-sm text-gray-400">
-                    Result: <span className={`font-bold ${
+                    {t('result')}: <span className={`font-bold ${
                       calculateResult() === 'win' ? 'text-green-400' :
                       calculateResult() === 'loss' ? 'text-red-400' :
                       'text-yellow-400'
                     }`}>
-                      {calculateResult().toUpperCase()}
+                      {calculateResult() === 'win' ? t('victory') : calculateResult() === 'loss' ? t('defeat') : t('draw')}
                     </span>
                   </p>
                 </div>
@@ -376,7 +379,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
               {/* Player Statistics */}
               <div className="bg-dark border border-gray-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Player Statistics</h3>
+                  <h3 className="text-lg font-semibold text-white">{t('playerStatistics')}</h3>
                   <button
                     type="button"
                     onClick={addPlayerStat}
@@ -384,14 +387,14 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                     disabled={playerStats.length >= players.length}
                   >
                     <Plus className="w-4 h-4" />
-                    Add Player
+                    {t('addPlayer')}
                   </button>
                 </div>
 
                 {playerStats.length === 0 ? (
                   <div className="text-center py-6 text-gray-400 text-sm">
-                    <p>No player statistics added yet.</p>
-                    <p className="mt-1">Click "Add Player" to record player performance.</p>
+                    <p>{t('noStatsAdded')}</p>
+                    <p className="mt-1">{t('clickAddPlayer')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -437,7 +440,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                               type="button"
                               onClick={() => removePlayerStat(index)}
                               className="p-1.5 text-red-400 hover:bg-red-400/10 rounded transition ml-2"
-                              title="Remove player"
+                              title={t('removePlayer')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -448,12 +451,12 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                             <div className="p-3 bg-dark">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div className="col-span-2">
-                                  <label className="block text-xs font-medium text-gray-400 mb-1">Player *</label>
+                                  <label className="block text-xs font-medium text-gray-400 mb-1">{t('player')} *</label>
                                   <CustomSelect
                                     value={stat.playerId}
                                     onChange={(value) => updatePlayerStat(index, 'playerId', value)}
                                     options={[
-                                      { value: '', label: 'Select Player' },
+                                      { value: '', label: t('selectPlayer') },
                                       ...players
                                         .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
                                         .map(player => ({
@@ -466,12 +469,12 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                                 </div>
 
                                 <div className="col-span-2">
-                                  <label className="block text-xs font-medium text-gray-400 mb-1">Agent *</label>
+                                  <label className="block text-xs font-medium text-gray-400 mb-1">{t('agent')} *</label>
                                   <input
                                     type="text"
                                     value={stat.agentPlayed}
                                     onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                                    placeholder="e.g., Jett"
+                                    placeholder={t('agentPlaceholder')}
                                     className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none"
                                     required
                                   />
@@ -480,11 +483,11 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">K</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">D</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                                 <div><label className="block text-xs font-medium text-gray-400 mb-1">A</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">AVG CS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Econ Rating</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">First Bloods</label><input type="number" min="0" value={stat.firstKills} onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Plants</label><input type="number" min="0" value={stat.plants} onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
-                                <div><label className="block text-xs font-medium text-gray-400 mb-1">Defuses</label><input type="number" min="0" value={stat.defuses} onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">{t('avgCs')}</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">{t('econRating')}</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">{t('firstBloods')}</label><input type="number" min="0" value={stat.firstKills} onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">{t('plants')}</label><input type="number" min="0" value={stat.plants} onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
+                                <div><label className="block text-xs font-medium text-gray-400 mb-1">{t('defuses')}</label><input type="number" min="0" value={stat.defuses} onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)} className="w-full px-3 py-1.5 bg-dark border border-gray-700 rounded text-white text-sm focus:border-primary focus:outline-none" /></div>
                               </div>
                             </div>
                           )}
@@ -505,7 +508,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
               className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
               disabled={loading}
             >
-              Cancel
+              {tCommon('cancel')}
             </button>
             <button
               type="submit"
@@ -513,7 +516,7 @@ export default function RecordMatchModal({ teams, onClose, onSuccess }: RecordMa
               disabled={loading || !selectedTeam || playerStats.length === 0}
             >
               <Save className="w-4 h-4" />
-              {loading ? 'Saving...' : 'Save Match'}
+              {loading ? tCommon('saving') : t('saveMatch')}
             </button>
           </div>
         </form>

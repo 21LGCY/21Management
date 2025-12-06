@@ -5,6 +5,7 @@ import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumb
 import { createClient } from '@/lib/supabase/client'
 import { TimezoneOffset } from '@/lib/types/database'
 import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, getDayNumber, getDayName } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 // Activity types with colors and icons (matching player schedule)
 const activityTypes: { [key: string]: { icon: any; color: string; name: string } } = {
@@ -123,6 +124,9 @@ interface ScheduleManagementProps {
 }
 
 export default function ScheduleManagementClient({ team, user, userTimezone }: ScheduleManagementProps) {
+  const t = useTranslations('schedule')
+  const tCommon = useTranslations('common')
+  const tDays = useTranslations('days')
   const [activities, setActivities] = useState<ScheduleActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
@@ -637,7 +641,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading schedule...</div>
+        <div className="text-gray-400">{t('loadingSchedule')}</div>
       </div>
     )
   }
@@ -742,7 +746,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
 
           <div className="flex items-center gap-4">
             <div className="text-center">
-              <div className="text-sm text-gray-400 mb-1">Current Week</div>
+              <div className="text-sm text-gray-400 mb-1">{t('currentWeek')}</div>
               <div className="text-lg font-semibold text-white">
                 {formatDateShort(getMondayOfWeek(currentWeekOffset))} - {formatDateShort(new Date(getMondayOfWeek(currentWeekOffset).getTime() + 6 * 24 * 60 * 60 * 1000))}
               </div>
@@ -750,9 +754,9 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
             {currentWeekOffset > 0 && (
               <button
                 onClick={goToCurrentWeek}
-                className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all text-sm font-medium"
+                className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all text-sm font-medium whitespace-nowrap"
               >
-                Go to Current Week
+                {t('goToCurrentWeek')}
               </button>
             )}
             {/* Timezone indicator */}
@@ -760,9 +764,9 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
               <Globe className="w-4 h-4 text-primary" />
               <span className="text-sm text-gray-300">
                 {userTimezone !== ORG_TIMEZONE ? (
-                  <>Times in <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
+                  <>{t('timesShownIn')} <span className="text-primary font-medium">{getTimezoneShort(userTimezone)}</span></>
                 ) : (
-                  <span className="text-gray-400">CET (Org timezone)</span>
+                  <span className="text-gray-400">{t('orgTimezone')}</span>
                 )}
               </span>
             </div>
@@ -791,7 +795,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
               <div className="p-3 bg-gray-800/80 sticky left-0 z-10">
                 <div className="flex items-center gap-2 text-gray-300">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Time</span>
+                  <span className="text-sm font-semibold">{t('time')}</span>
                 </div>
               </div>
               {daysOfWeek.map((day, index) => {
@@ -801,7 +805,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                 
                 return (
                   <div key={day} className="p-3 text-center border-l border-gray-700">
-                    <div className="text-sm font-semibold text-white">{day}</div>
+                    <div className="text-sm font-semibold text-white">{tDays(day.toLowerCase())}</div>
                     <div className="text-xs text-gray-300 mt-1">
                       {formatDateShort(date)}
                     </div>
@@ -951,13 +955,13 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
       <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6 shadow-lg">
         <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5" />
-          Activity Types
+          {t('activityTypesTitle')}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Object.entries(activityTypes).map(([key, { icon: Icon, color, name }]) => (
+          {Object.entries(activityTypes).map(([key, { icon: Icon, color }]) => (
             <div key={key} className={`p-3 rounded-lg border-2 ${color} flex items-center gap-2 shadow-md`}>
               <Icon className="w-5 h-5" />
-              <span className="text-sm font-semibold">{name}</span>
+              <span className="text-sm font-semibold">{t(`activityTypes.${key}`)}</span>
             </div>
           ))}
         </div>
@@ -1005,7 +1009,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                             className="text-xl font-semibold text-white mb-2 bg-transparent border-b border-gray-700 focus:border-primary outline-none w-full"
                           />
                           <span className="inline-block px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm">
-                            {activityInfo.name}
+                            {t(`activityTypes.${selectedActivity.type}`)}
                           </span>
                         </div>
                       </div>
@@ -1041,25 +1045,25 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                     </div>
 
                     <div>
-                      <label className="text-sm text-gray-400 mb-2 block">Description</label>
+                      <label className="text-sm text-gray-400 mb-2 block">{t('activityDescription')}</label>
                       <textarea
                         value={selectedActivity.description || ''}
                         onChange={(e) => setSelectedActivity({...selectedActivity, description: e.target.value})}
                         className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white resize-none focus:border-primary outline-none"
                         rows={3}
-                        placeholder="Add a description..."
+                        placeholder={t('descriptionPlaceholder')}
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm text-gray-400 mb-2 block">Duration</label>
+                      <label className="text-sm text-gray-400 mb-2 block">{t('duration')}</label>
                       <select
                         value={selectedActivity.duration}
                         onChange={(e) => setSelectedActivity({...selectedActivity, duration: parseInt(e.target.value)})}
                         className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
                       >
                         {[1, 2, 3, 4, 5, 6].map(h => (
-                          <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>
+                          <option key={h} value={h}>{h === 1 ? t('hourSingle') : t('hoursPlural', { count: h })}</option>
                         ))}
                       </select>
                     </div>
@@ -1072,14 +1076,14 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                       className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition flex items-center justify-center gap-2"
                     >
                       <Save className="w-4 h-4" />
-                      Save Changes
+                      {tCommon('saveChanges')}
                     </button>
                     <button
                       onClick={() => handleDeleteActivity(selectedActivity.id)}
                       className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition flex items-center gap-2"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Delete
+                      {tCommon('delete')}
                     </button>
                   </div>
                 </>
@@ -1100,57 +1104,57 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-800">
-              <h2 className="text-xl font-semibold text-white">Add Activity</h2>
+              <h2 className="text-xl font-semibold text-white">{t('addActivityTitle')}</h2>
               <p className="text-sm text-gray-400 mt-1">
-                {newActivity.day} at {newActivity.timeSlot}
+                {t(`days.${newActivity.day.toLowerCase()}`)} {t('atTime')} {newActivity.timeSlot}
               </p>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Activity Type</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('selectActivityType')}</label>
                 <select
                   value={newActivity.type}
                   onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
                 >
-                  {Object.entries(activityTypes).map(([key, { name }]) => (
-                    <option key={key} value={key}>{name}</option>
+                  {Object.entries(activityTypes).map(([key]) => (
+                    <option key={key} value={key}>{t(`activityTypes.${key}`)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Title</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('titleLabel')}</label>
                 <input
                   type="text"
                   value={newActivity.title}
                   onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
-                  placeholder="e.g., Team Practice, Scrimmage"
+                  placeholder={t('titlePlaceholder')}
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Description</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('activityDescription')}</label>
                 <textarea
                   value={newActivity.description}
                   onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white resize-none focus:border-primary outline-none"
                   rows={3}
-                  placeholder="Add details about this activity..."
+                  placeholder={t('descriptionPlaceholder')}
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Duration</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('duration')}</label>
                 <select
                   value={newActivity.duration}
                   onChange={(e) => setNewActivity({...newActivity, duration: parseInt(e.target.value)})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
                 >
                   {[1, 2, 3, 4, 5, 6].map(h => (
-                    <option key={h} value={h}>{h} hour{h > 1 ? 's' : ''}</option>
+                    <option key={h} value={h}>{h === 1 ? t('hourSingle') : t('hoursPlural', { count: h })}</option>
                   ))}
                 </select>
               </div>
@@ -1163,13 +1167,13 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                 className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-lg transition flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Activity
+                {t('addActivityTitle')}
               </button>
               <button
                 onClick={closeAddModal}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
             </div>
           </div>
@@ -1187,23 +1191,22 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-800">
-              <h2 className="text-xl font-semibold text-white">Créer plusieurs activités</h2>
+              <h2 className="text-xl font-semibold text-white">{t('createMultiple')}</h2>
               <p className="text-sm text-gray-400 mt-1">
-                {selectedSlots.size} créneau{selectedSlots.size > 1 ? 'x' : ''} sélectionné{selectedSlots.size > 1 ? 's' : ''}
+                {t('slotsSelected', { count: selectedSlots.size })}
               </p>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Type d'activité</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('selectActivityType')}</label>
                 <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
                   {(() => {
                     const Icon = activityTypes[selectedActivityType]?.icon
-                    const name = activityTypes[selectedActivityType]?.name
-                    return Icon && name ? (
+                    return Icon ? (
                       <>
                         <Icon className="w-5 h-5 text-primary" />
-                        <span className="text-white">{name}</span>
+                        <span className="text-white">{t(`activityTypes.${selectedActivityType}`)}</span>
                       </>
                     ) : null
                   })()}
@@ -1211,24 +1214,24 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Titre</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('titleLabel')}</label>
                 <input
                   type="text"
                   value={newActivity.title}
                   onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
-                  placeholder={`e.g., ${activityTypes[selectedActivityType]?.name || 'Activité'}`}
+                  placeholder={t(`activityTypes.${selectedActivityType}`)}
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-2 block">Description (optionnel)</label>
+                <label className="text-sm text-gray-400 mb-2 block">{t('activityDescription')} {t('optional')}</label>
                 <textarea
                   value={newActivity.description}
                   onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg text-white resize-none focus:border-primary outline-none"
                   rows={3}
-                  placeholder="Description commune pour toutes les activités..."
+                  placeholder={t('commonDescription')}
                 />
               </div>
             </div>
@@ -1239,7 +1242,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                 className="flex-1 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                Créer {selectedSlots.size} activité{selectedSlots.size > 1 ? 's' : ''}
+                {t('createCount', { count: selectedSlots.size })}
               </button>
               <button
                 onClick={() => {
@@ -1248,7 +1251,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                 }}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
               >
-                Annuler
+                {tCommon('cancel')}
               </button>
             </div>
           </div>

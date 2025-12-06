@@ -2,6 +2,8 @@ import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { PageTransitionProvider } from '@/components/PageTransition'
+import I18nProvider from '@/components/I18nProvider'
+import { getLocale, getMessages, getTimeZone } from 'next-intl/server'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -40,17 +42,23 @@ export const viewport: Viewport = {
   themeColor: '#0a0a0a',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+  const timeZone = await getTimeZone()
+
   return (
-    <html lang="en" className="dark">
+    <html lang={locale} className="dark">
       <body className={inter.className}>
-        <PageTransitionProvider>
-          {children}
-        </PageTransitionProvider>
+        <I18nProvider locale={locale} messages={messages} timeZone={timeZone}>
+          <PageTransitionProvider>
+            {children}
+          </PageTransitionProvider>
+        </I18nProvider>
       </body>
     </html>
   )

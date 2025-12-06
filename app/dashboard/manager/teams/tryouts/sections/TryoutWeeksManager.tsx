@@ -5,6 +5,7 @@ import { Plus, Calendar, Users, CheckCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, PlayerAvailability, TeamCategory, TryoutWeekStatus } from '@/lib/types/database'
+import { useTranslations } from 'next-intl'
 
 type TryoutWeekWithStats = TryoutWeek & {
   availabilities?: PlayerAvailability[]
@@ -25,6 +26,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
   const [tryoutWeeks, setTryoutWeeks] = useState<TryoutWeekWithStats[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const t = useTranslations('tryouts')
 
   useEffect(() => {
     if (teamCategory) {
@@ -124,7 +126,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Loading tryout weeks...</div>
+        <div className="text-white">{t('loadingTryoutWeeks')}</div>
       </div>
     )
   }
@@ -133,8 +135,8 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
     return (
       <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 text-center">
         <Calendar className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-yellow-300 mb-2">Team Category Not Found</h3>
-        <p className="text-yellow-400">Unable to determine team category for "{team?.name}". Contact an administrator.</p>
+        <h3 className="text-lg font-bold text-yellow-300 mb-2">{t('teamCategoryNotFound')}</h3>
+        <p className="text-yellow-400">{t('unableToDetermineCategory', { teamName: team?.name })}</p>
       </div>
     )
   }
@@ -146,14 +148,14 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
         <div>
           <h2 className="flex items-center gap-3 text-2xl font-bold text-white">
             <Calendar className="w-6 h-6 text-primary" />
-            Tryout Weeks - {getTeamLabel(teamCategory)}
+            {t('tryoutWeeksTitle', { team: getTeamLabel(teamCategory) })}
           </h2>
-          <p className="text-gray-400 mt-1">Manage tryout sessions and track player availability for your team</p>
+          <p className="text-gray-400 mt-1">{t('manageTryoutsDescription')}</p>
         </div>
         <Link href="/dashboard/manager/teams/tryouts/new">
           <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
             <Plus className="w-4 h-4" />
-            Create Tryout Week
+            {t('createTryoutWeek')}
           </button>
         </Link>
       </div>
@@ -161,7 +163,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
       {/* Team Info */}
       <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
         <p className="text-white">
-          Managing tryout weeks for: <span className="font-semibold text-primary">{team?.name}</span>
+          {t('managingTryoutsFor')} <span className="font-semibold text-primary">{team?.name}</span>
           <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
             {teamCategory}
           </span>
@@ -172,12 +174,12 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
       {tryoutWeeks.length === 0 ? (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Sessions</h3>
-          <p className="text-gray-400 mb-6">Create a tryout week for {getTeamLabel(teamCategory)}</p>
+          <h3 className="text-xl font-semibold text-white mb-2">{t('noSessions')}</h3>
+          <p className="text-gray-400 mb-6">{t('createTryoutFor', { team: getTeamLabel(teamCategory) })}</p>
           <Link href="/dashboard/manager/teams/tryouts/new">
             <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition mx-auto">
               <Plus className="w-4 h-4" />
-              Create
+              {t('createTryoutWeek')}
             </button>
           </Link>
         </div>
@@ -209,7 +211,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Users className="w-4 h-4" />
-                  {week.stats?.total || 0} players
+                  {week.stats?.total || 0} {t('players')}
                 </div>
               </div>
 
@@ -219,14 +221,14 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <div>
                     <div className="text-2xl font-bold text-green-400">{week.stats?.responded || 0}</div>
-                    <div className="text-xs text-gray-400">Responded</div>
+                    <div className="text-xs text-gray-400">{t('responded')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-yellow-400" />
                   <div>
                     <div className="text-2xl font-bold text-yellow-400">{week.stats?.pending || 0}</div>
-                    <div className="text-xs text-gray-400">Pending</div>
+                    <div className="text-xs text-gray-400">{t('pending')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -235,7 +237,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
                     <div className="text-2xl font-bold text-blue-400">
                       {week.stats?.responded || 0}/{week.stats?.total || 0}
                     </div>
-                    <div className="text-xs text-gray-400">Response Rate</div>
+                    <div className="text-xs text-gray-400">{t('responseRate')}</div>
                   </div>
                 </div>
               </div>

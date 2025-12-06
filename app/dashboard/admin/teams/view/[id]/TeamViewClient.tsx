@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import TeamCommunication from './TeamCommunication'
 import StratMapSelection from './StratMapSelection'
 import PraccsReviewSelection from './PraccsReviewSelection'
+import { useTranslations } from 'next-intl'
 
 interface TeamViewClientProps {
   teamId: string
@@ -28,6 +29,8 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('roster')
   
+  const t = useTranslations('teams')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
   const router = useRouter()
 
@@ -73,7 +76,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
   }
 
   const deleteTeam = async () => {
-    if (!confirm(`Are you sure you want to delete ${team?.name}? All associated matches will also be deleted.`)) return
+    if (!confirm(t('confirmDeleteTeam', { name: team?.name || '' }))) return
 
     try {
       const { error } = await supabase
@@ -87,7 +90,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       router.refresh()
     } catch (error) {
       console.error('Error deleting team:', error)
-      alert('Failed to delete team')
+      alert(t('failedDeleteTeam'))
     }
   }
 
@@ -188,7 +191,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
         {/* Joined Date - Always at Bottom */}
         {member.created_at && (
           <div className="w-full mt-3 pt-3 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
-            <span>Joined</span>
+            <span>{t('joined')}</span>
             <span>{new Date(member.created_at).toLocaleDateString()}</span>
           </div>
         )}
@@ -207,12 +210,12 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
   if (!team) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Team not found</p>
+        <p className="text-gray-400 mb-4">{t('teamNotFound')}</p>
         <Link
           href="/dashboard/admin/teams"
           className="text-primary hover:underline"
         >
-          Back to Teams
+          {t('backToTeams')}
         </Link>
       </div>
     )
@@ -243,14 +246,14 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20"
           >
             <Edit className="w-4 h-4" />
-            <span>Edit</span>
+            <span>{tCommon('edit')}</span>
           </Link>
           <button
             onClick={deleteTeam}
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-900/20 to-red-800/20 hover:from-red-800/30 hover:to-red-700/30 text-red-400 hover:text-red-300 rounded-lg transition-all border border-red-800/50 hover:border-red-700/50"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Delete</span>
+            <span>{tCommon('delete')}</span>
           </button>
         </div>
       </div>
@@ -267,7 +270,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             }`}
           >
             <Users className="w-4 h-4" />
-            Roster
+            {t('roster')}
           </button>
           <button
             onClick={() => setActiveTab('strat_map')}
@@ -278,7 +281,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             }`}
           >
             <Map className="w-4 h-4" />
-            Strat Map
+            {t('stratMap')}
           </button>
           <button
             onClick={() => setActiveTab('review_praccs')}
@@ -289,7 +292,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            Review Praccs
+            {t('reviewPraccs')}
           </button>
         </nav>
       </div>
@@ -303,11 +306,11 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
               <div className="flex items-center gap-2">
                 <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 <Users className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold text-white">Main Roster</h2>
+                <h2 className="text-xl font-semibold text-white">{t('mainRoster')}</h2>
               </div>
             </div>
             {players.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No players in the main roster</p>
+              <p className="text-gray-400 text-center py-8">{t('noPlayersInRoster')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {players.map((player) => renderMemberCard(player))}
@@ -320,10 +323,10 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             <div className="flex items-center gap-2 mb-6">
               <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
               <Shield className="w-5 h-5 text-blue-400" />
-              <h2 className="text-xl font-semibold text-white">Substitutes</h2>
+              <h2 className="text-xl font-semibold text-white">{t('substitutes')}</h2>
             </div>
             {substitutes.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No substitutes</p>
+              <p className="text-gray-400 text-center py-8">{t('noSubstitutes')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {substitutes.map((sub) => renderMemberCard(sub, true))}
@@ -336,10 +339,10 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
             <div className="flex items-center gap-2 mb-6">
               <div className="w-1 h-6 bg-gradient-to-b from-green-400 to-green-600 rounded-full"></div>
               <UserIcon className="w-5 h-5 text-green-400" />
-              <h2 className="text-xl font-semibold text-white">Staff</h2>
+              <h2 className="text-xl font-semibold text-white">{t('staff')}</h2>
             </div>
             {staff.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No staff members</p>
+              <p className="text-gray-400 text-center py-8">{t('noStaffMembers')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {staff.map((member) => renderMemberCard(member))}

@@ -6,6 +6,7 @@ import { Team, MatchHistory, UserRole } from '@/lib/types/database'
 import { ArrowLeft, MessageSquare, Calendar, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import TeamCommunication from '@/app/dashboard/admin/teams/view/[id]/TeamCommunication'
+import { useTranslations } from 'next-intl'
 
 interface PraccsReviewClientProps {
   teamId: string
@@ -22,6 +23,8 @@ export default function PraccsReviewClient({
   userName, 
   userRole 
 }: PraccsReviewClientProps) {
+  const t = useTranslations('practiceReviews')
+  const tMatches = useTranslations('matches')
   const [team, setTeam] = useState<Team | null>(null)
   const [match, setMatch] = useState<MatchHistory | null>(null)
   const [loading, setLoading] = useState(true)
@@ -71,10 +74,10 @@ export default function PraccsReviewClient({
 
   const getResultLabel = (result?: string) => {
     switch (result) {
-      case 'win': return 'Victory'
-      case 'loss': return 'Defeat'
-      case 'draw': return 'Draw'
-      default: return 'No Result'
+      case 'win': return tMatches('win')
+      case 'loss': return tMatches('loss')
+      case 'draw': return tMatches('draw')
+      default: return tMatches('noResult')
     }
   }
 
@@ -89,12 +92,12 @@ export default function PraccsReviewClient({
   if (!team || !match) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">Match or Team not found</p>
+        <p className="text-gray-400 mb-4">{t('matchOrTeamNotFound')}</p>
         <Link
           href="/dashboard/player/teams"
           className="text-primary hover:underline"
         >
-          Back to Team Hub
+          {t('backToTeamHub')}
         </Link>
       </div>
     )
@@ -114,7 +117,7 @@ export default function PraccsReviewClient({
           <div className="flex items-center gap-3 mb-2">
             <MessageSquare className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold text-white">Practice Review</h1>
+              <h1 className="text-3xl font-bold text-white">{t('practiceReview')}</h1>
               <p className="text-gray-400">{team.name}</p>
             </div>
           </div>
@@ -139,7 +142,7 @@ export default function PraccsReviewClient({
 
           {/* Opponent */}
           <div>
-            <span className="text-gray-400">vs </span>
+            <span className="text-gray-400">{tMatches('vs')} </span>
             <span className="text-white font-bold">{match.opponent_name}</span>
           </div>
 
@@ -159,7 +162,7 @@ export default function PraccsReviewClient({
           {/* Map */}
           {match.map_name && (
             <div>
-              <span className="text-gray-400">Map: </span>
+              <span className="text-gray-400">{tMatches('map')}: </span>
               <span className="text-white font-medium">{match.map_name}</span>
             </div>
           )}
@@ -175,7 +178,7 @@ export default function PraccsReviewClient({
         {/* Notes if any */}
         {match.notes && (
           <div className="mt-4 pt-4 border-t border-gray-800">
-            <p className="text-sm text-gray-400 mb-1">Match Notes</p>
+            <p className="text-sm text-gray-400 mb-1">{tMatches('matchNotes')}</p>
             <p className="text-gray-300">{match.notes}</p>
           </div>
         )}

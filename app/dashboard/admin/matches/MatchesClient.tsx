@@ -6,6 +6,7 @@ import { Team, MatchHistoryWithStats } from '@/lib/types/database'
 import { Trophy, Calendar, Search, Eye, Edit, Trash2, Filter, Plus } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface MatchesClientProps {
   teams: Team[]
@@ -15,6 +16,8 @@ type FilterType = 'all' | 'wins' | 'losses' | 'draws'
 
 export default function MatchesClient({ teams }: MatchesClientProps) {
   const supabase = createClient()
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
   const [matches, setMatches] = useState<MatchHistoryWithStats[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -46,7 +49,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
   }
 
   const deleteMatch = async (matchId: string) => {
-    if (!confirm('Are you sure you want to delete this match? All player statistics will also be deleted.')) return
+    if (!confirm(t('confirmDeleteWithStats'))) return
 
     try {
       const { error } = await supabase
@@ -58,7 +61,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
       setMatches(matches.filter(m => m.id !== matchId))
     } catch (error) {
       console.error('Error deleting match:', error)
-      alert('Failed to delete match')
+      alert(t('failedDelete'))
     }
   }
 
@@ -101,7 +104,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
-              <p className="text-sm text-gray-400">Total Matches</p>
+              <p className="text-sm text-gray-400">{t('totalMatches')}</p>
             </div>
           </div>
         </div>
@@ -113,7 +116,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-green-400">{stats.wins}</p>
-              <p className="text-sm text-gray-400">Wins</p>
+              <p className="text-sm text-gray-400">{t('wins')}</p>
             </div>
           </div>
         </div>
@@ -125,7 +128,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-red-400">{stats.losses}</p>
-              <p className="text-sm text-gray-400">Losses</p>
+              <p className="text-sm text-gray-400">{t('losses')}</p>
             </div>
           </div>
         </div>
@@ -137,7 +140,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-yellow-400">{stats.draws}</p>
-              <p className="text-sm text-gray-400">Draws</p>
+              <p className="text-sm text-gray-400">{t('draws')}</p>
             </div>
           </div>
         </div>
@@ -148,14 +151,14 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Search</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{tCommon('search')}</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search opponent, map, type..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
               />
             </div>
@@ -163,12 +166,12 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
 
           {/* Team Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Team</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('selectTeam')}</label>
             <CustomSelect
               value={selectedTeam}
               onChange={(value) => setSelectedTeam(value)}
               options={[
-                { value: 'all', label: 'All Teams' },
+                { value: 'all', label: t('allTeams') },
                 ...teams.map((team) => ({ value: team.id, label: team.name }))
               ]}
               className="min-w-[180px]"
@@ -177,15 +180,15 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
 
           {/* Result Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Result</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t('result')}</label>
             <CustomSelect
               value={filterType}
               onChange={(value) => setFilterType(value as FilterType)}
               options={[
-                { value: 'all', label: 'All Results' },
-                { value: 'wins', label: 'Wins Only' },
-                { value: 'losses', label: 'Losses Only' },
-                { value: 'draws', label: 'Draws Only' }
+                { value: 'all', label: t('allMatches') },
+                { value: 'wins', label: t('wins') },
+                { value: 'losses', label: t('losses') },
+                { value: 'draws', label: t('draws') }
               ]}
               className="min-w-[160px]"
             />
@@ -199,7 +202,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
           >
             <Plus className="w-5 h-5" />
-            Record Match
+            {t('recordStats')}
           </Link>
         </div>
       </div>
@@ -213,17 +216,14 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-12 text-center">
           <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-400 text-lg">
-            {matches.length === 0 ? 'No matches recorded yet' : 'No matches found'}
-          </p>
-          <p className="text-gray-500 text-sm mt-2">
-            {matches.length === 0 ? 'Record your first match to get started' : 'Try adjusting your filters'}
+            {t('noMatches')}
           </p>
         </div>
       ) : (
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl shadow-xl overflow-hidden">
           <div className="p-4 border-b border-gray-800 bg-gray-900/50">
             <p className="text-sm text-gray-400">
-              Showing <span className="text-white font-semibold">{filteredMatches.length}</span> of <span className="text-white font-semibold">{matches.length}</span> matches
+              {t('showingOfMatches', { count: filteredMatches.length, total: matches.length })}
             </p>
           </div>
 
@@ -266,7 +266,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
                       
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-sm text-gray-400 font-medium">
-                          {team?.name || 'Unknown Team'}
+                          {team?.name || t('unknownTeam')}
                         </span>
                         <span className="text-white font-semibold text-lg">vs</span>
                         <p className="text-white font-semibold text-lg">{match.opponent_name}</p>
@@ -295,7 +295,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
                       <Link href={`/dashboard/admin/matches/${match.id}`}>
                         <button
                           className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"
-                          title="View Details"
+                          title={t('viewDetails')}
                         >
                           <Eye className="w-5 h-5" />
                         </button>
@@ -303,7 +303,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
                       <button
                         onClick={() => deleteMatch(match.id)}
                         className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"
-                        title="Delete Match"
+                        title={tCommon('delete')}
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>

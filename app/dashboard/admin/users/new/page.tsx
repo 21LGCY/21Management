@@ -1,9 +1,11 @@
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import UserForm from '@/components/UserForm'
+import { getTranslations } from 'next-intl/server'
 
 export default async function NewUserPage() {
   const user = await requireRole(['admin'])
+  const t = await getTranslations('users')
 
   return (
     <div className="min-h-screen bg-dark">
@@ -15,9 +17,9 @@ export default async function NewUserPage() {
             <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
             <div>
               <h1 className="text-3xl font-bold text-white">
-                Add New User
+                {t('addUser')}
               </h1>
-              <p className="text-gray-400 text-sm mt-1">Create a new user account with role and permissions</p>
+              <p className="text-gray-400 text-sm mt-1">{t('createUserDescription')}</p>
             </div>
           </div>
         </div>

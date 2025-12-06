@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
+import { useTranslations } from 'next-intl'
 
 interface UserViewClientProps {
   userId: string
@@ -35,6 +36,8 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('users')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     fetchUser()
@@ -58,7 +61,7 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
   }
 
   const deleteUser = async () => {
-    if (!confirm(`Are you sure you want to delete ${user?.username}? This action cannot be undone.`)) return
+    if (!confirm(t('confirmDeleteUser', { username: user?.username || '' }))) return
 
     try {
       const { error } = await supabase
@@ -72,7 +75,7 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
       router.refresh()
     } catch (error) {
       console.error('Error deleting user:', error)
-      alert('Failed to delete user')
+      alert(t('failedDeleteUser'))
     }
   }
 
@@ -87,9 +90,9 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 mb-4">User not found</p>
+        <p className="text-gray-400 mb-4">{t('userNotFound')}</p>
         <Link href="/dashboard/admin/users" className="text-primary hover:underline">
-          Back to Users
+          {t('backToUsers')}
         </Link>
       </div>
     )
@@ -107,7 +110,7 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Users</span>
+            <span>{t('backToUsers')}</span>
           </Link>
         </div>
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -116,14 +119,14 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
               {user.in_game_name || user.username}
             </h1>
             <p className="text-gray-400">
-              {user.username} • {teamName || 'No Team'}
+              {user.username} • {teamName || t('noTeam')}
             </p>
           </div>
           <div className="flex gap-3">
             <Link href={`/dashboard/admin/users/${userId}`}>
               <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20">
                 <Edit className="w-4 h-4" />
-                <span>Edit</span>
+                <span>{tCommon('edit')}</span>
               </button>
             </Link>
             <button

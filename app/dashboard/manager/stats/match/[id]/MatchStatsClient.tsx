@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/database'
 import { ArrowLeft, Calendar, Trophy, Target, Users, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface MatchStatsClientProps {
   matchId: string
@@ -21,6 +22,7 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
   const [playerStats, setPlayerStats] = useState<PlayerStatsWithProfile[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const t = useTranslations('stats')
 
   useEffect(() => {
     fetchPlayerStats()
@@ -72,7 +74,7 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
             </button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-white">Match Details</h1>
+            <h1 className="text-3xl font-bold text-white">{t('matchDetails')}</h1>
             <p className="text-gray-400 mt-1">
               {new Date(match.match_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -139,7 +141,7 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
         {/* Team Average Stats */}
         {teamAvgStats && (
           <div className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4">Team Average</h3>
+            <h3 className="text-xl font-bold text-white mb-4">{t('teamAverage')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center p-4 bg-dark/50 rounded-lg border border-gray-800">
                 <p className="text-sm text-gray-400 mb-1">K/D/A</p>
@@ -176,7 +178,7 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
         {/* Player Statistics */}
         <div className="bg-dark-card border border-gray-800 rounded-xl p-6">
           <h3 className="text-xl font-bold text-white mb-4">
-            Player Statistics ({playerStats.length})
+            {t('playerStatistics')} ({playerStats.length})
           </h3>
 
           {playerStats.length > 0 ? (
@@ -241,8 +243,8 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
           ) : (
             <div className="text-center py-12">
               <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg mb-2">No player statistics recorded</p>
-              <p className="text-gray-500">Player performance data will appear here once added</p>
+              <p className="text-gray-400 text-lg mb-2">{t('noPlayerStatsRecorded')}</p>
+              <p className="text-gray-500">{t('playerDataWillAppear')}</p>
             </div>
           )}
         </div>

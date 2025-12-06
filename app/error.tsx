@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 
 export default function Error({
@@ -11,6 +12,8 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useTranslations('errors')
+  
   useEffect(() => {
     // Log error to monitoring service in production
     console.error('Application error:', error.message)
@@ -23,14 +26,14 @@ export default function Error({
           <AlertTriangle className="w-8 h-8 text-red-500" />
         </div>
         
-        <h1 className="text-2xl font-bold text-white mb-2">Something went wrong!</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('somethingWentWrong')}</h1>
         <p className="text-gray-400 mb-6">
-          We encountered an unexpected error. Please try again or contact support if the problem persists.
+          {t('unexpectedError')}
         </p>
 
         {error.digest && (
           <p className="text-xs text-gray-600 mb-6 font-mono">
-            Error ID: {error.digest}
+            {t('errorId')}: {error.digest}
           </p>
         )}
 
@@ -40,14 +43,14 @@ export default function Error({
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Try Again
+            {t('tryAgain')}
           </button>
           <Link
             href="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
           >
             <Home className="w-4 h-4" />
-            Go Home
+            {t('goHome')}
           </Link>
         </div>
       </div>

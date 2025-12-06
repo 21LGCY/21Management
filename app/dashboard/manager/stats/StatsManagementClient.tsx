@@ -7,6 +7,7 @@ import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Tr
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import ActionButton from '@/components/ActionButton'
+import { useTranslations } from 'next-intl'
 
 interface StatsManagementClientProps {
   user: UserProfile
@@ -25,6 +26,8 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
   const [filter, setFilter] = useState<'all' | 'win' | 'loss' | 'draw'>('all')
   const [timeFilter, setTimeFilter] = useState<'all' | 'last5' | 'last10' | 'last15'>('all')
   const supabase = createClient()
+  const t = useTranslations('stats')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     fetchData()
@@ -163,9 +166,9 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            Statistics Management
+            {t('statisticsManagement')}
           </h1>
-          <p className="text-gray-400">Track and analyze {teamName} performance data</p>
+          <p className="text-gray-400">{t('trackAndAnalyze', { teamName })}</p>
         </div>
 
         {/* Stats Overview - Enhanced Design */}
@@ -176,7 +179,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                 <Trophy className="w-6 h-6 text-gray-300" />
               </div>
             </div>
-            <p className="text-sm text-gray-400 mb-1">Total Matches</p>
+            <p className="text-sm text-gray-400 mb-1">{tCommon('totalMatches')}</p>
             <p className="text-3xl font-bold text-white">{stats.total}</p>
           </div>
 
@@ -186,7 +189,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                 <TrendingUp className="w-6 h-6 text-green-400" />
               </div>
             </div>
-            <p className="text-sm text-green-300/70 mb-1">Wins</p>
+            <p className="text-sm text-green-300/70 mb-1">{tCommon('wins')}</p>
             <p className="text-3xl font-bold text-green-400">{stats.wins}</p>
           </div>
 
@@ -196,7 +199,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                 <TrendingDown className="w-6 h-6 text-red-400" />
               </div>
             </div>
-            <p className="text-sm text-red-300/70 mb-1">Losses</p>
+            <p className="text-sm text-red-300/70 mb-1">{tCommon('losses')}</p>
             <p className="text-3xl font-bold text-red-400">{stats.losses}</p>
           </div>
 
@@ -206,7 +209,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                 <Target className="w-6 h-6 text-yellow-400" />
               </div>
             </div>
-            <p className="text-sm text-yellow-300/70 mb-1">Draws</p>
+            <p className="text-sm text-yellow-300/70 mb-1">{tCommon('draws')}</p>
             <p className="text-3xl font-bold text-yellow-400">{stats.draws}</p>
           </div>
 
@@ -216,7 +219,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                 <Award className="w-6 h-6 text-primary" />
               </div>
             </div>
-            <p className="text-sm text-primary/70 mb-1">Win Rate</p>
+            <p className="text-sm text-primary/70 mb-1">{tCommon('winRate')}</p>
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-bold text-primary">{stats.winRate}%</p>
               {stats.total > 0 && (
@@ -230,14 +233,14 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
           {/* Recent Game Statistics - Identical to Admin Match History */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Recent Game Statistics</h2>
+              <h2 className="text-xl font-semibold text-white">{t('recentGameStatistics')}</h2>
               <div className="flex gap-2">
                 <button className="px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-400 hover:text-white">
                   <Filter className="w-4 h-4" />
                 </button>
                 <Link href="/dashboard/manager/stats/game/new">
                   <ActionButton icon={Trophy}>
-                    Record Match
+                    {t('recordMatch')}
                   </ActionButton>
                 </Link>
               </div>
@@ -253,7 +256,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                     : 'bg-dark text-gray-400 hover:text-white border border-gray-800'
                 }`}
               >
-                All
+                {tCommon('all')}
               </button>
               <button
                 onClick={() => setFilter('win')}
@@ -263,7 +266,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                     : 'bg-dark text-gray-400 hover:text-white border border-gray-800'
                 }`}
               >
-                Wins
+                {tCommon('wins')}
               </button>
               <button
                 onClick={() => setFilter('loss')}
@@ -273,7 +276,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                     : 'bg-dark text-gray-400 hover:text-white border border-gray-800'
                 }`}
               >
-                Losses
+                {tCommon('losses')}
               </button>
               <button
                 onClick={() => setFilter('draw')}
@@ -283,7 +286,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                     : 'bg-dark text-gray-400 hover:text-white border border-gray-800'
                 }`}
               >
-                Draws
+                {tCommon('draws')}
               </button>
             </div>
             
@@ -338,7 +341,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                         </div>
 
                         {match.map_name && (
-                          <p className="text-sm text-gray-400 truncate">Map: {match.map_name}</p>
+                          <p className="text-sm text-gray-400 truncate">{t('map')}: {match.map_name}</p>
                         )}
 
                         {match.notes && (
@@ -348,13 +351,13 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                         {/* Show player stats summary */}
                         {match.player_stats && match.player_stats.length > 0 && (
                           <div className="mt-3 pt-3 border-t border-gray-700">
-                            <p className="text-xs text-gray-400 mb-2">Player Stats Available</p>
+                            <p className="text-xs text-gray-400 mb-2">{t('playerStatsAvailable')}</p>
                             <div className="flex gap-4 text-xs">
                               <span className="text-gray-400">
-                                Players: {match.player_stats.length}
+                                {t('players')}: {match.player_stats.length}
                               </span>
                               <span className="text-gray-400">
-                                Avg ACS: {Math.round(match.player_stats.reduce((sum, stat) => sum + stat.acs, 0) / match.player_stats.length)}
+                                {t('avgACSLabel')}: {Math.round(match.player_stats.reduce((sum, stat) => sum + stat.acs, 0) / match.player_stats.length)}
                               </span>
                             </div>
                           </div>
@@ -365,7 +368,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                         <Link href={`/dashboard/manager/stats/match/${match.id}`}>
                           <button 
                             className="p-2 text-primary hover:bg-primary/10 rounded transition"
-                            title="View Stats"
+                            title={t('viewStats')}
                           >
                             <Eye className="w-5 h-5" />
                           </button>
@@ -377,10 +380,10 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
               ) : (
                 <div className="text-center py-8">
                   <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No game statistics recorded</p>
+                  <p className="text-gray-400 mb-4">{t('noGameStatistics')}</p>
                   <Link href="/dashboard/manager/stats/game/new">
                     <ActionButton icon={Trophy}>
-                      {matches.length === 0 ? 'Record First Match' : 'Record Match'}
+                      {matches.length === 0 ? t('recordFirstMatch') : t('recordMatch')}
                     </ActionButton>
                   </Link>
                 </div>
@@ -391,7 +394,7 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
           {/* Player Performance - Enhanced with Real Stats */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Player Performance</h2>
+              <h2 className="text-xl font-semibold text-white">{t('playerPerformance')}</h2>
               <div className="flex gap-2">
                 <div className="flex items-center gap-2 px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-400">
                   <Users className="w-4 h-4" />
@@ -401,10 +404,10 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                   value={timeFilter}
                   onChange={(value) => setTimeFilter(value as 'all' | 'last5' | 'last10' | 'last15')}
                   options={[
-                    { value: 'all', label: 'All Time' },
-                    { value: 'last5', label: 'Last 5 Matches' },
-                    { value: 'last10', label: 'Last 10 Matches' },
-                    { value: 'last15', label: 'Last 15 Matches' }
+                    { value: 'all', label: t('allTime') },
+                    { value: 'last5', label: t('lastNMatchesFilter', { count: 5 }) },
+                    { value: 'last10', label: t('lastNMatchesFilter', { count: 10 }) },
+                    { value: 'last15', label: t('lastNMatchesFilter', { count: 15 }) }
                   ]}
                   className="min-w-[150px]"
                 />
@@ -436,12 +439,12 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                               <p className="font-medium text-white">{player.username}</p>
                               {averages.hasStats && (
                                 <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded">
-                                  Active
+                                  {t('active')}
                                 </span>
                               )}
                             </div>
                             <p className="text-sm text-gray-400">
-                              {player.in_game_name || 'No IGN'} 
+                              {player.in_game_name || t('noIGN')} 
                               {player.position && ` • ${player.position}`}
                             </p>
                           </div>
@@ -450,22 +453,22 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                           {averages.hasStats ? (
                             <div className="flex gap-4 text-sm">
                               <div>
-                                <p className="text-gray-400">KDA</p>
+                                <p className="text-gray-400">{t('kda')}</p>
                                 <p className="text-white font-medium">{averages.kda}</p>
                               </div>
                               <div>
-                                <p className="text-gray-400">Avg ACS</p>
+                                <p className="text-gray-400">{t('avgACS')}</p>
                                 <p className="text-white font-medium">{averages.acs}</p>
                               </div>
                               <div>
-                                <p className="text-gray-400">Matches</p>
+                                <p className="text-gray-400">{t('matches')}</p>
                                 <p className="text-white font-medium">{averages.matches}</p>
                               </div>
                             </div>
                           ) : (
                             <div className="text-center">
-                              <p className="text-gray-500 text-sm">No stats</p>
-                              <p className="text-gray-600 text-xs">Record a match to see data</p>
+                              <p className="text-gray-500 text-sm">{t('noStats')}</p>
+                              <p className="text-gray-600 text-xs">{t('recordMatchToSeeData')}</p>
                             </div>
                           )}
                         </div>
@@ -476,8 +479,8 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
               ) : (
                 <div className="text-center py-8">
                   <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">No players found</p>
-                  <p className="text-gray-500 text-sm">Add players to your team to track performance</p>
+                  <p className="text-gray-400 mb-4">{t('noPlayersFound')}</p>
+                  <p className="text-gray-500 text-sm">{t('addPlayersToTrack')}</p>
                 </div>
               )}
             </div>

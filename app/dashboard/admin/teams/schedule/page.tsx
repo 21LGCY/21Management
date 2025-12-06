@@ -3,10 +3,13 @@ import { requireRole } from '@/lib/auth/server'
 import BackButton from '@/components/BackButton'
 import TeamScheduleSelector from './TeamScheduleSelector'
 import { TimezoneOffset } from '@/lib/types/database'
+import { getTranslations } from 'next-intl/server'
 
 export default async function AdminTeamSchedulePage() {
   // Require admin role
   const user = await requireRole(['admin'])
+  const t = await getTranslations('schedule')
+  const tTeams = await getTranslations('teams')
 
   const supabase = await createClient()
   
@@ -32,15 +35,15 @@ export default async function AdminTeamSchedulePage() {
         <div className="mb-8">
           <div className="mb-4">
             <BackButton fallbackHref="/dashboard/admin/teams">
-              Back to Team Management
+              {t('backToTeamManagement')}
             </BackButton>
           </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">
-                Team Schedule Management
+                {t('title')}
               </h1>
-              <p className="text-gray-400">Select a team to manage its weekly schedule</p>
+              <p className="text-gray-400">{t('selectTeamToManage')}</p>
             </div>
           </div>
         </div>
@@ -54,7 +57,7 @@ export default async function AdminTeamSchedulePage() {
           />
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-400">No teams found. Please create a team first.</p>
+            <p className="text-gray-400">{tTeams('noTeamsCreateFirst')}</p>
           </div>
         )}
       </main>

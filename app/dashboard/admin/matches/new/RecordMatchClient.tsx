@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Plus, Trash2, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface RecordMatchClientProps {
   teams: Team[]
@@ -32,6 +33,8 @@ type RecordStep = 'select-team' | 'match-details' | 'player-stats'
 export default function RecordMatchClient({ teams, userId }: RecordMatchClientProps) {
   const supabase = createClient()
   const router = useRouter()
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<RecordStep>('select-team')
   const [players, setPlayers] = useState<UserProfile[]>([])
@@ -100,7 +103,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
     )
     
     if (availablePlayers.length === 0) {
-      alert('All players have been added')
+      alert(t('allPlayersAdded'))
       return
     }
 
@@ -151,7 +154,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
 
   const handleSubmit = async () => {
     if (!selectedTeamId || !opponentName.trim()) {
-      alert('Please fill in all required fields')
+      alert(t('pleaseCompleteRequiredFields'))
       return
     }
 
@@ -208,11 +211,11 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
         }
       }
 
-      alert('Match recorded successfully!')
+      alert(t('matchRecordedSuccessfully'))
       router.push('/dashboard/admin/matches')
     } catch (error) {
       console.error('Error recording match:', error)
-      alert('Failed to record match')
+      alert(t('failedRecordMatch'))
     } finally {
       setLoading(false)
     }
@@ -227,7 +230,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
       <Link href="/dashboard/admin/matches">
         <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
           <ArrowLeft className="w-4 h-4" />
-          Back to Matches
+          {t('backToMatches')}
         </button>
       </Link>
 
@@ -241,7 +244,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               }`}>
                 1
               </div>
-              <span className="font-medium">Select Team</span>
+              <span className="font-medium">{t('selectTeam')}</span>
             </div>
             <div className="w-12 h-0.5 bg-gray-800"></div>
             <div className={`flex items-center gap-3 ${step === 'match-details' ? 'text-primary' : 'text-gray-400'}`}>
@@ -250,7 +253,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               }`}>
                 2
               </div>
-              <span className="font-medium">Match Details</span>
+              <span className="font-medium">{t('matchDetails')}</span>
             </div>
             <div className="w-12 h-0.5 bg-gray-800"></div>
             <div className={`flex items-center gap-3 ${step === 'player-stats' ? 'text-primary' : 'text-gray-400'}`}>
@@ -259,7 +262,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               }`}>
                 3
               </div>
-              <span className="font-medium">Player Stats</span>
+              <span className="font-medium">{t('playerStats')}</span>
             </div>
           </div>
         </div>
@@ -268,7 +271,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
       {/* Step 1: Select Team */}
       {step === 'select-team' && (
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Select Team</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">{t('selectTeam')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {teams.map(team => (
@@ -294,12 +297,12 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Opponent Name *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('opponentName')} *</label>
               <input
                 type="text"
                 value={opponentName}
                 onChange={(e) => setOpponentName(e.target.value)}
-                placeholder="Enter opponent team name"
+                placeholder={t('enterOpponentTeamName')}
                 className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
               />
             </div>
@@ -309,7 +312,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               disabled={!canProceedToDetails}
               className="w-full py-3 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Continue to Match Details
+              {t('continueToMatchDetails')}
             </button>
           </div>
         </div>
@@ -319,23 +322,23 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
       {step === 'match-details' && (
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Match Details</h2>
+            <h2 className="text-2xl font-bold text-white">{t('matchDetails')}</h2>
             <button
               onClick={() => setStep('select-team')}
               className="text-gray-400 hover:text-white transition"
             >
-              Change Team
+              {t('changeTeam')}
             </button>
           </div>
 
           <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-400">Recording for</p>
+            <p className="text-sm text-gray-400">{t('recordingFor')}</p>
             <p className="text-white font-semibold text-lg">{selectedTeam?.name} vs {opponentName}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Match Date & Time *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('matchDateTime')} *</label>
               <input
                 type="datetime-local"
                 value={matchDate}
@@ -345,23 +348,23 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Match Type</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('matchType')}</label>
               <CustomSelect
                 value={matchType}
                 onChange={(value) => setMatchType(value as MatchType)}
                 options={[
-                  { value: 'Scrim', label: 'Scrim' },
-                  { value: 'Tournament', label: 'Tournament' },
-                  { value: 'Qualifier', label: 'Qualifier' },
-                  { value: 'League', label: 'League' },
-                  { value: 'Other', label: 'Other' }
+                  { value: 'Scrim', label: t('scrim') },
+                  { value: 'Tournament', label: t('tournament') },
+                  { value: 'Qualifier', label: t('qualifier') },
+                  { value: 'League', label: t('league') },
+                  { value: 'Other', label: t('other') }
                 ]}
                 className="min-w-[160px]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Our Score *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('ourScore')} *</label>
               <input
                 type="number"
                 value={ourScore}
@@ -372,7 +375,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Opponent Score *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('opponentScore')} *</label>
               <input
                 type="number"
                 value={opponentScore}
@@ -383,23 +386,23 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Map Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('mapName')}</label>
               <input
                 type="text"
                 value={mapName}
                 onChange={(e) => setMapName(e.target.value)}
-                placeholder="e.g., Ascent, Bind, Haven..."
+                placeholder={t('mapPlaceholder')}
                 className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('notes')}</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                placeholder="Add any notes about the match..."
+                placeholder={t('addMatchNotes')}
                 className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none resize-none"
               />
             </div>
@@ -410,13 +413,13 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               onClick={() => setStep('select-team')}
               className="flex-1 py-3 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 rounded-xl font-semibold transition border border-gray-700"
             >
-              Back
+              {tCommon('back')}
             </button>
             <button
               onClick={() => setStep('player-stats')}
               className="flex-1 py-3 bg-gradient-to-br from-primary via-purple-600 to-primary-dark text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-[1.02] hover:brightness-110"
             >
-              Continue to Player Stats
+              {t('continueToPlayerStats')}
             </button>
           </div>
         </div>
@@ -426,17 +429,17 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
       {step === 'player-stats' && (
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Player Statistics</h2>
+            <h2 className="text-2xl font-bold text-white">{t('playerStatistics')}</h2>
             <button
               onClick={() => setStep('match-details')}
               className="text-gray-400 hover:text-white transition"
             >
-              Back to Details
+              {t('backToDetails')}
             </button>
           </div>
 
           <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-400 mb-1">Match Summary</p>
+            <p className="text-sm text-gray-400 mb-1">{t('matchSummary')}</p>
             <p className="text-white font-semibold text-lg">
               {selectedTeam?.name} <span className={ourScore > opponentScore ? 'text-green-400' : ourScore < opponentScore ? 'text-red-400' : 'text-yellow-400'}>{ourScore}</span>
               <span className="text-gray-500 mx-2">-</span>
@@ -445,7 +448,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             {mapName && <p className="text-sm text-gray-400 mt-1">{mapName}</p>}
           </div>
 
-          <p className="text-sm text-gray-400 mb-4">Add player statistics (optional - you can skip this step)</p>
+          <p className="text-sm text-gray-400 mb-4">{t('addPlayerStatsOptional')}</p>
 
           <div className="space-y-4 mb-6">
             {playerStats.map((stat, index) => (
@@ -453,12 +456,12 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                 <div className="space-y-4">
                   {/* Player Selection */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">Player</label>
+                    <label className="block text-xs font-medium text-gray-400 mb-2">{t('player')}</label>
                     <CustomSelect
                       value={stat.playerId}
                       onChange={(value) => updatePlayerStat(index, 'playerId', value)}
                       options={[
-                        { value: '', label: 'Select...' },
+                        { value: '', label: t('selectDots') },
                         ...players
                           .filter(p => p.id === stat.playerId || !playerStats.some(ps => ps.playerId === p.id))
                           .map(player => ({
@@ -473,7 +476,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                   {/* Core Stats Grid */}
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">Kills</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('kills')}</label>
                       <input
                         type="number"
                         value={stat.kills}
@@ -484,7 +487,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">Deaths</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('deaths')}</label>
                       <input
                         type="number"
                         value={stat.deaths}
@@ -495,7 +498,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">Assists</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('assists')}</label>
                       <input
                         type="number"
                         value={stat.assists}
@@ -509,7 +512,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                   {/* Advanced Stats Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">AVG CS (ACS)</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('avgCs')}</label>
                       <input
                         type="number"
                         value={stat.acs}
@@ -520,7 +523,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">First Bloods</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('firstBloods')}</label>
                       <input
                         type="number"
                         value={stat.firstKills}
@@ -534,7 +537,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                   {/* Objective Stats Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">Plants</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('plants')}</label>
                       <input
                         type="number"
                         value={stat.plants}
@@ -545,7 +548,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-2">Defuses</label>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('defuses')}</label>
                       <input
                         type="number"
                         value={stat.defuses}
@@ -558,7 +561,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
 
                   {/* Agent Selection */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">Agent</label>
+                    <label className="block text-xs font-medium text-gray-400 mb-2">{t('agent')}</label>
                     {stat.championPool && stat.championPool.length > 0 ? (
                       <>
                         <CustomSelect
@@ -569,12 +572,12 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                             }
                           }}
                           options={[
-                            { value: '', label: 'Select...' },
+                            { value: '', label: t('selectDots') },
                             ...stat.championPool.map(champion => ({
                               value: champion,
                               label: champion
                             })),
-                            { value: 'other', label: 'Other (Custom)' }
+                            { value: 'other', label: t('otherCustom') }
                           ]}
                           className="w-full"
                         />
@@ -583,7 +586,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                             type="text"
                             value={stat.agent || ''}
                             onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
-                            placeholder="Enter agent name"
+                            placeholder={t('enterAgentName')}
                             className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none mt-2"
                           />
                         )}
@@ -594,11 +597,11 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                           type="text"
                           value={stat.agent || ''}
                           onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
-                          placeholder="e.g., Jett"
+                          placeholder={t('agentPlaceholder')}
                           className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
                         />
                         {stat.playerId && (
-                          <p className="text-xs text-yellow-400 mt-1">No agent pool defined for this player</p>
+                          <p className="text-xs text-yellow-400 mt-1">{t('noAgentPoolDefined')}</p>
                         )}
                       </>
                     )}
@@ -609,10 +612,10 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     <button
                       onClick={() => removePlayerStat(index)}
                       className="px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition flex items-center gap-2"
-                      title="Remove Player"
+                      title={t('removePlayer')}
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="text-sm">Remove Player</span>
+                      <span className="text-sm">{t('removePlayer')}</span>
                     </button>
                   </div>
                 </div>
@@ -626,7 +629,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               className="w-full py-3 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 rounded-xl font-medium transition border border-gray-700 flex items-center justify-center gap-2 mb-6"
             >
               <Plus className="w-5 h-5" />
-              Add Player
+              {t('addPlayer')}
             </button>
           )}
 
@@ -635,7 +638,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               onClick={() => setStep('match-details')}
               className="flex-1 py-3 bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 rounded-xl font-semibold transition border border-gray-700"
             >
-              Back
+              {tCommon('back')}
             </button>
             <button
               onClick={handleSubmit}
@@ -645,12 +648,12 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                  Recording...
+                  {t('recording')}
                 </>
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  Save Match
+                  {t('saveMatch')}
                 </>
               )}
             </button>

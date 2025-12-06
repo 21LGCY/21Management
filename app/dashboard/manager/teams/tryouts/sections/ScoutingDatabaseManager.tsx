@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
 import CustomSelect from '@/components/CustomSelect'
+import { useTranslations } from 'next-intl'
 
 interface ScoutingDatabaseManagerProps {
   teamId: string | null
@@ -25,6 +26,8 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
   
   const supabase = createClient()
   const router = useRouter()
+  const t = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     fetchTryouts()
@@ -57,7 +60,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
   }
 
   const deleteTryout = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this profile?')) return
+    if (!confirm(t('confirmDeleteProfile'))) return
 
     try {
       const { error } = await supabase
@@ -74,11 +77,11 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
 
   const promoteToPlayer = async (tryout: ProfileTryout) => {
     if (!teamId) {
-      alert('Team information not available')
+      alert(t('teamInfoNotAvailable'))
       return
     }
 
-    if (!confirm(`Are you sure you want to promote ${tryout.in_game_name || tryout.username} to player status?`)) return
+    if (!confirm(t('confirmPromote', { name: tryout.in_game_name || tryout.username }))) return
 
     try {
       // First create a user profile
@@ -113,11 +116,11 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
 
       // Refresh the tryouts list
       fetchTryouts()
-      alert('Player successfully added to team!')
+      alert(t('playerAddedSuccess'))
 
     } catch (error) {
       console.error('Error promoting player:', error)
-      alert('Failed to promote player. Please try again.')
+      alert(t('failedPromote'))
     }
   }
 
@@ -178,13 +181,13 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
 
   const getStatusLabel = (status: TryoutStatus) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Contacted / Pending'
-      case 'in_tryouts': return 'In Tryouts'
-      case 'substitute': return 'Substitute'
-      case 'rejected': return 'Rejected'
-      case 'left': return 'Left'
-      case 'accepted': return 'Player'
+      case 'not_contacted': return t('notContacted')
+      case 'contacted': return t('contactedPending')
+      case 'in_tryouts': return t('inTryouts')
+      case 'substitute': return t('substitute')
+      case 'rejected': return t('rejected')
+      case 'left': return t('left')
+      case 'accepted': return t('player')
     }
   }
 
@@ -202,7 +205,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search by name, username, or IGN..."
+            placeholder={t('searchByNameOrIGN')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary font-sans"
@@ -214,14 +217,14 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             value={statusFilter}
             onChange={(value) => setStatusFilter(value as TryoutStatus | 'all')}
             options={[
-              { value: 'all', label: 'All Statuses' },
-              { value: 'not_contacted', label: 'Not Contacted' },
-              { value: 'contacted', label: 'Contacted' },
-              { value: 'in_tryouts', label: 'In Tryouts' },
-              { value: 'substitute', label: 'Substitute' },
-              { value: 'rejected', label: 'Rejected' },
-              { value: 'left', label: 'Left' },
-              { value: 'accepted', label: 'Player' }
+              { value: 'all', label: t('allStatuses') },
+              { value: 'not_contacted', label: t('notContacted') },
+              { value: 'contacted', label: t('contacted') },
+              { value: 'in_tryouts', label: t('inTryouts') },
+              { value: 'substitute', label: t('substitute') },
+              { value: 'rejected', label: t('rejected') },
+              { value: 'left', label: t('left') },
+              { value: 'accepted', label: t('player') }
             ]}
             className="min-w-[160px]"
           />
@@ -230,7 +233,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             value={roleFilter}
             onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
             options={[
-              { value: 'all', label: 'All Roles' },
+              { value: 'all', label: t('allRoles') },
               { value: 'Duelist', label: 'Duelist' },
               { value: 'Initiator', label: 'Initiator' },
               { value: 'Controller', label: 'Controller' },
@@ -246,7 +249,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white rounded-lg transition-all shadow-lg hover:shadow-primary/20 whitespace-nowrap font-semibold"
           >
             <Plus className="w-5 h-5" />
-            <span>Add Scout</span>
+            <span>{t('addScout')}</span>
           </Link>
         </div>
       </div>
@@ -255,7 +258,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       {team && (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
           <p className="text-white">
-            Scouting for: <span className="font-semibold text-primary">{team.name}</span>
+            {t('scoutingFor')}: <span className="font-semibold text-primary">{team.name}</span>
             {teamCategory && (
               <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
                 {teamCategory}
@@ -263,12 +266,12 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             )}
             {!teamCategory && (
               <span className="ml-2 px-2 py-1 bg-red-500/20 text-red-300 text-sm rounded">
-                No team category assigned - Contact admin
+                {t('noTeamCategory')} - {t('contactAdmin')}
               </span>
             )}
           </p>
           <p className="text-gray-400 text-sm mt-2">
-            💡 Click on any player card to view detailed information and manage their status
+            💡 {t('clickCardToView')}
           </p>
         </div>
       )}
@@ -277,10 +280,10 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       {!teamCategory && (
         <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
           <p className="text-yellow-300">
-            ⚠️ No team category assigned. Unable to load scouting database.
+            ⚠️ {t('noTeamCategoryWarning')}
           </p>
           <p className="text-yellow-400 text-sm mt-1">
-            Please contact an administrator to assign a team category (21L, 21GC, or 21ACA) to your team.
+            {t('contactAdminForCategory')}
           </p>
         </div>
       )}
@@ -289,8 +292,8 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       {filteredTryouts.length === 0 ? (
         <div className="text-center py-12 bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl shadow-xl">
           <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-400 font-semibold mb-2">No scouting profiles found for {teamCategory || 'your team'}</p>
-          <p className="text-gray-500 text-sm">Click "Add Scout" to create one</p>
+          <p className="text-gray-400 font-semibold mb-2">{t('noScoutingProfiles', { category: teamCategory || 'your team' })}</p>
+          <p className="text-gray-500 text-sm">{t('clickAddScout')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -396,7 +399,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
                           {/* Notes */}
                           {tryout.notes && (
                             <div>
-                              <p className="text-gray-400 text-xs mb-1.5 font-medium">Notes</p>
+                              <p className="text-gray-400 text-xs mb-1.5 font-medium">{t('notesLabel')}</p>
                               <p className="text-xs text-gray-300 line-clamp-2">
                                 {tryout.notes}
                               </p>
@@ -411,7 +414,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
                           {/* Agent Pool */}
                           {tryout.champion_pool && tryout.champion_pool.length > 0 && (
                             <div>
-                              <p className="text-gray-400 text-xs mb-2 font-medium">Main Agents</p>
+                              <p className="text-gray-400 text-xs mb-2 font-medium">{t('mainAgents')}</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {tryout.champion_pool.slice(0, 3).map((agent: string) => (
                                   <span key={agent} className="px-2.5 py-1 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs rounded-md font-medium border border-gray-700">
@@ -434,26 +437,26 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
 
                           {/* Management Info */}
                           <div>
-                            <p className="text-gray-400 text-xs mb-2 font-medium">Management Info</p>
+                            <p className="text-gray-400 text-xs mb-2 font-medium">{t('managementInfo')}</p>
                             <div className="space-y-1.5">
                               <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-400">Added By:</span>
+                                <span className="text-xs text-gray-400">{t('addedBy')}</span>
                                 <span className="text-xs text-gray-200 font-medium">
                                   {tryout.managed_by || 'N/A'}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-400">Contacted By:</span>
+                                <span className="text-xs text-gray-400">{t('contactedByLabel')}</span>
                                 <span className="text-xs text-gray-200 font-medium">
                                   {tryout.contacted_by || 'N/A'}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-400">Last Contact:</span>
+                                <span className="text-xs text-gray-400">{t('lastContactDate')}</span>
                                 <span className="text-xs text-gray-200 font-medium">
                                   {tryout.last_contact_date 
                                     ? new Date(tryout.last_contact_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                                    : 'Not yet contacted'}
+                                    : t('notYetContacted')}
                                 </span>
                               </div>
                             </div>

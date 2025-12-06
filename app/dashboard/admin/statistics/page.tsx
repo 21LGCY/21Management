@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import StatisticsClient from './StatisticsClient'
 import { BarChart3, TrendingUp, Users, Trophy } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 interface TopPlayerResult {
   player_id: string
@@ -17,6 +18,8 @@ interface TopPlayerResult {
 export default async function StatisticsPage() {
   const user = await requireRole(['admin'])
   const supabase = await createClient()
+  const t = await getTranslations('stats')
+  const tDashboard = await getTranslations('dashboard')
 
   // Run all queries in parallel for faster page load
   const [
@@ -69,9 +72,9 @@ export default async function StatisticsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">
-                Statistics
+                {t('title')}
               </h1>
-              <p className="text-gray-400">View player performance statistics across all teams</p>
+              <p className="text-gray-400">{t('viewPerformance')}</p>
             </div>
           </div>
         </div>
@@ -81,7 +84,7 @@ export default async function StatisticsPage() {
           <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5 animate-fade-up stagger-1 card-hover">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400 mb-1">Active Players</p>
+                <p className="text-sm text-gray-400 mb-1">{tDashboard('activePlayers')}</p>
                 <p className="text-3xl font-bold text-white">{totalPlayers || 0}</p>
               </div>
               <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
@@ -93,7 +96,7 @@ export default async function StatisticsPage() {
           <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5 animate-fade-up stagger-2 card-hover">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400 mb-1">Total Matches</p>
+                <p className="text-sm text-gray-400 mb-1">{t('totalMatches')}</p>
                 <p className="text-3xl font-bold text-white">{totalMatches}</p>
               </div>
               <div className="p-3 bg-green-500/10 rounded-xl border border-green-500/20">
@@ -105,12 +108,12 @@ export default async function StatisticsPage() {
           <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5 animate-fade-up stagger-3 card-hover">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400 mb-1">Top Performer</p>
+                <p className="text-sm text-gray-400 mb-1">{t('topPerformer')}</p>
                 <p className="text-lg font-bold text-white truncate">
                   {topPlayer ? (topPlayer.profiles.in_game_name || topPlayer.profiles.username) : 'N/A'}
                 </p>
                 {topPlayer && (
-                  <p className="text-xs text-primary">{topPlayer.acs} ACS (Best)</p>
+                  <p className="text-xs text-primary">{topPlayer.acs} ACS ({t('best')})</p>
                 )}
               </div>
               <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">

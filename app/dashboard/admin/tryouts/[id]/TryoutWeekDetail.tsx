@@ -9,6 +9,7 @@ import { TryoutWeek, PlayerAvailability, ProfileTryout, TimezoneOffset } from '@
 import AvailabilityHeatmap from '@/components/AvailabilityHeatmap'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import { ORG_TIMEZONE } from '@/lib/utils/timezone'
+import { useTranslations } from 'next-intl'
 
 interface TryoutWeekDetailProps {
   weekId: string
@@ -17,6 +18,9 @@ interface TryoutWeekDetailProps {
 
 export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }: TryoutWeekDetailProps) {
   const router = useRouter()
+  const t = useTranslations('tryouts.weekDetail')
+  const tTryouts = useTranslations('tryouts')
+  const tCommon = useTranslations('common')
   const [week, setWeek] = useState<TryoutWeek | null>(null)
   const [availabilities, setAvailabilities] = useState<PlayerAvailability[]>([])
   const [loading, setLoading] = useState(true)
@@ -298,7 +302,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this tryout week? This will also delete all player availabilities.')) {
+    if (!confirm(t('deleteConfirm'))) {
       return
     }
 
@@ -331,12 +335,12 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'not_contacted': return 'Not Contacted'
-      case 'contacted': return 'Contacted'
-      case 'in_tryouts': return 'In Tryouts'
-      case 'substitute': return 'Substitute'
-      case 'rejected': return 'Rejected'
-      case 'accepted': return 'Player'
+      case 'not_contacted': return tTryouts('notContacted')
+      case 'contacted': return tTryouts('contacted')
+      case 'in_tryouts': return tTryouts('inTryouts')
+      case 'substitute': return tTryouts('substitute')
+      case 'rejected': return tTryouts('rejected')
+      case 'accepted': return tTryouts('accepted')
       default: return status
     }
   }
@@ -344,7 +348,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">{tCommon('loading')}</div>
       </div>
     )
   }
@@ -352,7 +356,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
   if (!week) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white">Tryout week not found</div>
+        <div className="text-white">{t('weekNotFound')}</div>
       </div>
     )
   }
@@ -370,7 +374,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
         <Link href="/dashboard/admin/tryouts">
           <button className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white transition mb-4">
             <ArrowLeft className="w-4 h-4" />
-            Back to Tryouts
+            {t('backToTryouts')}
           </button>
         </Link>
         
@@ -379,21 +383,21 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
             {isEditingInfo ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">Session Title</label>
+                  <label className="text-sm text-gray-400 mb-2 block">{t('sessionTitle')}</label>
                   <input
                     type="text"
                     value={editedTitle}
                     onChange={(e) => setEditedTitle(e.target.value)}
-                    placeholder="Ex: January 2025 Tryouts"
+                    placeholder={t('titlePlaceholder')}
                     className="w-full bg-dark border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">Description / Notes</label>
+                  <label className="text-sm text-gray-400 mb-2 block">{t('descriptionNotes')}</label>
                   <textarea
                     value={editedNotes}
                     onChange={(e) => setEditedNotes(e.target.value)}
-                    placeholder="Notes or instructions for this session..."
+                    placeholder={t('descriptionPlaceholder')}
                     rows={3}
                     className="w-full bg-dark border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                   />
@@ -405,7 +409,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                     className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
-                    {savingInfo ? 'Saving...' : 'Save'}
+                    {savingInfo ? tCommon('saving') : tCommon('save')}
                   </button>
                   <button
                     onClick={handleCancelEdit}
@@ -413,7 +417,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                     className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
                   >
                     <X className="w-4 h-4" />
-                    Cancel
+                    {tCommon('cancel')}
                   </button>
                 </div>
               </div>
@@ -448,18 +452,18 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
               <>
                 <button
                   onClick={handleShowAddPlayersModal}
-                  className="flex items-center gap-2 px-4 py-2 border border-green-700 text-green-400 rounded-lg hover:bg-green-500/20 transition"
+                  className="flex items-center gap-2 px-4 py-2 border border-green-700 text-green-400 rounded-lg hover:bg-green-500/20 transition whitespace-nowrap"
                 >
                   <UserPlus className="w-4 h-4" />
-                  Add Players
+                  {t('addPlayers')}
                 </button>
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50 whitespace-nowrap"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  {refreshing ? tCommon('loading') : t('refresh')}
                 </button>
                 <button
                   onClick={handleDelete}
@@ -480,21 +484,21 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
             <CheckCircle className="w-6 h-6 text-green-400" />
             <div className="text-3xl font-bold text-green-400">{stats.responded}</div>
           </div>
-          <div className="text-sm text-gray-400">Responded</div>
+          <div className="text-sm text-gray-400">{tTryouts('responded')}</div>
         </div>
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-6 h-6 text-yellow-400" />
             <div className="text-3xl font-bold text-yellow-400">{stats.pending}</div>
           </div>
-          <div className="text-sm text-gray-400">Pending</div>
+          <div className="text-sm text-gray-400">{tTryouts('pending')}</div>
         </div>
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-6 h-6 text-blue-400" />
             <div className="text-3xl font-bold text-blue-400">{stats.responded}/{stats.total}</div>
           </div>
-          <div className="text-sm text-gray-400">Response Rate</div>
+          <div className="text-sm text-gray-400">{tTryouts('responseRate')}</div>
         </div>
       </div>
 
@@ -503,25 +507,25 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
         <div className="flex items-center gap-3">
           <button
             onClick={() => setViewMode('heatmap')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition whitespace-nowrap ${
               viewMode === 'heatmap'
                 ? 'bg-primary text-white'
                 : 'border border-gray-700 text-gray-300 hover:bg-dark-hover'
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            Heatmap View
+            {t('viewHeatmap')}
           </button>
           <button
             onClick={() => setViewMode('individual')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition whitespace-nowrap ${
               viewMode === 'individual'
                 ? 'bg-primary text-white'
                 : 'border border-gray-700 text-gray-300 hover:bg-dark-hover'
             }`}
           >
             <User className="w-4 h-4" />
-            Individual Players
+            {t('viewIndividual')}
           </button>
         </div>
       </div>
@@ -536,7 +540,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
       {/* Individual Players View */}
       {viewMode === 'individual' && week && (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Individual Player Availability</h2>
+          <h2 className="text-xl font-semibold text-white mb-6">{t('playerAvailabilities')}</h2>
           
           <div className="space-y-6">
             {availabilities.map((availability) => {
@@ -557,17 +561,17 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                               ? 'border-green-400 text-green-400' 
                               : 'border-yellow-400 text-yellow-400'
                           }`}>
-                            {responded ? 'Responded' : 'Pending'}
+                            {responded ? tTryouts('responded') : tTryouts('pending')}
                           </span>
                         </div>
                         {responded && (
                           <div className="text-sm text-gray-400 mt-1">
-                            {slotsCount} slot{slotsCount !== 1 ? 's' : ''} selected
+                            {t('slotsSelected', { count: slotsCount })}
                           </div>
                         )}
                         {availability.submitted_at && (
                           <div className="text-xs text-gray-500 mt-1">
-                            Submitted: {formatDateTime(availability.submitted_at)}
+                            {t('submitted', { date: formatDateTime(availability.submitted_at) })}
                           </div>
                         )}
                       </div>
@@ -580,12 +584,12 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                       {copiedToken === availability.token ? (
                         <>
                           <CheckCircle className="w-4 h-4" />
-                          Copied!
+                          {t('copied')}
                         </>
                       ) : (
                         <>
                           <Copy className="w-4 h-4" />
-                          Copy Link
+                          {t('copyLink')}
                         </>
                       )}
                     </button>
@@ -605,7 +609,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
 
                   {!responded && (
                     <div className="mt-4 text-center py-8 text-gray-400">
-                      Player has not submitted their availability yet
+                      {t('notSubmittedYet')}
                     </div>
                   )}
                 </div>
@@ -622,9 +626,9 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">Add Players</h3>
+                <h3 className="text-2xl font-bold text-white mb-1">{t('addPlayersToSession')}</h3>
                 <p className="text-sm text-gray-400">
-                  Session: {week?.week_label || 'Untitled'} • {week?.team_category}
+                  {t('session')}: {week?.week_label || tCommon('untitled')} • {week?.team_category}
                 </p>
               </div>
               <button
@@ -641,9 +645,9 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                   <div className="w-16 h-16 rounded-full bg-dark flex items-center justify-center mx-auto mb-4">
                     <User className="w-8 h-8 text-gray-600" />
                   </div>
-                  <p className="text-gray-300 font-medium mb-2">No players available</p>
+                  <p className="text-gray-300 font-medium mb-2">{t('noPlayersAvailable')}</p>
                   <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                    All eligible players from this team are already in this tryout session.
+                    {t('allPlayersInSession')}
                   </p>
                 </div>
               </div>
@@ -657,7 +661,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                       type="text"
                       value={playerSearchTerm}
                       onChange={(e) => setPlayerSearchTerm(e.target.value)}
-                      placeholder="Search by name, role or nationality..."
+                      placeholder={t('searchByNameRoleNationality')}
                       className="w-full pl-11 bg-dark border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
@@ -665,7 +669,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                   {/* Results Counter */}
                   {playerSearchTerm && (
                     <div className="mt-2 text-sm text-gray-400">
-                      {filteredAvailablePlayers.length} player{filteredAvailablePlayers.length !== 1 ? 's' : ''} found
+                      {t('playersFound', { count: filteredAvailablePlayers.length })}
                     </div>
                   )}
                 </div>
@@ -677,9 +681,9 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                       <div className="w-16 h-16 rounded-full bg-dark flex items-center justify-center mx-auto mb-4">
                         <Search className="w-8 h-8 text-gray-600" />
                       </div>
-                      <p className="text-gray-300 font-medium mb-2">No results</p>
+                      <p className="text-gray-300 font-medium mb-2">{t('noResults')}</p>
                       <p className="text-sm text-gray-500">
-                        No players match your search
+                        {t('noPlayersMatchSearch')}
                       </p>
                     </div>
                   </div>
@@ -718,7 +722,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                                 
                                 <div className="flex flex-wrap items-center gap-2 text-sm">
                                   <span className="text-gray-400 capitalize">
-                                    {player.position || 'Undefined'}
+                                    {player.position || t('undefined')}
                                   </span>
                                   {player.nationality && (
                                     <>
@@ -745,9 +749,9 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                 {/* Footer Actions */}
                 <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-800">
                   <div className="text-sm">
-                    <span className="text-gray-400">Selection: </span>
+                    <span className="text-gray-400">{t('selection')}: </span>
                     <span className="text-white font-semibold">
-                      {selectedPlayersToAdd.length} player{selectedPlayersToAdd.length !== 1 ? 's' : ''}
+                      {selectedPlayersToAdd.length} {selectedPlayersToAdd.length === 1 ? t('player') : `${t('player')}s`}
                     </span>
                   </div>
                   
@@ -757,7 +761,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                       disabled={addingPlayers}
                       className="px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-dark-hover transition disabled:opacity-50"
                     >
-                      Cancel
+                      {tCommon('cancel')}
                     </button>
                     <button
                       onClick={handleAddPlayers}
@@ -765,7 +769,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
                       className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <UserPlus className="w-4 h-4" />
-                      {addingPlayers ? 'Adding...' : `Add (${selectedPlayersToAdd.length})`}
+                      {addingPlayers ? t('adding') : t('addCount', { count: selectedPlayersToAdd.length })}
                     </button>
                   </div>
                 </div>

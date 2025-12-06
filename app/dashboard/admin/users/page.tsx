@@ -1,9 +1,11 @@
 import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import UserManagementClient from './UserManagementClient'
+import { getTranslations } from 'next-intl/server'
 
 export default async function UserManagementPage() {
   const user = await requireRole(['admin'])
+  const t = await getTranslations('users')
 
   return (
     <div className="min-h-screen bg-dark">
@@ -12,9 +14,9 @@ export default async function UserManagementPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
-            User Management
+            {t('title')}
           </h1>
-          <p className="text-gray-400">Manage players, managers, and staff accounts</p>
+          <p className="text-gray-400">{t('title')}</p>
         </div>
         
         <UserManagementClient />

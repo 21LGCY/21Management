@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Users, Calendar, MapPin } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import ScoutingDatabase from './sections/ScoutingDatabase'
 import TryoutWeeks from './sections/TryoutWeeks'
 import ZonesInterface from './sections/ZonesInterface'
@@ -10,21 +11,22 @@ type TabType = 'scouting' | 'tryouts' | 'zones'
 
 export default function TryoutsPageClient() {
   const [activeTab, setActiveTab] = useState<TabType>('scouting')
+  const t = useTranslations('tryouts')
 
   const tabs = [
     {
       id: 'scouting' as TabType,
-      name: 'Scouting Database',
+      name: t('scoutingDatabase'),
       icon: Users,
     },
     {
       id: 'tryouts' as TabType,
-      name: 'Tryout Weeks',
+      name: t('tryoutWeeks'),
       icon: Calendar,
     },
     {
       id: 'zones' as TabType,
-      name: 'Geographic Zones',
+      name: t('geographicZones'),
       icon: MapPin,
     },
   ]

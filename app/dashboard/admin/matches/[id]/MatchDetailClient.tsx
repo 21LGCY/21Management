@@ -4,6 +4,7 @@ import { MatchHistoryWithStats, PlayerMatchStats } from '@/lib/types/database'
 import { ArrowLeft, Trophy, Calendar, Map, Flag, Users, Target, Crosshair, Heart } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 interface MatchDetailClientProps {
   match: MatchHistoryWithStats & {
@@ -23,6 +24,7 @@ interface MatchDetailClientProps {
 export default function MatchDetailClient({ match }: MatchDetailClientProps) {
   const team = match.team
   const playerStats = match.player_stats || []
+  const t = useTranslations('stats')
 
   const resultColor = match.result === 'win' ? 'text-green-400' : match.result === 'loss' ? 'text-red-400' : 'text-yellow-400'
   const resultBg = match.result === 'win' ? 'bg-green-500/20 border-green-500/30' : match.result === 'loss' ? 'bg-red-500/20 border-red-500/30' : 'bg-yellow-500/20 border-yellow-500/30'
@@ -43,7 +45,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
       <Link href="/dashboard/admin/matches">
         <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
           <ArrowLeft className="w-4 h-4" />
-          Back to Matches
+          {t('backToMatches')}
         </button>
       </Link>
 
@@ -71,7 +73,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
             </div>
 
             <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-4xl font-bold text-white">{team?.name || 'Unknown Team'}</h1>
+              <h1 className="text-4xl font-bold text-white">{team?.name || t('unknownTeam')}</h1>
               <span className="text-3xl text-gray-500">vs</span>
               <h1 className="text-4xl font-bold text-white">{match.opponent_name}</h1>
             </div>
@@ -120,7 +122,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{teamTotals.kills}</p>
-                <p className="text-sm text-gray-400">Total Kills</p>
+                <p className="text-sm text-gray-400">{t('totalKills')}</p>
               </div>
             </div>
           </div>
@@ -132,7 +134,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{teamTotals.deaths}</p>
-                <p className="text-sm text-gray-400">Total Deaths</p>
+                <p className="text-sm text-gray-400">{t('totalDeaths')}</p>
               </div>
             </div>
           </div>
@@ -144,7 +146,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{teamTotals.assists}</p>
-                <p className="text-sm text-gray-400">Total Assists</p>
+                <p className="text-sm text-gray-400">{t('totalAssists')}</p>
               </div>
             </div>
           </div>
@@ -156,7 +158,7 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{avgACS}</p>
-                <p className="text-sm text-gray-400">Avg ACS</p>
+                <p className="text-sm text-gray-400">{t('avgACSShort')}</p>
               </div>
             </div>
           </div>
@@ -166,13 +168,13 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
       {/* Player Statistics */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl shadow-xl overflow-hidden">
         <div className="p-6 border-b border-gray-800 bg-gray-900/50">
-          <h2 className="text-2xl font-bold text-white">Player Statistics</h2>
+          <h2 className="text-2xl font-bold text-white">{t('playerStatistics')}</h2>
         </div>
 
         {playerStats.length === 0 ? (
           <div className="p-12 text-center">
             <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">No player statistics recorded for this match</p>
+            <p className="text-gray-400">{t('noStatsForMatch')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
