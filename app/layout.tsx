@@ -12,10 +12,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: '21 Legacy Management',
+    default: '21 Legacy',
     template: '%s | 21 Legacy',
   },
-  description: 'Professional esports team management platform for VALORANT teams and players',
+  description: 'Management Platform',
   keywords: ['esports', 'valorant', 'team management', '21 Legacy', 'player management'],
   authors: [{ name: '21 Legacy' }],
   robots: {
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
     apple: '/images/21.svg',
   },
   openGraph: {
-    title: '21 Legacy Management',
-    description: 'Professional esports team management platform',
+    title: '21 Legacy',
+    description: 'Management platform',
     type: 'website',
     siteName: '21 Legacy Management',
   },
