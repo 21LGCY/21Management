@@ -47,8 +47,17 @@
     "draws": "Draws",
     "winRate": "Win Rate",
     "untitled": "Untitled",
+    "team": "Team",
     "unknownPlayer": "Unknown Player",
-    "username": "Username"
+    "username": "Username",
+    "searchCountries": "Search countries...",
+    "noCountriesFound": "No countries found",
+    "enableEditMode": "Enable Edit Mode",
+    "closeEditMode": "Close Edit Mode",
+    "editMode": "Edit Mode",
+    "deleteMode": "Delete Mode",
+    "stopDeleting": "Stop Deleting",
+    "playerAvailableCount": "{count, plural, =1 {1 player available} other {{count} players available}}"
   },
   "nav": {
     "users": "Users",
@@ -65,7 +74,14 @@
     "logout": "Logout",
     "accountSettings": "Account Settings",
     "manageAccount": "Manage your account",
-    "backToDashboard": "Back to Dashboard"
+    "backToDashboard": "Back to Dashboard",
+    "dashboard": "Dashboard"
+  },
+  "managerNav": {
+    "overview": "Overview",
+    "playerManagement": "Player Management",
+    "teamRosterManagement": "Team/Roster Management",
+    "statsManagement": "Stats Management"
   },
   "auth": {
     "login": "Login",
@@ -90,6 +106,29 @@
     "usernamePlaceholder": "Enter your username",
     "passwordPlaceholder": "Enter your password",
     "contactAdmins": "If you have any problems, contact the admins on Discord."
+  },
+  "profile": {
+    "backToDashboard": "Back to Dashboard",
+    "changePassword": "Change Password",
+    "updateYourPassword": "Update your account password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "passwordMinLength": "Password must be at least 6 characters long",
+    "passwordMinLengthHint": "Must be at least 6 characters long",
+    "passwordsDoNotMatch": "New passwords do not match",
+    "failedUpdatePassword": "Failed to update password",
+    "passwordUpdatedSuccess": "Password updated successfully!",
+    "updating": "Updating...",
+    "updatePassword": "Update Password",
+    "profileAvatar": "Profile Avatar",
+    "uploadNewAvatar": "Upload New Avatar",
+    "removeAvatar": "Remove Avatar",
+    "failedUploadAvatar": "Failed to upload avatar",
+    "failedRemoveAvatar": "Failed to remove avatar",
+    "avatarUpdatedSuccess": "Avatar updated successfully!",
+    "avatarRemovedSuccess": "Avatar removed successfully!",
+    "noAvatarSet": "No avatar set"
   },
   "settings": {
     "title": "Account Settings",
@@ -166,7 +205,8 @@
     "recentResults": "Recent Results",
     "lastMatches": "Last {count} matches",
     "noMatchHistory": "No match history yet",
-    "resultsAppearHere": "Results will appear here"
+    "resultsAppearHere": "Results will appear here",
+    "winRate": "Win Rate"
   },
   "users": {
     "title": "User Management",
@@ -280,7 +320,9 @@
     "teamComposition": "Team Composition",
     "addAgentsToComposition": "Add agents to composition",
     "selectAgentsHint": "Select agents for this strategy composition",
-    "teamCompsManaged": "Team compositions can be managed by your Staff"
+    "teamCompsManaged": "Team compositions can be managed by your Staff",
+    "pleaseSelectAgent": "Please select at least one agent",
+    "failedSaveComposition": "Failed to save composition"
   },
   "practiceReviews": {
     "title": "Practice Reviews",
@@ -497,6 +539,7 @@
       "iglMarked": "Scout will be marked as an IGL",
       "agentPool": "Agent Pool",
       "selectAgent": "Select agent",
+      "noAgentsAdded": "No agents added yet",
       "contactLinks": "Contact & Links",
       "contactLinksDesc": "Social media and tracking profiles",
       "trackerUrl": "Tracker URL",
@@ -734,7 +777,18 @@
     "optional": "(optional)",
     "backToTeamHub": "Back to Team Hub",
     "backToTeamManagement": "Back to Team Management",
-    "selectTeamToManage": "Select a team to manage its weekly schedule"
+    "selectTeamToManage": "Select a team to manage its weekly schedule",
+    "responses": "responses",
+    "yourAvailability": "Your Availability",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "maybe": "Maybe",
+    "playerResponses": "Player Responses",
+    "noResponsesYet": "No responses yet",
+    "selectATeam": "Select a Team",
+    "viewingSchedule": "Viewing Schedule",
+    "noTeamSelected": "No team selected",
+    "clickTeamToManage": "Click on a team above to view and manage its schedule"
   },
   "availability": {
     "title": "Availability",
@@ -880,7 +934,13 @@
     "failedRecordMatch": "Failed to record match",
     "recording": "Recording...",
     "vs": "vs",
-    "matchNotes": "Match Notes"
+    "matchNotes": "Match Notes",
+    "selectPlayer": "Select Player",
+    "selectAgent": "Select Agent",
+    "noPlayerStatsYet": "No player statistics added yet.",
+    "clickAddPlayerToRecord": "Click \"Add Player\" to record player performance.",
+    "playerNumber": "Player {number}",
+    "agentPlayed": "Agent Played"
   },
   "stats": {
     "title": "Statistics",
@@ -1019,7 +1079,11 @@
     "invalidFile": "Please select a valid file",
     "fileTooLarge": "File is too large",
     "imageOnly": "Please select an image file",
-    "maxFileSize": "Image must be less than 5MB"
+    "maxFileSize": "Image must be less than 5MB",
+    "failedUpdatePassword": "Failed to update password",
+    "failedUpload": "Failed to upload image",
+    "failedUploadAvatar": "Failed to upload avatar",
+    "failedRemoveAvatar": "Failed to remove avatar"
   },
   "validation": {
     "required": "This field is required",
@@ -1069,6 +1133,10 @@
     "updateUser": "Update User",
     "createUser": "Create User",
     "usernamePasswordRequired": "Username and password are required",
+    "usernameCannotChange": "Username cannot be changed",
+    "newPassword": "New Password",
+    "staffRole": "Staff Role",
+    "avatarRecommendation": "Square image, at least 256x256px recommended",
     "playerUpdated": "Player updated successfully!",
     "playerCreated": "Player created successfully!",
     "errorSavingPlayer": "Error saving player",
@@ -1173,5 +1241,42 @@
     "selectAtLeastOneSlot": "Please select at least one time slot when you are available",
     "failedToSubmit": "Failed to submit availability",
     "language": "Language"
+  },
+  "playerProgression": {
+    "title": "Personal Progression",
+    "subtitle": "Track your growth and achievements",
+    "playerLevel": "Player Level",
+    "matchesPlayed": "Matches Played",
+    "progressToLevel": "Progress to Level {level}",
+    "playMoreMatches": "Play {count, plural, =1 {# more match} other {# more matches}} to reach the next level",
+    "winRate": "Win Rate",
+    "kdRatio": "K/D Ratio",
+    "average": "Average",
+    "acs": "ACS",
+    "combatScore": "Combat Score",
+    "hsPercent": "HS %",
+    "headshots": "Headshots",
+    "currentRole": "Current Role",
+    "notSet": "Not Set",
+    "igl": "IGL",
+    "substitute": "Substitute",
+    "currentRank": "Current Rank",
+    "unranked": "Unranked",
+    "recentAchievements": "Recent Achievements",
+    "achievement5Wins": "5 Wins",
+    "achievement10Matches": "10 Matches",
+    "achievementHighWR": "High WR",
+    "keepPlaying": "Keep playing to unlock achievements!"
+  },
+  "teamRoster": {
+    "title": "Team Roster",
+    "playersCount": "{count} players",
+    "mainRoster": "Main Roster",
+    "substitutes": "Substitutes",
+    "igl": "IGL",
+    "iglCount": "{count, plural, =1 {IGL} other {IGLs}}",
+    "you": "You",
+    "noPlayersYet": "No players in roster yet",
+    "contactManager": "Contact your manager for more information"
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface Country {
   code: string
@@ -23,6 +24,7 @@ export default function SearchableCountrySelect({
   placeholder = 'Select Country',
   className = ''
 }: SearchableCountrySelectProps) {
+  const t = useTranslations('common')
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -71,12 +73,15 @@ export default function SearchableCountrySelect({
         </span>
         <div className="flex items-center gap-2">
           {value && (
-            <button
+            <span
+              role="button"
+              tabIndex={0}
               onClick={handleClear}
-              className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-400"
+              onKeyDown={(e) => e.key === 'Enter' && handleClear(e as unknown as React.MouseEvent)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-400 cursor-pointer"
             >
               <X className="w-4 h-4" />
-            </button>
+            </span>
           )}
           <svg
             className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -99,7 +104,7 @@ export default function SearchableCountrySelect({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search countries..."
+                placeholder={t('searchCountries')}
                 className="w-full pl-10 pr-4 py-2 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary text-sm"
                 autoFocus
               />
@@ -146,7 +151,7 @@ export default function SearchableCountrySelect({
               </>
             ) : (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                No countries found
+                {t('noCountriesFound')}
               </div>
             )}
           </div>

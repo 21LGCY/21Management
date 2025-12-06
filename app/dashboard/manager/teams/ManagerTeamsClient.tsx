@@ -134,7 +134,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
                   <Users className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <p className="text-sm text-primary/70 mb-1">{t('totalPlayers')}</p>
+              <p className="text-sm text-primary/70 mb-1">{tCommon('totalPlayers')}</p>
               <p className="text-3xl font-bold text-primary">{playerCount}</p>
               <Link href="/dashboard/manager/players" className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-2 font-medium transition group">
                 <span>{tCommon('viewAll')}</span>
@@ -151,7 +151,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
               <p className="text-sm text-green-300/70 mb-1">{t('activeTryouts')}</p>
               <p className="text-3xl font-bold text-green-400">{currentTryouts.length}</p>
               <Link href="/dashboard/manager/teams/tryouts" className="inline-flex items-center gap-1 text-xs text-green-300/70 hover:text-green-400 mt-2 font-medium transition group">
-                <span>{t('manage')}</span>
+                <span>{tCommon('manage')}</span>
                 <span className="group-hover:translate-x-0.5 transition-transform">→</span>
               </Link>
             </div>

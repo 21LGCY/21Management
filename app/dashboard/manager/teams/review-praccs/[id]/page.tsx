@@ -6,10 +6,11 @@ import PraccsReviewClient from './PraccsReviewClient'
 export default async function ManagerPraccsReviewPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const { user, teamId } = await requireManagerTeamAccess()
-  const matchId = params.id
+  const matchId = id
 
   // Redirect if no team assigned
   if (!teamId) {

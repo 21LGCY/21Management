@@ -7,7 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // Remove X-Powered-By header for security
   
-  // Experimental features for better performance
+  // Experimental features
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },

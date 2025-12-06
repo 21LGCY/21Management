@@ -378,8 +378,8 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
 
           {playerStats.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              <p>No player statistics added yet.</p>
-              <p className="text-sm mt-2">Click "Add Player" to record player performance.</p>
+              <p>{t('noPlayerStatsYet')}</p>
+              <p className="text-sm mt-2">{t('clickAddPlayerToRecord')}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -394,20 +394,20 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                   </button>
 
                   <h3 className="text-lg font-semibold text-white mb-4">
-                    Player {index + 1}
+                    {t('playerNumber', { number: index + 1 })}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Player *
+                        {t('player')} *
                       </label>
                       <CustomSelect
                         value={stat.playerId}
                         onChange={(value) => updatePlayerStat(index, 'playerId', value)}
-                        placeholder="Select Player"
+                        placeholder={t('selectPlayer')}
                         options={[
-                          { value: '', label: 'Select Player' },
+                          { value: '', label: t('selectPlayer') },
                           ...players
                             .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
                             .map(player => ({
@@ -420,7 +420,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Agent Played *
+                        {t('agentPlayed')} *
                       </label>
                       {stat.championPool && stat.championPool.length > 0 ? (
                         <>
@@ -431,11 +431,11 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                                 updatePlayerStat(index, 'agentPlayed', value)
                               }
                             }}
-                            placeholder="Select Agent"
+                            placeholder={t('selectAgent')}
                             options={[
-                              { value: '', label: 'Select Agent' },
+                              { value: '', label: t('selectAgent') },
                               ...stat.championPool.map(agent => ({ value: agent, label: agent })),
-                              { value: 'other', label: 'Other (Custom)' }
+                              { value: 'other', label: t('otherCustom') }
                             ]}
                           />
                           {!stat.championPool.includes(stat.agentPlayed) && (
@@ -443,7 +443,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                               type="text"
                               value={stat.agentPlayed}
                               onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                              placeholder="Enter agent name"
+                              placeholder={t('enterAgentName')}
                               className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none mt-2"
                               required
                             />
@@ -460,12 +460,12 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                         />
                       )}
                       {stat.playerId && stat.championPool.length === 0 && (
-                        <p className="text-xs text-yellow-400 mt-1">No agent pool set for this player</p>
+                        <p className="text-xs text-yellow-400 mt-1">{t('noAgentPoolDefined')}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Kills</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('kills')}</label>
                       <input
                         type="number"
                         min="0"
@@ -476,7 +476,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Deaths</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('deaths')}</label>
                       <input
                         type="number"
                         min="0"
@@ -487,7 +487,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Assists</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('assists')}</label>
                       <input
                         type="number"
                         min="0"
@@ -498,7 +498,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">AVG CS</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('avgCs')}</label>
                       <input
                         type="number"
                         min="0"
@@ -509,7 +509,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">First Bloods</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('firstBloods')}</label>
                       <input
                         type="number"
                         min="0"
@@ -520,7 +520,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Econ Rating</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('econRating')}</label>
                       <input
                         type="number"
                         min="0"
@@ -531,7 +531,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Plants</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('plants')}</label>
                       <input
                         type="number"
                         min="0"
@@ -542,7 +542,7 @@ export default function RecordMatchClient({ teamId, teamName }: RecordMatchClien
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Defuses</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('defuses')}</label>
                       <input
                         type="number"
                         min="0"

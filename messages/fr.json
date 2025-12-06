@@ -54,14 +54,19 @@
     "hour": "heure",
     "enableEditMode": "Activer le mode édition",
     "closeEditMode": "Quitter le mode édition",
+    "editMode": "Mode édition",
     "deleteMode": "Mode suppression",
     "stopDeleting": "Arrêter la suppression",
     "currentWeek": "Semaine actuelle",
     "goToCurrentWeek": "Aller à la semaine actuelle",
     "timesIn": "Horaires en",
     "untitled": "Sans titre",
+    "team": "Équipe",
     "unknownPlayer": "Joueur inconnu",
-    "username": "Nom d'utilisateur"
+    "username": "Nom d'utilisateur",
+    "searchCountries": "Rechercher des pays...",
+    "noCountriesFound": "Aucun pays trouvé",
+    "playerAvailableCount": "{count, plural, =1 {1 joueur disponible} other {{count} joueurs disponibles}}"
   },
   "nav": {
     "users": "Utilisateurs",
@@ -78,7 +83,14 @@
     "logout": "Déconnexion",
     "accountSettings": "Paramètres du compte",
     "manageAccount": "Gérer votre compte",
-    "backToDashboard": "Retour au tableau de bord"
+    "backToDashboard": "Retour au tableau de bord",
+    "dashboard": "Tableau de bord"
+  },
+  "managerNav": {
+    "overview": "Vue d'ensemble",
+    "playerManagement": "Gestion des Joueurs",
+    "teamRosterManagement": "Gestion Équipe/Effectif",
+    "statsManagement": "Gestion des Stats"
   },
   "auth": {
     "login": "Connexion",
@@ -103,6 +115,29 @@
     "usernamePlaceholder": "Entrez votre nom d'utilisateur",
     "passwordPlaceholder": "Entrez votre mot de passe",
     "contactAdmins": "En cas de problème, contactez les admins sur Discord."
+  },
+  "profile": {
+    "backToDashboard": "Retour au tableau de bord",
+    "changePassword": "Changer le mot de passe",
+    "updateYourPassword": "Mettez à jour le mot de passe de votre compte",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
+    "passwordMinLengthHint": "Doit contenir au moins 6 caractères",
+    "passwordsDoNotMatch": "Les nouveaux mots de passe ne correspondent pas",
+    "failedUpdatePassword": "Échec de la mise à jour du mot de passe",
+    "passwordUpdatedSuccess": "Mot de passe mis à jour avec succès !",
+    "updating": "Mise à jour...",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "profileAvatar": "Avatar du profil",
+    "uploadNewAvatar": "Télécharger un nouvel avatar",
+    "removeAvatar": "Supprimer l'avatar",
+    "failedUploadAvatar": "Échec du téléchargement de l'avatar",
+    "failedRemoveAvatar": "Échec de la suppression de l'avatar",
+    "avatarUpdatedSuccess": "Avatar mis à jour avec succès !",
+    "avatarRemovedSuccess": "Avatar supprimé avec succès !",
+    "noAvatarSet": "Aucun avatar défini"
   },
   "settings": {
     "title": "Paramètres du compte",
@@ -179,7 +214,8 @@
     "recentResults": "Résultats Récents",
     "lastMatches": "{count} derniers matchs",
     "noMatchHistory": "Aucun historique de match",
-    "resultsAppearHere": "Les résultats apparaîtront ici"
+    "resultsAppearHere": "Les résultats apparaîtront ici",
+    "winRate": "Taux de victoire"
   },
   "users": {
     "title": "Gestion des utilisateurs",
@@ -293,7 +329,9 @@
     "teamComposition": "Composition d'équipe",
     "addAgentsToComposition": "Ajouter des agents à la composition",
     "selectAgentsHint": "Sélectionnez des agents pour cette composition stratégique",
-    "teamCompsManaged": "Les compositions d'équipe peuvent être gérées par votre Staff"
+    "teamCompsManaged": "Les compositions d'équipe peuvent être gérées par votre Staff",
+    "pleaseSelectAgent": "Veuillez sélectionner au moins un agent",
+    "failedSaveComposition": "Échec de l'enregistrement de la composition"
   },
   "practiceReviews": {
     "title": "Revues d'Entraînement",
@@ -510,6 +548,7 @@
       "iglMarked": "Le scout sera marqué comme IGL",
       "agentPool": "Pool d'agents",
       "selectAgent": "Sélectionner un agent",
+      "noAgentsAdded": "Aucun agent ajouté",
       "contactLinks": "Contact et liens",
       "contactLinksDesc": "Réseaux sociaux et profils de suivi",
       "trackerUrl": "URL Tracker",
@@ -746,7 +785,18 @@
     "optional": "(optionnel)",
     "backToTeamHub": "Retour au Hub Équipe",
     "backToTeamManagement": "Retour à la gestion d'équipe",
-    "selectTeamToManage": "Sélectionnez une équipe pour gérer son planning hebdomadaire"
+    "selectTeamToManage": "Sélectionnez une équipe pour gérer son planning hebdomadaire",
+    "responses": "réponses",
+    "yourAvailability": "Votre Disponibilité",
+    "available": "Disponible",
+    "unavailable": "Indisponible",
+    "maybe": "Peut-être",
+    "playerResponses": "Réponses des Joueurs",
+    "noResponsesYet": "Aucune réponse pour le moment",
+    "selectATeam": "Sélectionner une équipe",
+    "viewingSchedule": "Affichage du planning",
+    "noTeamSelected": "Aucune équipe sélectionnée",
+    "clickTeamToManage": "Cliquez sur une équipe ci-dessus pour voir et gérer son planning"
   },
   "availability": {
     "title": "Disponibilité",
@@ -905,7 +955,11 @@
     "failedRecordMatch": "Échec de l'enregistrement du match",
     "recording": "Enregistrement...",
     "vs": "vs",
-    "matchNotes": "Notes du match"
+    "matchNotes": "Notes du match",
+    "noPlayerStatsYet": "Aucune statistique de joueur ajoutée.",
+    "clickAddPlayerToRecord": "Cliquez sur \"Ajouter un joueur\" pour enregistrer les performances.",
+    "playerNumber": "Joueur {number}",
+    "selectAgent": "Sélectionner un agent"
   },
   "stats": {
     "title": "Statistiques",
@@ -1044,7 +1098,11 @@
     "invalidFile": "Veuillez sélectionner un fichier valide",
     "fileTooLarge": "Le fichier est trop volumineux",
     "imageOnly": "Veuillez sélectionner une image",
-    "maxFileSize": "L'image doit faire moins de 5Mo"
+    "maxFileSize": "L'image doit faire moins de 5Mo",
+    "failedUpdatePassword": "Échec de la mise à jour du mot de passe",
+    "failedUpload": "Échec du téléchargement de l'image",
+    "failedUploadAvatar": "Échec du téléchargement de l'avatar",
+    "failedRemoveAvatar": "Échec de la suppression de l'avatar"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -1094,6 +1152,10 @@
     "updateUser": "Mettre à jour l'utilisateur",
     "createUser": "Créer l'utilisateur",
     "usernamePasswordRequired": "Le nom d'utilisateur et le mot de passe sont requis",
+    "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié",
+    "newPassword": "Nouveau mot de passe",
+    "staffRole": "Rôle du staff",
+    "avatarRecommendation": "Image carrée, au moins 256x256px recommandé",
     "playerUpdated": "Joueur mis à jour avec succès !",
     "playerCreated": "Joueur créé avec succès !",
     "errorSavingPlayer": "Erreur lors de l'enregistrement du joueur",
@@ -1198,5 +1260,42 @@
     "selectAtLeastOneSlot": "Veuillez sélectionner au moins un créneau horaire où vous êtes disponible",
     "failedToSubmit": "Échec de l'envoi des disponibilités",
     "language": "Langue"
+  },
+  "playerProgression": {
+    "title": "Progression Personnelle",
+    "subtitle": "Suivez votre évolution et vos accomplissements",
+    "playerLevel": "Niveau du Joueur",
+    "matchesPlayed": "Matchs Joués",
+    "progressToLevel": "Progression vers le Niveau {level}",
+    "playMoreMatches": "Jouez {count, plural, =1 {# match de plus} other {# matchs de plus}} pour atteindre le niveau suivant",
+    "winRate": "Taux de Victoire",
+    "kdRatio": "Ratio K/D",
+    "average": "Moyenne",
+    "acs": "ACS",
+    "combatScore": "Score de Combat",
+    "hsPercent": "% HS",
+    "headshots": "Headshots",
+    "currentRole": "Rôle Actuel",
+    "notSet": "Non défini",
+    "igl": "IGL",
+    "substitute": "Remplaçant",
+    "currentRank": "Rang Actuel",
+    "unranked": "Non classé",
+    "recentAchievements": "Accomplissements Récents",
+    "achievement5Wins": "5 Victoires",
+    "achievement10Matches": "10 Matchs",
+    "achievementHighWR": "Haut %V",
+    "keepPlaying": "Continuez à jouer pour débloquer des accomplissements !"
+  },
+  "teamRoster": {
+    "title": "Effectif de l'Équipe",
+    "playersCount": "{count} joueurs",
+    "mainRoster": "Effectif Principal",
+    "substitutes": "Remplaçants",
+    "igl": "IGL",
+    "iglCount": "{count, plural, =1 {IGL} other {IGLs}}",
+    "you": "Vous",
+    "noPlayersYet": "Aucun joueur dans l'effectif pour le moment",
+    "contactManager": "Contactez votre manager pour plus d'informations"
   }
 }

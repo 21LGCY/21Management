@@ -3,7 +3,8 @@ import NavbarWrapper from '@/components/NavbarWrapper'
 import UserForm from '@/components/UserForm'
 import { getTranslations } from 'next-intl/server'
 
-export default async function EditUserPage({ params }: { params: { id: string } }) {
+export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await requireRole(['admin'])
   const t = await getTranslations('users')
 
@@ -20,7 +21,7 @@ export default async function EditUserPage({ params }: { params: { id: string } 
         </div>
         
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-          <UserForm userId={params.id} />
+          <UserForm userId={id} />
         </div>
       </main>
     </div>

@@ -5,12 +5,13 @@ import NavbarWrapper from '@/components/NavbarWrapper'
 import AddMatchClient from './AddMatchClient'
 
 interface NewMatchPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function NewMatchPage({ params }: NewMatchPageProps) {
+  const { id } = await params
   const user = await requireRole(['admin'])
   
   const supabase = await createClient()
@@ -19,7 +20,7 @@ export default async function NewMatchPage({ params }: NewMatchPageProps) {
   const { data: team } = await supabase
     .from('teams')
     .select('name')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!team) {
@@ -37,7 +38,7 @@ export default async function NewMatchPage({ params }: NewMatchPageProps) {
             <p className="text-gray-400">Record match results and player statistics for {team.name}</p>
           </div>
 
-          <AddMatchClient teamId={params.id} teamName={team.name} />
+          <AddMatchClient teamId={id} teamName={team.name} />
         </div>
       </main>
     </div>

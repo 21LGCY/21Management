@@ -6,8 +6,9 @@ import PraccsReviewClient from './PraccsReviewClient'
 export default async function PraccsReviewPage({ 
   params 
 }: { 
-  params: { id: string; matchId: string } 
+  params: Promise<{ id: string; matchId: string }>
 }) {
+  const { id, matchId } = await params
   const user = await requireRole(['admin', 'manager', 'player'])
 
   return (
@@ -16,8 +17,8 @@ export default async function PraccsReviewPage({
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PraccsReviewClient 
-          teamId={params.id}
-          matchId={params.matchId}
+          teamId={id}
+          matchId={matchId}
           userId={user.user_id}
           userName={user.username}
           userRole={user.role}

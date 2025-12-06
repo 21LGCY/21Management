@@ -414,7 +414,7 @@ export default function EditScoutForm({ scoutId }: EditScoutFormProps) {
               )}
               {formData.champion_pool.length === 0 && (
                 <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                  <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
+                  <p className="text-sm text-gray-500">{tForm('noAgentsAdded')}</p>
                 </div>
               )}
             </div>

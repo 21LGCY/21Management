@@ -12,12 +12,13 @@ const VALID_MAPS: ValorantMap[] = [
 export default async function StratMapPage({ 
   params 
 }: { 
-  params: { id: string; map: string } 
+  params: Promise<{ id: string; map: string }>
 }) {
+  const { id, map } = await params
   const user = await requireRole(['admin', 'manager', 'player'])
   
   // Capitalize first letter to match enum
-  const mapName = params.map.charAt(0).toUpperCase() + params.map.slice(1) as ValorantMap
+  const mapName = map.charAt(0).toUpperCase() + map.slice(1) as ValorantMap
   
   // Validate map name
   if (!VALID_MAPS.includes(mapName)) {
@@ -30,7 +31,7 @@ export default async function StratMapPage({
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StratMapClient 
-          teamId={params.id}
+          teamId={id}
           mapName={mapName}
           userId={user.user_id}
           userName={user.username}

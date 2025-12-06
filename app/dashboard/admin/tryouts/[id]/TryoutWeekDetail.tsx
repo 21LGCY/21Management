@@ -177,10 +177,10 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
       
       // Success notification
       const count = selectedPlayersToAdd.length
-      alert(`✅ ${count} player${count > 1 ? 's' : ''} added successfully!\n\n${addedPlayerNames}`)
+      alert(`✅ ${t('playersAdded', { count })}\n\n${addedPlayerNames}`)
     } catch (error) {
       console.error('Error adding players:', error)
-      alert('❌ Error adding players. Please try again.')
+      alert(`❌ ${t('errorAddingPlayers')}`)
     } finally {
       setAddingPlayers(false)
     }
@@ -239,10 +239,10 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
       })
 
       setIsEditingInfo(false)
-      alert('Information updated successfully!')
+      alert(t('infoUpdated'))
     } catch (error) {
       console.error('Error updating tryout info:', error)
-      alert('Error updating information')
+      alert(t('errorUpdating'))
     } finally {
       setSavingInfo(false)
     }
@@ -317,7 +317,7 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
       router.push('/dashboard/admin/tryouts')
     } catch (error) {
       console.error('Error deleting tryout week:', error)
-      alert('Failed to delete tryout week')
+      alert(t('failedDelete'))
     }
   }
 

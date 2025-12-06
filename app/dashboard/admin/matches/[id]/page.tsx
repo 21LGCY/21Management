@@ -4,7 +4,8 @@ import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import MatchDetailClient from './MatchDetailClient'
 
-export default async function MatchDetailPage({ params }: { params: { id: string } }) {
+export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await requireRole(['admin'])
   const supabase = await createClient()
 
@@ -19,7 +20,7 @@ export default async function MatchDetailPage({ params }: { params: { id: string
         player:profiles(id, username, in_game_name, avatar_url, position)
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !match) notFound()

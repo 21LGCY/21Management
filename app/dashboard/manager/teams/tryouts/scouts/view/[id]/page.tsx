@@ -5,12 +5,13 @@ import Navbar from '@/components/Navbar'
 import ScoutViewManager from './ScoutViewManager'
 
 interface ScoutViewPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function ScoutViewManagerPage({ params }: ScoutViewPageProps) {
+  const { id } = await params
   const { user, teamId, team, teamCategory } = await requireManagerTeamAccess()
   const supabase = await createClient()
 
@@ -18,7 +19,7 @@ export default async function ScoutViewManagerPage({ params }: ScoutViewPageProp
   const { data: scout, error } = await supabase
     .from('profiles_tryouts')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !scout) {

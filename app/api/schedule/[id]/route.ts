@@ -5,8 +5,9 @@ import { ActivityType } from '@/lib/types/database'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await createClient()
 
   try {
@@ -48,7 +49,7 @@ export async function PUT(
     const { data: existingActivity, error: fetchError } = await supabase
       .from('schedule_activities')
       .select('team_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError || !existingActivity) {
@@ -73,7 +74,7 @@ export async function PUT(
         activity_date: activity_date || null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -91,8 +92,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await createClient()
 
   try {
@@ -117,7 +119,7 @@ export async function DELETE(
     const { data: existingActivity, error: fetchError } = await supabase
       .from('schedule_activities')
       .select('team_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (fetchError || !existingActivity) {
@@ -133,7 +135,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('schedule_activities')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) {
       console.error('Error deleting schedule activity:', error)

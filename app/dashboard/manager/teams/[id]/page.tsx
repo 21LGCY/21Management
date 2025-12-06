@@ -8,17 +8,18 @@ import Link from 'next/link'
 import TeamManagementClient from './TeamManagementClient'
 
 interface TeamManagementPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function TeamManagementPage({ params }: TeamManagementPageProps) {
+  const { id } = await params
   // Require manager role and get team access
   const { user, teamId, team } = await requireManagerTeamAccess()
   
   // Ensure the manager can only access their own team
-  if (params.id !== teamId) {
+  if (id !== teamId) {
     notFound()
   }
 

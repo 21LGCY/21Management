@@ -140,7 +140,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update password')
+        throw new Error(data.error || tErrors('failedUpdatePassword'))
       }
 
       setSuccess(true)
@@ -152,7 +152,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         router.refresh()
       }, 2000)
     } catch (err: any) {
-      setError(err.message || 'Failed to update password')
+      setError(err.message || tErrors('failedUpdatePassword'))
     } finally {
       setLoading(false)
     }
@@ -207,7 +207,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to upload to Cloudinary')
+        throw new Error(result.error?.message || tErrors('failedUpload'))
       }
 
       const publicUrl = result.secure_url
@@ -241,7 +241,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         router.refresh()
       }, 1000)
     } catch (err: any) {
-      setError(err.message || 'Failed to upload avatar')
+      setError(err.message || tErrors('failedUploadAvatar'))
     } finally {
       setUploadingAvatar(false)
     }
@@ -261,7 +261,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         const result = await deleteUserAvatar(userId, currentAvatarUrl)
         
         if (!result.success) {
-          throw new Error(result.error || 'Failed to remove avatar')
+          throw new Error(result.error || tErrors('failedRemoveAvatar'))
         }
       } else {
         // No avatar to delete, just update database
@@ -292,7 +292,7 @@ export default function SettingsClient({ profile, userId }: SettingsClientProps)
         router.refresh()
       }, 1000)
     } catch (err: any) {
-      setError(err.message || 'Failed to remove avatar')
+      setError(err.message || tErrors('failedRemoveAvatar'))
     } finally {
       setUploadingAvatar(false)
     }

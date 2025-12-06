@@ -24,10 +24,11 @@ const getRankImage = (rank: string | undefined | null): string | null => {
 }
 
 interface PlayerDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function PlayerDetailPage({ params }: PlayerDetailPageProps) {
+  const { id } = await params
   // Require manager role and get team access
   const { user, teamId, team } = await requireManagerTeamAccess()
   const t = await getTranslations('players')
@@ -39,7 +40,7 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
   const { data: player, error } = await supabase
     .from('profiles')
     .select('*, teams(name)')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('role', 'player')
     .eq('team_id', teamId)
     .single()

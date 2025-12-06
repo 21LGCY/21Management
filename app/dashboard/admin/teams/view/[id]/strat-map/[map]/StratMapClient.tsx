@@ -68,7 +68,7 @@ export default function StratMapClient({
 
   const handleSaveComposition = async () => {
     if (selectedAgents.length === 0) {
-      alert('Please select at least one agent')
+      alert(t('pleaseSelectAgent'))
       return
     }
 
@@ -125,7 +125,7 @@ export default function StratMapClient({
     } catch (error: any) {
       console.error('Error saving composition:', error)
       const errorMessage = error?.message || 'Unknown error'
-      alert(`Failed to save composition: ${errorMessage}`)
+      alert(`${t('failedSaveComposition')}: ${errorMessage}`)
     }
   }
 

@@ -7,10 +7,11 @@ import { createClient } from '@/lib/supabase/server'
 export default async function PlayerPraccsReviewPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const user = await requireRole(['player'])
-  const matchId = params.id
+  const matchId = id
   
   // Get player's team_id from their profile
   const supabase = await createClient()

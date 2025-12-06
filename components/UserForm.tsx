@@ -7,6 +7,7 @@ import { ValorantRole, ValorantRank, UserRole, StaffRole } from '@/lib/types/dat
 import { Save, X, User, Shield, Award, Link as LinkIcon, Globe } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
+import { useTranslations } from 'next-intl'
 
 interface UserFormProps {
   userId?: string
@@ -59,6 +60,9 @@ const EUROPEAN_COUNTRIES = [
 export default function UserForm({ userId }: UserFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('forms')
+  const tCommon = useTranslations('common')
+  const tRoles = useTranslations('roles')
   const [loading, setLoading] = useState(false)
   const [teams, setTeams] = useState<any[]>([])
   
@@ -180,7 +184,7 @@ export default function UserForm({ userId }: UserFormProps) {
       } else {
         // Create new user
         if (!formData.username || !formData.password) {
-          alert('Username and password are required')
+          alert(t('usernamePasswordRequired'))
           setLoading(false)
           return
         }
@@ -238,7 +242,7 @@ export default function UserForm({ userId }: UserFormProps) {
       router.refresh()
     } catch (error: any) {
       console.error('Error saving user:', error)
-      alert(error.message || 'Error saving user')
+      alert(error.message || t('errorSavingUser'))
     } finally {
       setLoading(false)
     }
@@ -270,15 +274,15 @@ export default function UserForm({ userId }: UserFormProps) {
             <User className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Account Information</h3>
-            <p className="text-xs text-gray-400">Basic account credentials and settings</p>
+            <h3 className="text-lg font-semibold text-white">{t('accountInfo')}</h3>
+            <p className="text-xs text-gray-400">{t('accountInfoDescUser')}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username <span className="text-red-400">*</span>
+              {t('username')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -289,38 +293,38 @@ export default function UserForm({ userId }: UserFormProps) {
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {userId && (
-              <p className="mt-1.5 text-xs text-gray-500">Username cannot be changed</p>
+              <p className="mt-1.5 text-xs text-gray-500">{t('usernameCannotChange')}</p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              {userId ? 'New Password' : 'Password'} {!userId && <span className="text-red-400">*</span>}
+              {userId ? t('newPassword') : t('password')} {!userId && <span className="text-red-400">*</span>}
             </label>
             <input
               type="password"
               required={!userId}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder={userId ? 'Leave blank to keep current' : ''}
+              placeholder={userId ? t('leaveBlankToKeep') : ''}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
             {userId && (
-              <p className="mt-1.5 text-xs text-gray-500">Leave blank to keep current password</p>
+              <p className="mt-1.5 text-xs text-gray-500">{t('leaveBlankToKeep')}</p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Account Type <span className="text-red-400">*</span>
+              {t('userRole')} <span className="text-red-400">*</span>
             </label>
             <CustomSelect
               value={formData.role}
               onChange={(value) => setFormData({ ...formData, role: value as UserRole })}
               options={[
-                { value: 'player', label: 'Player' },
-                { value: 'manager', label: 'Manager' },
-                { value: 'admin', label: 'Admin' }
+                { value: 'player', label: tRoles('player') },
+                { value: 'manager', label: tRoles('manager') },
+                { value: 'admin', label: tRoles('admin') }
               ]}
               className="w-full"
             />
@@ -328,21 +332,21 @@ export default function UserForm({ userId }: UserFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Avatar URL
+              {t('avatarUrl')}
             </label>
             <input
               type="url"
               value={formData.avatar_url}
               onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-              placeholder="https://example.com/avatar.jpg"
+              placeholder={t('avatarUrlPlaceholder')}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             />
-            <p className="mt-1.5 text-xs text-gray-500">Square image, at least 256x256px recommended</p>
+            <p className="mt-1.5 text-xs text-gray-500">{t('avatarRecommendation')}</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nationality
+              {t('nationality')}
             </label>
             <SearchableCountrySelect
               value={formData.nationality}
@@ -363,21 +367,21 @@ export default function UserForm({ userId }: UserFormProps) {
               <Award className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Player Information</h3>
-              <p className="text-xs text-gray-400">In-game details and team assignment</p>
+              <h3 className="text-lg font-semibold text-white">{t('playerInfo')}</h3>
+              <p className="text-xs text-gray-400">{t('playerInfoDesc')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                In-Game Name
+                {t('inGameName')}
               </label>
               <input
                 type="text"
                 value={formData.in_game_name}
                 onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-                placeholder="IGN"
+                placeholder={t('enterValorantUsername')}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
@@ -402,13 +406,13 @@ export default function UserForm({ userId }: UserFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Position
+                {t('rolePosition')}
               </label>
               <CustomSelect
                 value={formData.position}
                 onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
                 options={[
-                  { value: '', label: 'Select Position' },
+                  { value: '', label: t('selectRole') },
                   ...VALORANT_ROLES.map(role => ({
                     value: role,
                     label: role
@@ -420,13 +424,13 @@ export default function UserForm({ userId }: UserFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Rank
+                {t('rank')}
               </label>
               <CustomSelect
                 value={formData.rank}
                 onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
                 options={[
-                  { value: '', label: 'Select Rank' },
+                  { value: '', label: t('selectRank') },
                   ...VALORANT_RANKS.map(rank => ({
                     value: rank,
                     label: rank
@@ -439,7 +443,7 @@ export default function UserForm({ userId }: UserFormProps) {
             {/* Agent Pool */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Agent Pool
+                {t('agentPool')}
               </label>
               <div className="space-y-3">
                 <div className="flex gap-2">
@@ -447,7 +451,7 @@ export default function UserForm({ userId }: UserFormProps) {
                     value={championInput}
                     onChange={(value) => setChampionInput(value)}
                     options={[
-                      { value: '', label: 'Select agent...' },
+                      { value: '', label: t('selectAgent') },
                       ...VALORANT_AGENTS.map(agent => ({
                         value: agent,
                         label: agent
@@ -461,7 +465,7 @@ export default function UserForm({ userId }: UserFormProps) {
                     disabled={!championInput}
                     className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30"
                   >
-                    Add
+                    {tCommon('add')}
                   </button>
                 </div>
                 {formData.champion_pool.length > 0 && (
@@ -485,7 +489,7 @@ export default function UserForm({ userId }: UserFormProps) {
                 )}
                 {formData.champion_pool.length === 0 && (
                   <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                    <p className="text-sm text-gray-500">No agents added yet</p>
+                    <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
                   </div>
                 )}
               </div>
@@ -503,8 +507,8 @@ export default function UserForm({ userId }: UserFormProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">IGL (In-Game Leader)</span>
-                  <p className="text-xs text-gray-500">This player leads the team strategy</p>
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{t('igl')}</span>
+                  <p className="text-xs text-gray-500">{t('iglDesc')}</p>
                 </div>
               </label>
 
@@ -519,8 +523,8 @@ export default function UserForm({ userId }: UserFormProps) {
                   />
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">Substitute Player</span>
-                  <p className="text-xs text-gray-500">Backup roster member</p>
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{t('substitute')}</span>
+                  <p className="text-xs text-gray-500">{t('substituteDesc')}</p>
                 </div>
               </label>
             </div>
@@ -534,15 +538,15 @@ export default function UserForm({ userId }: UserFormProps) {
               <LinkIcon className="w-5 h-5 text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Links & Profiles</h3>
-              <p className="text-xs text-gray-400">External profile links</p>
+              <h3 className="text-lg font-semibold text-white">{t('linksProfiles')}</h3>
+              <p className="text-xs text-gray-400">{t('linksProfilesDesc')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Valorant Tracker URL
+                {t('valorantTrackerUrl')}
               </label>
               <input
                 type="url"
@@ -555,7 +559,7 @@ export default function UserForm({ userId }: UserFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Twitter/X URL
+                {t('twitterUrl')}
               </label>
               <input
                 type="url"
@@ -580,21 +584,21 @@ export default function UserForm({ userId }: UserFormProps) {
               <Shield className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Manager Information</h3>
-              <p className="text-xs text-gray-400">Team assignment and staff role</p>
+              <h3 className="text-lg font-semibold text-white">{t('managerInfo')}</h3>
+              <p className="text-xs text-gray-400">{t('managerInfoDesc')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Team
+                {t('assignedTeam')}
               </label>
               <CustomSelect
                 value={formData.team_id}
                 onChange={(value) => setFormData({ ...formData, team_id: value })}
                 options={[
-                  { value: '', label: 'No Team' },
+                  { value: '', label: t('noTeam') },
                   ...teams.map(team => ({
                     value: team.id,
                     label: team.name
@@ -606,13 +610,13 @@ export default function UserForm({ userId }: UserFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Staff Role
+                {t('staffRole')}
               </label>
               <CustomSelect
                 value={formData.staff_role}
                 onChange={(value) => setFormData({ ...formData, staff_role: value as StaffRole })}
                 options={[
-                  { value: '', label: 'Select Role' },
+                  { value: '', label: t('selectRole') },
                   ...STAFF_ROLES.map(role => ({
                     value: role,
                     label: role
@@ -631,15 +635,15 @@ export default function UserForm({ userId }: UserFormProps) {
               <LinkIcon className="w-5 h-5 text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Links & Profiles</h3>
-              <p className="text-xs text-gray-400">External profile links</p>
+              <h3 className="text-lg font-semibold text-white">{t('linksProfiles')}</h3>
+              <p className="text-xs text-gray-400">{t('linksProfilesDesc')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Valorant Tracker URL
+                {t('valorantTrackerUrl')}
               </label>
               <input
                 type="url"
@@ -652,7 +656,7 @@ export default function UserForm({ userId }: UserFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Twitter/X URL
+                {t('twitterUrl')}
               </label>
               <input
                 type="url"
@@ -674,7 +678,7 @@ export default function UserForm({ userId }: UserFormProps) {
           onClick={() => router.back()}
           className="px-6 py-2.5 bg-dark border border-gray-800 hover:border-gray-700 text-white rounded-lg transition-all font-medium"
         >
-          Cancel
+          {tCommon('cancel')}
         </button>
         <button
           type="submit"
@@ -684,12 +688,12 @@ export default function UserForm({ userId }: UserFormProps) {
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-              Saving...
+              {tCommon('saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              {userId ? 'Update User' : 'Create User'}
+              {userId ? t('updateUser') : t('createUser')}
             </>
           )}
         </button>

@@ -12,12 +12,13 @@ const VALID_MAPS: ValorantMap[] = [
 export default async function PlayerStratMapPage({ 
   params 
 }: { 
-  params: { map: string } 
+  params: Promise<{ map: string }>
 }) {
+  const { map } = await params
   const user = await requireRole(['player'])
   
   // Capitalize first letter to match enum
-  const mapName = params.map.charAt(0).toUpperCase() + params.map.slice(1) as ValorantMap
+  const mapName = map.charAt(0).toUpperCase() + map.slice(1) as ValorantMap
   
   // Validate map name
   if (!VALID_MAPS.includes(mapName)) {

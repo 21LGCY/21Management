@@ -53,11 +53,13 @@ const getHeatmapColor = (count: number): string => {
 const HeatmapCell = memo(function HeatmapCell({ 
   count, 
   playerNames, 
-  colorClass 
+  colorClass,
+  playerAvailableText
 }: { 
   count: number
   playerNames: string[]
-  colorClass: string 
+  colorClass: string
+  playerAvailableText: string 
 }) {
   return (
     <div
@@ -76,7 +78,7 @@ const HeatmapCell = memo(function HeatmapCell({
       {count > 0 && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none whitespace-nowrap">
           <div className="font-semibold mb-1">
-            {count} {count === 1 ? 'player available' : 'players available'}:
+            {playerAvailableText}:
           </div>
           <div className="space-y-1">
             {playerNames.map((name, index) => (
@@ -185,6 +187,7 @@ function AvailabilityHeatmap({ availabilities, weekStart, userTimezone = ORG_TIM
                         count={slotData.count}
                         playerNames={slotData.players}
                         colorClass={getHeatmapColor(slotData.count)}
+                        playerAvailableText={tCommon('playerAvailableCount', { count: slotData.count })}
                       />
                     )
                   })}

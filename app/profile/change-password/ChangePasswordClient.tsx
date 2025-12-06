@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Lock, Eye, EyeOff, Save, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 interface ChangePasswordClientProps {
   userId: string
@@ -14,6 +15,8 @@ interface ChangePasswordClientProps {
 export default function ChangePasswordClient({ userId, role }: ChangePasswordClientProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('profile')
+  const tCommon = useTranslations('common')
   
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -35,13 +38,13 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
 
     // Validate passwords
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match')
+      setError(t('passwordsDoNotMatch'))
       setLoading(false)
       return
     }
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long')
+      setError(t('passwordMinLength'))
       setLoading(false)
       return
     }
@@ -62,7 +65,7 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
         router.refresh()
       }, 2000)
     } catch (err: any) {
-      setError(err.message || 'Failed to update password')
+      setError(err.message || t('failedUpdatePassword'))
     } finally {
       setLoading(false)
     }
@@ -78,12 +81,12 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            {t('backToDashboard')}
           </Link>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Change Password
+            {t('changePassword')}
           </h1>
-          <p className="text-gray-400 mt-2">Update your account password</p>
+          <p className="text-gray-400 mt-2">{t('updateYourPassword')}</p>
         </div>
 
         {/* Password Form */}
@@ -92,7 +95,7 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
             {/* Current Password Field */}
             <div>
               <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                Current Password
+                {t('currentPassword')}
               </label>
               <div className="flex items-center gap-0 bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                 <span className="pl-3 text-gray-500">
@@ -119,7 +122,7 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
             {/* New Password Field */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                New Password
+                {t('newPassword')}
               </label>
               <div className="flex items-center gap-0 bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                 <span className="pl-3 text-gray-500">
@@ -142,13 +145,13 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
                   {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
+              <p className="text-xs text-gray-500 mt-1">{t('passwordMinLengthHint')}</p>
             </div>
 
             {/* Confirm Password Field */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                Confirm New Password
+                {t('confirmNewPassword')}
               </label>
               <div className="flex items-center gap-0 bg-gray-900 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
                 <span className="pl-3 text-gray-500">
@@ -181,7 +184,7 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
             
             {success && (
               <div className="p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm">
-                Password updated successfully!
+                {t('passwordUpdatedSuccess')}
               </div>
             )}
 
@@ -194,12 +197,12 @@ export default function ChangePasswordClient({ userId, role }: ChangePasswordCli
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Updating...
+                  {t('updating')}
                 </>
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  Update Password
+                  {t('updatePassword')}
                 </>
               )}
             </button>

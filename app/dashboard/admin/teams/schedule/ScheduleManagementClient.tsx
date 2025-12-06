@@ -653,7 +653,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
         <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white">
-              {isDeleteMode ? '🗑️ Delete Mode' : '✏️ Edit Mode'}
+              {isDeleteMode ? `🗑️ ${tCommon('deleteMode')}` : `✏️ ${tCommon('editMode')}`}
             </h3>
             <div className="flex gap-2">
               <button
@@ -664,13 +664,13 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                     : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                 }`}
               >
-                {isDeleteMode ? 'Stop Deleting' : 'Delete'}
+                {isDeleteMode ? tCommon('stopDeleting') : tCommon('delete')}
               </button>
               <button
                 onClick={toggleEditMode}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
               >
-                Close Edit Mode
+                {tCommon('closeEditMode')}
               </button>
             </div>
           </div>
@@ -678,10 +678,10 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
           {!isDeleteMode && (
             <>
               <p className="text-sm text-gray-400 mb-4">
-                Select an activity type, then <strong>drag</strong> on the calendar to create multiple activities
+                {t('selectTypeAndDrag')}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                {Object.entries(activityTypes).map(([key, { icon: Icon, color, name }]) => (
+                {Object.entries(activityTypes).map(([key, { icon: Icon, color }]) => (
                   <button
                     key={key}
                     onClick={() => setSelectedActivityType(key)}
@@ -692,16 +692,16 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
                     }`}
                   >
                     <Icon className="w-5 h-5 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-center">{name}</p>
+                    <p className="text-xs font-medium text-center">{t(`activityTypes.${key}`)}</p>
                   </button>
                 ))}
               </div>
               {selectedActivityType && (
                 <div className="mt-4 p-3 bg-primary/10 border border-primary/30 rounded-lg">
                   <p className="text-primary text-sm">
-                    ✓ <strong>{activityTypes[selectedActivityType]?.name}</strong> selected
+                    ✓ <strong>{t(`activityTypes.${selectedActivityType}`)}</strong> {t('selected')}
                     <br />
-                    <span className="text-gray-400">Drag on the calendar to select multiple slots</span>
+                    <span className="text-gray-400">{t('dragOnCalendar')}</span>
                   </p>
                 </div>
               )}
@@ -710,7 +710,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
 
           {isDeleteMode && (
             <p className="text-sm text-red-400">
-              Click or <strong>drag</strong> on activities to select and delete them
+              {t('clickDragDelete')}
             </p>
           )}
         </div>
@@ -724,7 +724,7 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
             className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <Edit className="w-5 h-5" />
-            Enable Edit Mode
+            {tCommon('enableEditMode')}
           </button>
         </div>
       )}

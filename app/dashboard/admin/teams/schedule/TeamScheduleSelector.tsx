@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Shield, Calendar } from 'lucide-react'
 import ScheduleManagementClient from './ScheduleManagementClient'
 import { TimezoneOffset } from '@/lib/types/database'
+import { useTranslations } from 'next-intl'
 
 interface Team {
   id: string
@@ -20,6 +21,7 @@ interface TeamScheduleSelectorProps {
 
 export default function TeamScheduleSelector({ teams, user, userTimezone }: TeamScheduleSelectorProps) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
+  const t = useTranslations('schedule')
 
   return (
     <div className="space-y-6">
@@ -27,7 +29,7 @@ export default function TeamScheduleSelector({ teams, user, userTimezone }: Team
       <div className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-white">Select a Team</h2>
+          <h2 className="text-lg font-semibold text-white">{t('selectATeam')}</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
@@ -67,7 +69,7 @@ export default function TeamScheduleSelector({ teams, user, userTimezone }: Team
                 <div className="mt-3 pt-3 border-t border-primary/30">
                   <div className="flex items-center gap-2 text-primary text-sm font-medium">
                     <Calendar className="w-4 h-4" />
-                    <span>Viewing Schedule</span>
+                    <span>{t('viewingSchedule')}</span>
                   </div>
                 </div>
               )}
@@ -86,8 +88,8 @@ export default function TeamScheduleSelector({ teams, user, userTimezone }: Team
       ) : (
         <div className="text-center py-12 bg-dark-card border border-gray-800 rounded-xl">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400 text-lg mb-2">No team selected</p>
-          <p className="text-gray-500">Click on a team above to view and manage its schedule</p>
+          <p className="text-gray-400 text-lg mb-2">{t('noTeamSelected')}</p>
+          <p className="text-gray-500">{t('clickTeamToManage')}</p>
         </div>
       )}
     </div>

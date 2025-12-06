@@ -6,6 +6,7 @@ import { UserProfile, MatchType } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Save, X, Plus, Trash2, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface EditMatchClientProps {
   matchId: string
@@ -31,6 +32,8 @@ interface PlayerStats {
 export default function EditMatchClient({ matchId, teamId }: EditMatchClientProps) {
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('matches')
+  const tCommon = useTranslations('common')
   
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(true)
@@ -473,14 +476,14 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
                       <div className="p-4 bg-dark">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Player *</label>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">{t('player')} *</label>
                             <select
                               value={stat.playerId}
                               onChange={(e) => updatePlayerStat(index, 'playerId', e.target.value)}
                               className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                               required
                             >
-                              <option value="">Select Player</option>
+                              <option value="">{t('selectPlayer')}</option>
                               {players
                                 .filter(p => !playerStats.some((s, i) => i !== index && s.playerId === p.id))
                                 .concat(players.filter(p => p.id === stat.playerId))
@@ -494,22 +497,22 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Agent Played *</label>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPlayed')} *</label>
                             <input
                               type="text"
                               value={stat.agentPlayed}
                               onChange={(e) => updatePlayerStat(index, 'agentPlayed', e.target.value)}
-                              placeholder="e.g., Jett, Sage"
+                              placeholder={t('agentPlaceholder')}
                               className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none"
                               required
                             />
                           </div>
 
                           {/* Stats inputs */}
-                          <div><label className="block text-sm font-medium text-gray-300 mb-2">Kills</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-sm font-medium text-gray-300 mb-2">Deaths</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-sm font-medium text-gray-300 mb-2">Assists</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
-                          <div><label className="block text-sm font-medium text-gray-300 mb-2">ACS</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('kills')}</label><input type="number" min="0" value={stat.kills} onChange={(e) => updatePlayerStat(index, 'kills', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('deaths')}</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('assists')}</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('avgCs')}</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
                         </div>
                       </div>
                     )}

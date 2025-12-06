@@ -7,10 +7,11 @@ import PlayerForm from '@/components/PlayerForm'
 import { getTranslations } from 'next-intl/server'
 
 interface EditPlayerPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
+  const { id } = await params
   const t = await getTranslations('players')
   
   // Require manager role and get team access
@@ -22,7 +23,7 @@ export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
   const { data: player, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('role', 'player')
     .eq('team_id', teamId)
     .single()

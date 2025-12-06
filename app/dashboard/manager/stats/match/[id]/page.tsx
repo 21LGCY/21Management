@@ -5,12 +5,13 @@ import Navbar from '@/components/Navbar'
 import MatchStatsClient from './MatchStatsClient'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function MatchStatsPage({ params }: PageProps) {
+  const { id } = await params
   const { user, teamId } = await requireManagerTeamAccess()
   const supabase = await createClient()
 
@@ -18,7 +19,7 @@ export default async function MatchStatsPage({ params }: PageProps) {
   const { data: match, error: matchError } = await supabase
     .from('match_history')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('team_id', teamId)
     .single()
 
@@ -30,7 +31,7 @@ export default async function MatchStatsPage({ params }: PageProps) {
     <div className="min-h-screen bg-dark">
       <Navbar role={user.role} username={user.username} />
       <MatchStatsClient 
-        matchId={params.id}
+        matchId={id}
         teamId={teamId!}
         initialMatch={match}
       />

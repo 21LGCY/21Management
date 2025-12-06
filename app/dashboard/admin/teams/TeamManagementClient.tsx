@@ -218,12 +218,12 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Match History */}
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 gap-4">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{tMatches('title')}</h2>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-shrink-0">
               <Link
                 href="/dashboard/admin/matches"
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 text-gray-300 hover:text-white rounded-xl font-medium transition-all duration-300 border border-gray-600/50 hover:border-primary/50 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:brightness-125"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 text-gray-300 hover:text-white rounded-xl font-medium transition-all duration-300 border border-gray-600/50 hover:border-primary/50 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:brightness-125 whitespace-nowrap"
               >
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">{tCommon('viewAll')}</span>
