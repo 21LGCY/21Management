@@ -23,18 +23,55 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Track user activity (non-blocking, for Discord daily summaries)
+  if (isAuthenticated && userCookie?.value) {
+    trackUserActivity(request, userCookie.value).catch(() => {
+      // Silent fail - don't break page loads
+    })
+  }
+
   return NextResponse.next()
+}
+
+/**
+ * Track user activity for Discord daily summaries
+ * Updates user_sessions table with latest activity
+ */
+async function trackUserActivity(request: NextRequest, userCookieValue: string) {
+  try {
+    const user = JSON.parse(userCookieValue)
+    if (!user?.user_id) return
+
+    // Determine if this is a login
+    const isLogin = request.nextUrl.pathname === '/login' || 
+                    request.headers.get('referer')?.includes('/login')
+
+    // Call internal API to update activity
+    const apiUrl = new URL('/api/activity/track', request.url)
+    await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': user.user_id,
+        'x-is-login': isLogin ? 'true' : 'false',
+      },
+    })
+  } catch {
+    // Silent fail
+  }
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - api/activity/track (avoid double tracking)
+     * - api/cron (skip cron endpoints)
+     * - static assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/activity|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

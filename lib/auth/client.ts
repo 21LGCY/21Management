@@ -48,6 +48,9 @@ export async function login(username: string, password: string): Promise<AuthUse
     Cookies.set(LOCALE_COOKIE, profile.locale, { expires: 365, secure: true, sameSite: 'strict' })
   }
   
+  // Note: Login tracking is now handled automatically by middleware
+  // Activity tracking will capture this in the daily Discord summary
+  
   return user
 }
 
