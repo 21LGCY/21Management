@@ -42,11 +42,11 @@ const activityTypes: { [key: string]: { icon: any; color: string; name: string }
   }
 }
 
-// Generate time slots from 3:00 PM to 11:00 PM (matching player availability)
+// Generate time slots from 2:00 PM to 11:00 PM (matching player availability)
 // These are stored in ORG_TIMEZONE (CET/Paris) - manager creates in CET
 const generateTimeSlots = () => {
   const slots = []
-  for (let hour = 3; hour < 12; hour++) {
+  for (let hour = 2; hour < 12; hour++) {
     slots.push(`${hour}:00 PM`)
   }
   return slots
