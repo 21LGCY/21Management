@@ -4,8 +4,9 @@ import { sendDailySummary } from '@/lib/discord/webhook'
 
 /**
  * Vercel Cron Job: Daily Discord Activity Summary
- * Runs at 8:00 PM UTC daily
+ * Runs at 5:00 PM UTC (6:00 PM French time) daily
  * Summarizes activity from 00:00-23:59 of the previous day
+ * Also auto-deletes records older than 30 days to prevent database bloat
  */
 export async function GET(request: NextRequest) {
   // Verify cron secret to prevent unauthorized access
@@ -93,6 +94,18 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Cleanup: Delete records older than 30 days to prevent database bloat
+    const cleanupDate = new Date()
+    cleanupDate.setDate(cleanupDate.getDate() - 30)
+    const cleanupDateString = cleanupDate.toISOString().split('T')[0]
+    
+    await supabase
+      .from('user_sessions')
+      .delete()
+      .lt('session_date', cleanupDateString)
+    
+    // Note: We don't check for errors on cleanup - it's non-critical
 
     return NextResponse.json({
       success: true,
