@@ -35,6 +35,7 @@ export default async function ManagerDashboard() {
       .from('schedule_activities')
       .select('*')
       .eq('team_id', teamId)
+      .gte('activity_date', new Date().toISOString())
       .order('activity_date', { ascending: true, nullsFirst: false })
       .limit(5),
     // Get tournaments where manager's team is participating

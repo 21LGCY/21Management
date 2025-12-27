@@ -47,7 +47,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Get schedule activities for the team
+    const today = new Date().toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+
+    // Get schedule activities for the team (only future or recurring activities)
     const { data: activities, error } = await supabase
       .from('schedule_activities')
       .select(`
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
         created_by_profile:profiles!schedule_activities_created_by_fkey(username)
       `)
       .eq('team_id', teamId)
+      .or(`activity_date.gte.${today},activity_date.is.null`) // Include future dated activities or recurring ones (null date)
       .order('day_of_week', { ascending: true })
       .order('time_slot', { ascending: true })
 

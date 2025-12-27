@@ -1,7 +1,7 @@
 'use client'
 
 import { MatchHistoryWithStats, PlayerMatchStats } from '@/lib/types/database'
-import { ArrowLeft, Trophy, Calendar, Map, Flag, Users, Target, Crosshair, Heart } from 'lucide-react'
+import { ArrowLeft, Trophy, Calendar, Map, Flag, Users, Target, Crosshair, Heart, Edit } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -41,13 +41,21 @@ export default function MatchDetailClient({ match }: MatchDetailClientProps) {
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link href="/dashboard/admin/matches">
-        <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-          <ArrowLeft className="w-4 h-4" />
-          {t('backToMatches')}
-        </button>
-      </Link>
+      {/* Header with Back and Edit Buttons */}
+      <div className="flex items-center justify-between">
+        <Link href="/dashboard/admin/matches">
+          <button className="flex items-center gap-2 text-gray-400 hover:text-white transition">
+            <ArrowLeft className="w-4 h-4" />
+            {t('backToMatches')}
+          </button>
+        </Link>
+        <Link href={`/dashboard/admin/teams/view/${match.team_id}/matches/${match.id}/edit`}>
+          <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+            <Edit className="w-4 h-4" />
+            {t('editMatch')}
+          </button>
+        </Link>
+      </div>
 
       {/* Match Header */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-8">

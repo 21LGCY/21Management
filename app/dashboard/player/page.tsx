@@ -21,7 +21,8 @@ export default async function PlayerDashboard() {
   // Run remaining queries in parallel for faster page load
   const [
     { data: upcomingMatches },
-    { data: recentMatches }
+    { data: recentMatches },
+    { data: matchHistory }
   ] = await Promise.all([
     // Get upcoming matches for player's team
     supabase
@@ -31,18 +32,24 @@ export default async function PlayerDashboard() {
       .gte('scheduled_at', new Date().toISOString())
       .order('scheduled_at', { ascending: true })
       .limit(5),
-    // Get recent matches
+    // Get recent scheduled matches
     supabase
       .from('matches')
       .select('*, teams(name)')
       .eq('team_id', teamId)
       .lte('scheduled_at', new Date().toISOString())
       .order('scheduled_at', { ascending: false })
-      .limit(5)
+      .limit(5),
+    // Get match history for statistics
+    supabase
+      .from('match_history')
+      .select('*')
+      .eq('team_id', teamId)
+      .order('match_date', { ascending: false })
   ])
 
-  const winCount = recentMatches?.filter(m => m.result === 'win').length || 0
-  const totalMatches = recentMatches?.length || 0
+  const winCount = matchHistory?.filter(m => m.result === 'win').length || 0
+  const totalMatches = matchHistory?.length || 0
   const winRate = totalMatches > 0 ? Math.round((winCount / totalMatches) * 100) : 0
 
   return (

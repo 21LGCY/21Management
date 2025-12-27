@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/database'
-import { ArrowLeft, Calendar, Trophy, Target, Users, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Calendar, Trophy, Target, Users, MessageSquare, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -67,24 +67,32 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/manager/stats">
-            <button className="p-2 hover:bg-dark-card rounded-lg transition">
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard/manager/stats">
+              <button className="p-2 hover:bg-dark-card rounded-lg transition">
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
+              </button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-white">{t('matchDetails')}</h1>
+              <p className="text-gray-400 mt-1">
+                {new Date(match.match_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            </div>
+          </div>
+          <Link href={`/dashboard/manager/stats/match/${matchId}/edit`}>
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+              <Edit className="w-4 h-4" />
+              {t('editMatch')}
             </button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-white">{t('matchDetails')}</h1>
-            <p className="text-gray-400 mt-1">
-              {new Date(match.match_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
-          </div>
         </div>
 
         {/* Match Overview */}
