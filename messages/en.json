@@ -1030,6 +1030,7 @@
     "map": "Map",
     "viewStats": "View Stats",
     "matchDetails": "Match Details",
+    "editMatch": "Edit Match",
     "teamAverage": "Team Average",
     "noPlayerStatsRecorded": "No player statistics recorded",
     "playerDataWillAppear": "Player performance data will appear here once added",

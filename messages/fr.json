@@ -1044,6 +1044,7 @@
     "map": "Carte",
     "viewStats": "Voir les stats",
     "matchDetails": "Détails du match",
+    "editMatch": "Modifier le match",
     "teamAverage": "Moyenne équipe",
     "noPlayerStatsRecorded": "Aucune statistique de joueur enregistrée",
     "playerDataWillAppear": "Les données de performance des joueurs apparaîtront ici une fois ajoutées",

@@ -300,6 +300,14 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
                           <Eye className="w-5 h-5" />
                         </button>
                       </Link>
+                      <Link href={`/dashboard/admin/teams/view/${match.team_id}/matches/${match.id}/edit`}>
+                        <button
+                          className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition"
+                          title={tCommon('edit')}
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                      </Link>
                       <button
                         onClick={() => deleteMatch(match.id)}
                         className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition"

@@ -373,6 +373,14 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
                             <Eye className="w-5 h-5" />
                           </button>
                         </Link>
+                        <Link href={`/dashboard/manager/stats/match/${match.id}/edit`}>
+                          <button 
+                            className="p-2 text-blue-400 hover:bg-blue-400/10 rounded transition"
+                            title={t('editMatch')}
+                          >
+                            <Edit className="w-5 h-5" />
+                          </button>
+                        </Link>
                       </div>
                     </div>
                   </div>
