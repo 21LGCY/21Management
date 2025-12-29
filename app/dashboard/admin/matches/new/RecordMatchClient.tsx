@@ -21,6 +21,7 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
+  econRating: number
   firstKills: number
   plants: number
   defuses: number
@@ -84,6 +85,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             deaths: 0,
             assists: 0,
             acs: 0,
+            econRating: 0,
             firstKills: 0,
             plants: 0,
             defuses: 0,
@@ -194,12 +196,11 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
             deaths: ps.deaths,
             assists: ps.assists,
             acs: ps.acs,
+            econ_rating: ps.econRating,
             agent_played: ps.agent || null,
-            headshot_percentage: 0,
-            first_kills: 0,
-            first_deaths: 0,
-            plants: 0,
-            defuses: 0
+            first_kills: ps.firstKills,
+            plants: ps.plants,
+            defuses: ps.defuses
           }))
 
         if (statsToInsert.length > 0) {
@@ -523,6 +524,20 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
 
                     <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('econRating')}</label>
+                      <input
+                        type="number"
+                        value={stat.econRating}
+                        onChange={(e) => updatePlayerStat(index, 'econRating', parseInt(e.target.value) || 0)}
+                        min="0"
+                        className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Objective Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-xs font-medium text-gray-400 mb-2">{t('firstBloods')}</label>
                       <input
                         type="number"
@@ -532,10 +547,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                         className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
                       />
                     </div>
-                  </div>
 
-                  {/* Objective Stats Grid */}
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-2">{t('plants')}</label>
                       <input
@@ -546,7 +558,10 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                         className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
                       />
                     </div>
+                  </div>
 
+                  {/* Defuses Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-2">{t('defuses')}</label>
                       <input

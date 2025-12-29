@@ -157,10 +157,13 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
 
   const fetchActivities = async () => {
     const supabase = createClient()
+    const today = new Date().toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+    
     const { data, error } = await supabase
       .from('schedule_activities')
       .select('*')
       .eq('team_id', teamId)
+      .or(`activity_date.gte.${today},activity_date.is.null`) // Include future dated activities or recurring ones (null date)
     
     if (error) {
       console.error('Error fetching activities:', error)

@@ -21,9 +21,8 @@ interface PlayerStats {
   deaths: number
   assists: number
   acs: number
-  headshotPercent: number
+  econRating: number
   firstKills: number
-  firstDeaths: number
   plants: number
   defuses: number
   agentPlayed: string
@@ -90,9 +89,8 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
         deaths: stat.deaths,
         assists: stat.assists,
         acs: stat.acs,
-        headshotPercent: stat.headshot_percentage || 0,
+        econRating: stat.econ_rating || 0,
         firstKills: stat.first_kills,
-        firstDeaths: stat.first_deaths,
         plants: stat.plants,
         defuses: stat.defuses,
         agentPlayed: stat.agent_played || ''
@@ -132,9 +130,8 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
         deaths: 0,
         assists: 0,
         acs: 0,
-        headshotPercent: 0,
+        econRating: 0,
         firstKills: 0,
-        firstDeaths: 0,
         plants: 0,
         defuses: 0,
         agentPlayed: ''
@@ -242,9 +239,8 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
           deaths: stat.deaths,
           assists: stat.assists,
           acs: stat.acs,
-          headshot_percentage: stat.headshotPercent,
+          econ_rating: stat.econRating,
           first_kills: stat.firstKills,
-          first_deaths: stat.firstDeaths,
           plants: stat.plants,
           defuses: stat.defuses,
           agent_played: stat.agentPlayed.trim()
@@ -513,6 +509,10 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
                           <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('deaths')}</label><input type="number" min="0" value={stat.deaths} onChange={(e) => updatePlayerStat(index, 'deaths', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
                           <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('assists')}</label><input type="number" min="0" value={stat.assists} onChange={(e) => updatePlayerStat(index, 'assists', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
                           <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('avgCs')}</label><input type="number" min="0" value={stat.acs} onChange={(e) => updatePlayerStat(index, 'acs', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('econRating')}</label><input type="number" min="0" value={stat.econRating} onChange={(e) => updatePlayerStat(index, 'econRating', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('firstBloods')}</label><input type="number" min="0" value={stat.firstKills} onChange={(e) => updatePlayerStat(index, 'firstKills', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('plants')}</label><input type="number" min="0" value={stat.plants} onChange={(e) => updatePlayerStat(index, 'plants', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
+                          <div><label className="block text-sm font-medium text-gray-300 mb-2">{t('defuses')}</label><input type="number" min="0" value={stat.defuses} onChange={(e) => updatePlayerStat(index, 'defuses', parseInt(e.target.value) || 0)} className="w-full px-4 py-2 bg-dark border border-gray-700 rounded-lg text-white focus:border-primary focus:outline-none" /></div>
                         </div>
                       </div>
                     )}

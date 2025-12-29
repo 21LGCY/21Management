@@ -197,9 +197,7 @@ export default function RecordMatchClient({ teamId, teamName, userId }: RecordMa
             acs: ps.acs,
             econ_rating: ps.econRating,
             agent_played: ps.agent || null,
-            headshot_percentage: 0,
             first_kills: ps.firstKills,
-            first_deaths: 0,
             plants: ps.plants,
             defuses: ps.defuses
           }))

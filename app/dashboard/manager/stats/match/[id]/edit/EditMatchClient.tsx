@@ -22,9 +22,7 @@ interface PlayerStats {
   assists: number
   acs: number
   econRating: number
-  headshotPercent: number
   firstKills: number
-  firstDeaths: number
   plants: number
   defuses: number
   agentPlayed: string
@@ -92,9 +90,7 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
         assists: stat.assists,
         acs: stat.acs,
         econRating: stat.econ_rating || 0,
-        headshotPercent: stat.headshot_percentage || 0,
         firstKills: stat.first_kills,
-        firstDeaths: stat.first_deaths,
         plants: stat.plants,
         defuses: stat.defuses,
         agentPlayed: stat.agent_played || ''
@@ -135,9 +131,7 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
         assists: 0,
         acs: 0,
         econRating: 0,
-        headshotPercent: 0,
         firstKills: 0,
-        firstDeaths: 0,
         plants: 0,
         defuses: 0,
         agentPlayed: ''
@@ -246,9 +240,7 @@ export default function EditMatchClient({ matchId, teamId }: EditMatchClientProp
           assists: stat.assists,
           acs: stat.acs,
           econ_rating: stat.econRating,
-          headshot_percentage: stat.headshotPercent,
           first_kills: stat.firstKills,
-          first_deaths: stat.firstDeaths,
           plants: stat.plants,
           defuses: stat.defuses,
           agent_played: stat.agentPlayed.trim()

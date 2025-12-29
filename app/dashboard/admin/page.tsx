@@ -42,7 +42,7 @@ export default async function AdminDashboard() {
     supabase
       .from('schedule_activities')
       .select('*, teams(name)')
-      .gte('activity_date', new Date().toISOString())
+      .or(`activity_date.gte.${new Date().toISOString().split('T')[0]},activity_date.is.null`) // Include future dated or recurring activities
       .order('activity_date', { ascending: true, nullsFirst: false })
       .limit(5),
     // Get players across all teams

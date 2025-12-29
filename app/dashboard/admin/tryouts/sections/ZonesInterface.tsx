@@ -8,13 +8,15 @@ import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
 
-// VALORANT European Zones mapping
+// VALORANT EMEA Competitive Zones mapping
 const VALORANT_ZONES: Record<string, string[]> = {
-  'Europe du Nord': ['Denmark', 'Finland', 'Ireland', 'Iceland', 'Norway', 'Sweden', 'United Kingdom', 'GB', 'UK', 'DK', 'FI', 'IE', 'IS', 'NO', 'SE'],
-  'Europe de l\'Est': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia', 'Bulgaria', 'Croatia', 'Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan', 'Latvia', 'Lithuania', 'Moldova', 'Montenegro', 'Poland', 'Romania', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Czechia', 'Czech Republic', 'Ukraine', 'Uzbekistan', 'AL', 'AM', 'AZ', 'BY', 'BA', 'BG', 'HR', 'EE', 'GE', 'GR', 'HU', 'KZ', 'LV', 'LT', 'MD', 'ME', 'PL', 'RO', 'RU', 'RS', 'SK', 'SI', 'CZ', 'UA', 'UZ'],
+  'Northern Europe': ['Denmark', 'Finland', 'Ireland', 'Iceland', 'Norway', 'Sweden', 'United Kingdom', 'GB', 'UK', 'DK', 'FI', 'IE', 'IS', 'NO', 'SE'],
+  'Eastern Europe': ['Albania', 'Armenia', 'Azerbaijan', 'Belarus', 'Bosnia', 'Bulgaria', 'Croatia', 'Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan', 'Latvia', 'Lithuania', 'Moldova', 'Montenegro', 'Poland', 'Romania', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Czechia', 'Czech Republic', 'Ukraine', 'Uzbekistan', 'AL', 'AM', 'AZ', 'BY', 'BA', 'BG', 'HR', 'EE', 'GE', 'GR', 'HU', 'KZ', 'LV', 'LT', 'MD', 'ME', 'PL', 'RO', 'RU', 'RS', 'SK', 'SI', 'CZ', 'UA', 'UZ'],
   'DACH': ['Germany', 'Austria', 'Switzerland', 'DE', 'AT', 'CH'],
-  'IBIT': ['Spain', 'Italy', 'Portugal', 'ES', 'IT', 'PT'],
+  'BENELUX': ['Belgium', 'Netherlands', 'Luxembourg', 'BE', 'NL', 'LU'],
   'France': ['France', 'FR'],
+  'IBIT': ['Spain', 'Portugal', 'Italy', 'ES', 'PT', 'IT'],
+  'Turkey & MENA': ['Turkey', 'TR', 'Middle East', 'North Africa'],
 }
 
 interface ZoneStats {
@@ -60,11 +62,22 @@ export default function ZonesInterface() {
   const getZoneForNationality = (nationality: string): string | null => {
     if (!nationality) return null
     
+    const normalizedNationality = nationality.toLowerCase().trim()
+    const isCountryCode = normalizedNationality.length <= 3
+    
     for (const [zone, countries] of Object.entries(VALORANT_ZONES)) {
-      if (countries.some(country => 
-        nationality.toLowerCase().includes(country.toLowerCase()) ||
-        country.toLowerCase().includes(nationality.toLowerCase())
-      )) {
+      if (countries.some(country => {
+        const normalizedCountry = country.toLowerCase().trim()
+        const isCountryCodeInList = normalizedCountry.length <= 3
+        
+        // Match codes with codes, and names with names
+        if (isCountryCode && isCountryCodeInList) {
+          return normalizedNationality === normalizedCountry
+        } else if (!isCountryCode && !isCountryCodeInList) {
+          return normalizedNationality.includes(normalizedCountry) || normalizedCountry.includes(normalizedNationality)
+        }
+        return false
+      })) {
         return zone
       }
     }
@@ -116,11 +129,13 @@ export default function ZonesInterface() {
 
   const getZoneColor = (zone: string): string => {
     const colors: Record<string, string> = {
-      'Europe du Nord': 'from-green-500 to-emerald-600',
-      'Europe de l\'Est': 'from-purple-500 to-violet-600',
+      'Northern Europe': 'from-blue-500 to-cyan-600',
+      'Eastern Europe': 'from-purple-500 to-violet-600',
       'DACH': 'from-yellow-500 to-orange-500',
+      'BENELUX': 'from-orange-500 to-red-500',
+      'France': 'from-blue-600 to-indigo-700',
       'IBIT': 'from-red-500 to-pink-500',
-      'France': 'from-blue-500 to-indigo-600',
+      'Turkey & MENA': 'from-red-600 to-orange-600',
       'Autre': 'from-gray-500 to-gray-600'
     }
     return colors[zone] || 'from-gray-500 to-gray-600'

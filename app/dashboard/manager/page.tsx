@@ -35,7 +35,7 @@ export default async function ManagerDashboard() {
       .from('schedule_activities')
       .select('*')
       .eq('team_id', teamId)
-      .gte('activity_date', new Date().toISOString())
+      .or(`activity_date.gte.${new Date().toISOString().split('T')[0]},activity_date.is.null`) // Include future dated or recurring activities
       .order('activity_date', { ascending: true, nullsFirst: false })
       .limit(5),
     // Get tournaments where manager's team is participating

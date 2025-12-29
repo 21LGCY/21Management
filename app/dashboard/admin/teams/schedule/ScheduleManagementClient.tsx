@@ -173,12 +173,15 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
       setLoading(true)
       const supabase = createClient()
       
+      const today = new Date().toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+      
       // Fetch activities and team players count in parallel
       const [activitiesResult, playersResult] = await Promise.all([
         supabase
           .from('schedule_activities')
           .select('*')
-          .eq('team_id', team.id),
+          .eq('team_id', team.id)
+          .or(`activity_date.gte.${today},activity_date.is.null`), // Include future dated activities or recurring ones (null date)
         supabase
           .from('profiles')
           .select('id')

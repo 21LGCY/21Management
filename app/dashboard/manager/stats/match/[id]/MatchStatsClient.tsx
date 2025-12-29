@@ -52,7 +52,7 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
     deaths: (playerStats.reduce((sum, p) => sum + p.deaths, 0) / playerStats.length).toFixed(1),
     assists: (playerStats.reduce((sum, p) => sum + p.assists, 0) / playerStats.length).toFixed(1),
     acs: (playerStats.reduce((sum, p) => sum + p.acs, 0) / playerStats.length).toFixed(0),
-    headshotPercent: (playerStats.reduce((sum, p) => sum + (p.headshot_percentage || 0), 0) / playerStats.length).toFixed(1),
+    econRating: (playerStats.reduce((sum, p) => sum + (p.econ_rating || 0), 0) / playerStats.length).toFixed(0),
   } : null
 
   if (loading) {
@@ -162,14 +162,13 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
                 <p className="text-xl font-bold text-primary">{teamAvgStats.acs}</p>
               </div>
               <div className="text-center p-4 bg-dark/50 rounded-lg border border-gray-800">
-                <p className="text-sm text-gray-400 mb-1">HS%</p>
-                <p className="text-xl font-bold text-white">{teamAvgStats.headshotPercent}%</p>
+                <p className="text-sm text-gray-400 mb-1">ECON Rating</p>
+                <p className="text-xl font-bold text-white">{teamAvgStats.econRating}</p>
               </div>
               <div className="text-center p-4 bg-dark/50 rounded-lg border border-gray-800">
-                <p className="text-sm text-gray-400 mb-1">FK/FD</p>
-                <p className="text-xl font-bold text-white">
-                  {playerStats.reduce((sum, p) => sum + p.first_kills, 0)}/
-                  {playerStats.reduce((sum, p) => sum + p.first_deaths, 0)}
+                <p className="text-sm text-gray-400 mb-1">First Bloods</p>
+                <p className="text-xl font-bold text-green-400">
+                  {playerStats.reduce((sum, p) => sum + p.first_kills, 0)}
                 </p>
               </div>
               <div className="text-center p-4 bg-dark/50 rounded-lg border border-gray-800">
@@ -201,9 +200,8 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">A</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">K/D</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">ACS</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">HS%</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">ECON</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">FK</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">FD</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">Plants</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">Defuses</th>
                   </tr>
@@ -237,9 +235,8 @@ export default function MatchStatsClient({ matchId, teamId, initialMatch }: Matc
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center text-primary font-semibold">{stat.acs}</td>
-                          <td className="py-3 px-4 text-center text-white">{stat.headshot_percentage || 0}%</td>
+                          <td className="py-3 px-4 text-center text-white">{stat.econ_rating || 0}</td>
                           <td className="py-3 px-4 text-center text-green-400">{stat.first_kills}</td>
-                          <td className="py-3 px-4 text-center text-red-400">{stat.first_deaths}</td>
                           <td className="py-3 px-4 text-center text-gray-300">{stat.plants}</td>
                           <td className="py-3 px-4 text-center text-gray-300">{stat.defuses}</td>
                         </tr>
