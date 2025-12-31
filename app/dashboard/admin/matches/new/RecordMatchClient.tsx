@@ -120,6 +120,7 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
         deaths: 0,
         assists: 0,
         acs: 0,
+        econRating: 0,
         firstKills: 0,
         plants: 0,
         defuses: 0,
