@@ -37,8 +37,8 @@ export const DAY_LABELS: Record<DayOfWeek, string> = {
   sunday: 'Sun',
 }
 
-// Base hours in ORG timezone (CET): 14-23 (2PM-11PM)
-export const ORG_HOURS: HourSlot[] = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+// Base hours in ORG timezone (CET): 12PM-11PM and 12AM
+export const ORG_HOURS: HourSlot[] = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0]
 
 // ============================================
 // TIMEZONE OFFSET FUNCTIONS

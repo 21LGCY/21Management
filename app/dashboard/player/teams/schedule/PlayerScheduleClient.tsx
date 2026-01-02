@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, ChevronLeft, ChevronRight, Users, Target, Trophy, Dumbbell, BookOpen, Globe } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { TimezoneOffset } from '@/lib/types/database'
-import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, getDayNumber } from '@/lib/utils/timezone'
+import { convertTimeSlotToUserTimezone, getTimezoneShort, ORG_TIMEZONE, ORG_HOURS, getDayNumber } from '@/lib/utils/timezone'
 import { useTranslations } from 'next-intl'
 
 // Activity types with colors and icons (higher contrast) - names are translation keys
@@ -41,14 +41,15 @@ const activityTypeConfig: { [key: string]: { icon: any; color: string; nameKey: 
   }
 }
 
-// Generate time slots from 2:00 PM to 11:00 PM (matching player availability)
+// Generate time slots from ORG_HOURS (matching player availability)
 // These are stored in ORG_TIMEZONE (CET/Paris) - admin creates in CET
 const generateTimeSlots = () => {
-  const slots = []
-  for (let hour = 2; hour < 12; hour++) {
-    slots.push(`${hour}:00 PM`)
-  }
-  return slots
+  return ORG_HOURS.map(hour => {
+    if (hour === 0) return '12:00 AM'
+    if (hour < 12) return `${hour}:00 AM`
+    if (hour === 12) return '12:00 PM'
+    return `${hour - 12}:00 PM`
+  })
 }
 
 // Time slots in ORG_TIMEZONE (CET)

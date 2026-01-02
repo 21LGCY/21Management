@@ -10,7 +10,7 @@ export type ValorantRank =
 export type TeamCategory = '21L' | '21GC' | '21ACA'
 export type TryoutWeekStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
-export type HourSlot = 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+export type HourSlot = 0 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
 export type CommunicationSection = 'strat_map' | 'review_praccs'
 export type MessageType = 'text' | 'image'
 export type StratType = 'attack' | 'defense'
@@ -186,6 +186,7 @@ export interface PlayerMatchStats {
   deaths: number
   assists: number
   acs: number // Average Combat Score
+  econ_rating?: number // Economy Rating
   headshot_percentage?: number
   first_kills: number
   first_deaths: number
