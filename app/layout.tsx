@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: '21 Legacy',
     description: 'Management platform',
     type: 'website',
-    siteName: '21 Legacy Management',
+    siteName: '21 Legacy - Management',
   },
 }
 
