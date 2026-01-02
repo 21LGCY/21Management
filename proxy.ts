@@ -10,7 +10,11 @@ export async function proxy(request: NextRequest) {
 
   // Redirect to login if accessing dashboard without auth
   if (isDashboard && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    // Save the intended destination as callbackUrl
+    const callbackUrl = request.nextUrl.pathname + request.nextUrl.search
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('callbackUrl', callbackUrl)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Redirect to dashboard if accessing login while authenticated

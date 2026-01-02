@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { login } from '@/lib/auth/client'
 import { LogIn } from 'lucide-react'
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const t = useTranslations('auth')
   const tCommon = useTranslations('common')
 
@@ -25,8 +26,17 @@ export default function LoginPage() {
       // Authenticate user with username and password
       const user = await login(username, password)
 
-      // Redirect based on role
-      router.push(`/dashboard/${user.role}`)
+      // Get callback URL from search params
+      const callbackUrl = searchParams.get('callbackUrl')
+      
+      // Validate callback URL (must start with /dashboard for security)
+      if (callbackUrl && callbackUrl.startsWith('/dashboard')) {
+        router.push(callbackUrl)
+      } else {
+        // Default: redirect based on role
+        router.push(`/dashboard/${user.role}`)
+      }
+      
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
