@@ -230,7 +230,8 @@ export default function NewTryoutWeekForm() {
                 options={[
                   { value: '21L', label: '21L' },
                   { value: '21GC', label: '21GC' },
-                  { value: '21ACA', label: '21 ACA' }
+                  { value: '21ACA', label: '21 ACA' },
+                  { value: '21CS2', label: '21 CS2' }
                 ]}
                 className="w-full"
               />

@@ -92,6 +92,10 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
     twitter_url: '',
     avatar_url: '',
     game: DEFAULT_GAME as GameType,
+    // CS2-specific fields
+    faceit_level: null as number | null,
+    steam_url: '',
+    faceit_url: '',
   })
 
   const [championInput, setChampionInput] = useState('')
@@ -148,6 +152,10 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
       character_pool: player.character_pool || player.champion_pool || [],
       rank: player.rank || '',
       valorant_tracker_url: player.valorant_tracker_url || '',
+      // CS2-specific fields
+      faceit_level: player.faceit_level || null,
+      steam_url: player.steam_url || '',
+      faceit_url: player.faceit_url || '',
       tracker_url: player.tracker_url || player.valorant_tracker_url || '',
       twitter_url: player.twitter_url || '',
       avatar_url: player.avatar_url || '',
@@ -181,6 +189,10 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           twitter_url: formData.twitter_url || null,
           avatar_url: formData.avatar_url || null,
           game: gameType,
+          // CS2-specific fields
+          faceit_level: gameType === 'cs2' ? formData.faceit_level : null,
+          steam_url: gameType === 'cs2' ? formData.steam_url || null : null,
+          faceit_url: gameType === 'cs2' ? formData.faceit_url || null : null,
         }
 
         const { error: updateError } = await supabase
@@ -226,6 +238,10 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           twitter_url: formData.twitter_url || null,
           avatar_url: formData.avatar_url || null,
           game: gameType,
+          // CS2-specific fields
+          faceit_level: gameType === 'cs2' ? formData.faceit_level : null,
+          steam_url: gameType === 'cs2' ? formData.steam_url || null : null,
+          faceit_url: gameType === 'cs2' ? formData.faceit_url || null : null,
         }
 
         const { error: updateError } = await supabase
@@ -414,19 +430,61 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           </div>
         </div>
 
-        {/* Character/Weapon Pool */}
+        {/* CS2-specific fields - Faceit Level */}
+        {gameType === 'cs2' && (
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('faceitLevel')}</label>
+              <CustomSelect
+                value={formData.faceit_level?.toString() || ''}
+                onChange={(value) => setFormData({ ...formData, faceit_level: value ? parseInt(value) : null })}
+                placeholder={t('selectFaceitLevel')}
+                options={[
+                  { value: '', label: t('selectFaceitLevel') },
+                  { value: '8', label: 'Level 8' },
+                  { value: '9', label: 'Level 9' },
+                  { value: '10', label: 'Level 10' },
+                ]}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('steamUrl')}</label>
+              <input
+                type="url"
+                value={formData.steam_url}
+                onChange={(e) => setFormData({ ...formData, steam_url: e.target.value })}
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="https://steamcommunity.com/id/..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('faceitUrl')}</label>
+              <input
+                type="url"
+                value={formData.faceit_url}
+                onChange={(e) => setFormData({ ...formData, faceit_url: e.target.value })}
+                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="https://www.faceit.com/en/players/..."
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Character Pool - Only for Valorant */}
+        {gameConfig.hasCharacterPool && (
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
+            {t('agentPool')}
           </label>
           <div className="space-y-3">
             <div className="flex gap-2">
               <CustomSelect
                 value={championInput}
                 onChange={(value) => setChampionInput(value)}
-                placeholder={gameType === 'valorant' ? t('selectAgentToAdd') : t('selectWeaponToAdd')}
+                placeholder={t('selectAgentToAdd')}
                 options={[
-                  { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                  { value: '', label: t('selectAgent') },
                   ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({ value: char, label: char }))
                 ]}
                 className="flex-1"
@@ -463,12 +521,13 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             {formData.character_pool.length === 0 && (
               <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
                 <p className="text-sm text-gray-500">
-                  {gameType === 'valorant' ? t('noAgentsAdded') : t('noWeaponsAdded')}
+                  {t('noAgentsAdded')}
                 </p>
               </div>
             )}
           </div>
         </div>
+        )}
 
         {/* IGL and Substitute Checkboxes */}
         <div className="mt-6 pt-4 border-t border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-4">

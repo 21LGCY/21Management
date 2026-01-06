@@ -21,6 +21,7 @@
     "next": "Next",
     "previous": "Previous",
     "submit": "Submit",
+    "send": "Send",
     "confirm": "Confirm",
     "close": "Close",
     "view": "View",
@@ -323,7 +324,19 @@
     "selectAgentsHint": "Select agents for this strategy composition",
     "teamCompsManaged": "Team compositions can be managed by your Staff",
     "pleaseSelectAgent": "Please select at least one agent",
-    "failedSaveComposition": "Failed to save composition"
+    "failedSaveComposition": "Failed to save composition",
+    "tryoutsNotAvailableForCS2": "Tryouts Not Available for CS2",
+    "tryoutsValorantOnly": "The tryouts and scouting system is currently only available for Valorant teams.",
+    "noCategoryAssigned": "No Team Category Assigned",
+    "contactAdmin": "Please contact an administrator to assign a team category for accessing tryouts.",
+    "zonesNotAvailableForCS2": "Geographic Zones Not Available for CS2",
+    "zonesValorantOnly": "Geographic zones analysis is specific to Valorant EMEA competitive regions.",
+    "noTryoutWeeks": "No Tryout Weeks Yet",
+    "createFirstTryoutWeek": "Create your first tryout week to schedule sessions with prospects.",
+    "tryoutWeeksCS2Title": "{team} - Tryout Weeks",
+    "cs2ZonesTitle": "{team} - Geographic Zones (CS2)",
+    "cs2ZoneDefinitions": "CS2 Zone Definitions",
+    "valorantZoneDefinitions": "VALORANT Zone Definitions"
   },
   "practiceReviews": {
     "title": "Practice Reviews",
@@ -369,6 +382,7 @@
     "allRanks": "All Ranks",
     "showingOfPlayers": "Showing {filtered} of {total} players",
     "rankLabel": "Rank",
+    "faceitLevel": "Faceit Level",
     "nation": "Nation",
     "unranked": "Unranked",
     "unknown": "Unknown",
@@ -454,7 +468,7 @@
     "noTeamCategory": "No team category assigned",
     "contactAdmin": "Contact admin",
     "noTeamCategoryWarning": "No team category assigned. Unable to load scouting database.",
-    "contactAdminForCategory": "Please contact an administrator to assign a team category (21L, 21GC, or 21ACA) to your team.",
+    "contactAdminForCategory": "Please contact an administrator to assign a team category (21L, 21GC, 21ACA, or 21CS2) to your team.",
     "noScoutingProfiles": "No scouting profiles found for {category}",
     "clickAddScout": "Click \"Add Scout\" to create one",
     "player": "Player",
@@ -1218,7 +1232,11 @@
     "trackerUrl": "Tracker URL",
     "cs2TrackerUrl": "CS2 Stats URL",
     "enterInGameName": "Enter in-game name",
-    "gameInfoDescCS2": "Role, rank, and weapon preferences"
+    "gameInfoDescCS2": "Role, rank, and weapon preferences",
+    "faceitLevel": "Faceit Level",
+    "selectFaceitLevel": "Select Faceit level",
+    "steamUrl": "Steam Profile URL",
+    "faceitUrl": "Faceit Profile URL"
   },
   "games": {
     "valorant": "Valorant",
@@ -1237,11 +1255,11 @@
       },
       "cs2": {
         "Entry Fragger": "Entry Fragger",
+        "Second Entry": "Second Entry",
         "AWPer": "AWPer",
         "Support": "Support",
         "Lurker": "Lurker",
-        "IGL": "IGL",
-        "Flex": "Flex"
+        "IGL": "IGL"
       }
     }
   },

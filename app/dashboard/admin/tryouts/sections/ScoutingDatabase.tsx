@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, TeamCategory } from '@/lib/types/database'
-import { GameType, GAME_CONFIGS, DEFAULT_GAME } from '@/lib/types/games'
+import { GameType, GAME_CONFIGS, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
 import { Plus, Edit, Trash2, Search, ExternalLink, User as UserIcon, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -192,7 +192,8 @@ export default function ScoutingDatabase() {
               { value: 'all', label: t('allCategories') },
               { value: '21L', label: '21L' },
               { value: '21GC', label: '21GC' },
-              { value: '21ACA', label: '21 ACA' }
+              { value: '21ACA', label: '21 ACA' },
+              { value: '21CS2', label: '21 CS2' }
             ]}
             className="min-w-[140px]"
           />
@@ -288,6 +289,13 @@ export default function ScoutingDatabase() {
                             <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
                               {tryout.in_game_name || tryout.username}
                             </h3>
+                            <span className={`px-1.5 py-0.5 text-[10px] rounded font-medium ${
+                              (tryout.game || DEFAULT_GAME) === 'valorant' 
+                                ? 'bg-[#ff4655]/20 text-[#ff4655]' 
+                                : 'bg-[#de9b35]/20 text-[#de9b35]'
+                            }`}>
+                              {(tryout.game || DEFAULT_GAME).toUpperCase()}
+                            </span>
                           </div>
                           {tryout.in_game_name && (
                             <p className="text-sm text-gray-400">@{tryout.username}</p>
@@ -320,24 +328,39 @@ export default function ScoutingDatabase() {
                         )}
                       </div>
 
-                      {/* Rank and Nationality Grid */}
+                      {/* Rank/Faceit Level and Nationality Grid */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/rank relative">
-                          {rankImage ? (
-                            <>
+                          {/* Show Faceit Level for CS2, Rank image for Valorant */}
+                          {(tryout.game || DEFAULT_GAME) === 'cs2' ? (
+                            (tryout as any).faceit_level ? (
                               <Image
-                                src={rankImage}
-                                alt={tryout.rank || 'Unranked'}
-                                width={32}
-                                height={32}
+                                src={getFaceitLevelImage((tryout as any).faceit_level)}
+                                alt={`Faceit Level ${(tryout as any).faceit_level}`}
+                                width={48}
+                                height={48}
                                 className="object-contain"
                               />
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                {tryout.rank}
-                              </div>
-                            </>
+                            ) : (
+                              <span className="text-gray-500 text-xs">N/A</span>
+                            )
                           ) : (
-                            <span className="text-gray-500 text-xs">N/A</span>
+                            rankImage ? (
+                              <>
+                                <Image
+                                  src={rankImage}
+                                  alt={tryout.rank || 'Unranked'}
+                                  width={32}
+                                  height={32}
+                                  className="object-contain"
+                                />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                  {tryout.rank}
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-gray-500 text-xs">N/A</span>
+                            )
                           )}
                         </div>
                         <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/nation relative">
@@ -378,8 +401,8 @@ export default function ScoutingDatabase() {
                             <div className="my-3 border-t border-gray-700/50"></div>
                           )}
 
-                          {/* Agent Pool */}
-                          {tryout.champion_pool && tryout.champion_pool.length > 0 && (
+                          {/* Agent Pool - Only for Valorant */}
+                          {(tryout.game || DEFAULT_GAME) === 'valorant' && tryout.champion_pool && tryout.champion_pool.length > 0 && (
                             <div>
                               <p className="text-gray-400 text-xs mb-2 font-medium">{t('mainAgents')}</p>
                               <div className="flex flex-wrap gap-1.5">
@@ -392,6 +415,40 @@ export default function ScoutingDatabase() {
                                   <span className="px-2.5 py-1 bg-primary/20 text-primary text-xs rounded-md font-medium border border-primary/30">
                                     +{tryout.champion_pool.length - 3}
                                   </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* CS2-specific info */}
+                          {(tryout.game || DEFAULT_GAME) === 'cs2' && (
+                            <div>
+                              <p className="text-gray-400 text-xs mb-2 font-medium">CS2 Links</p>
+                              <div className="flex flex-wrap gap-2">
+                                {(tryout as any).steam_url && (
+                                  <a 
+                                    href={(tryout as any).steam_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="px-2.5 py-1 bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs rounded-md font-medium border border-gray-700 hover:border-primary transition"
+                                  >
+                                    Steam
+                                  </a>
+                                )}
+                                {(tryout as any).faceit_url && (
+                                  <a 
+                                    href={(tryout as any).faceit_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="px-2.5 py-1 bg-gradient-to-r from-orange-700/50 to-orange-800/50 text-orange-200 text-xs rounded-md font-medium border border-orange-700/50 hover:border-orange-500 transition"
+                                  >
+                                    Faceit
+                                  </a>
+                                )}
+                                {!(tryout as any).steam_url && !(tryout as any).faceit_url && (
+                                  <span className="text-gray-500 text-xs">No links</span>
                                 )}
                               </div>
                             </div>

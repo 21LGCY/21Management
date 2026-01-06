@@ -5,8 +5,9 @@ import Link from 'next/link'
 import BackButton from '@/components/BackButton'
 import { Edit, Mail, Phone, ExternalLink, Crown, User } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
+import { GameType, getFaceitLevelImage } from '@/lib/types/games'
 
-// Utility function to get rank image
+// Utility function to get rank image for Valorant
 const getRankImage = (rank: string | undefined | null): string | null => {
   if (!rank) return null
   
@@ -33,13 +34,17 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
   const { user, teamId, team } = await requireManagerTeamAccess()
   const t = await getTranslations('players')
   const tCommon = await getTranslations('common')
+  const tForms = await getTranslations('forms')
   
   const supabase = await createClient()
+  
+  // Determine game type from team
+  const gameType: GameType = (team?.game as GameType) || 'valorant'
 
   // Get player details - ensure they belong to the manager's team
   const { data: player, error } = await supabase
     .from('profiles')
-    .select('*, teams(name)')
+    .select('*, teams(name, game)')
     .eq('id', id)
     .eq('role', 'player')
     .eq('team_id', teamId)
@@ -143,39 +148,77 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
 
             {/* Gaming Information */}
             <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">{t('gamingInfo')}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-white">{t('gamingInfo')}</h2>
+                {/* Game badge */}
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  gameType === 'valorant' 
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                    : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                }`}>
+                  {gameType === 'valorant' ? 'VALORANT' : 'CS2'}
+                </span>
+              </div>
               
               <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <p className="text-gray-400 text-sm mb-1">{t('currentRank')}</p>
-                  <div className="flex items-center gap-2">
-                    {getRankImage(player.rank) && (
-                      <img 
-                        src={getRankImage(player.rank)!} 
-                        alt={player.rank}
-                        className="w-8 h-8"
-                      />
-                    )}
-                    <p className="text-white font-medium text-lg">{player.rank || t('unranked')}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm mb-1">{t('peakRank')}</p>
-                  <div className="flex items-center gap-2">
-                    {getRankImage(player.peak_rank) && (
-                      <img 
-                        src={getRankImage(player.peak_rank)!} 
-                        alt={player.peak_rank}
-                        className="w-8 h-8"
-                      />
-                    )}
-                    <p className="text-white font-medium text-lg">{player.peak_rank || t('notRecorded')}</p>
-                  </div>
-                </div>
+                {gameType === 'cs2' ? (
+                  /* CS2: Faceit Level */
+                  <>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">{tForms('faceitLevel')}</p>
+                      <div className="flex items-center gap-2">
+                        {player.faceit_level && (
+                          <img 
+                            src={getFaceitLevelImage(player.faceit_level)} 
+                            alt={`Level ${player.faceit_level}`}
+                            className="w-8 h-8"
+                          />
+                        )}
+                        <p className="text-white font-medium text-lg">
+                          {player.faceit_level ? `Level ${player.faceit_level}` : t('unranked')}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">{t('currentRank')}</p>
+                      <p className="text-white font-medium text-lg">{player.rank || t('unranked')}</p>
+                    </div>
+                  </>
+                ) : (
+                  /* Valorant: Rank */
+                  <>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">{t('currentRank')}</p>
+                      <div className="flex items-center gap-2">
+                        {getRankImage(player.rank) && (
+                          <img 
+                            src={getRankImage(player.rank)!} 
+                            alt={player.rank}
+                            className="w-8 h-8"
+                          />
+                        )}
+                        <p className="text-white font-medium text-lg">{player.rank || t('unranked')}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">{t('peakRank')}</p>
+                      <div className="flex items-center gap-2">
+                        {getRankImage(player.peak_rank) && (
+                          <img 
+                            src={getRankImage(player.peak_rank)!} 
+                            alt={player.peak_rank}
+                            className="w-8 h-8"
+                          />
+                        )}
+                        <p className="text-white font-medium text-lg">{player.peak_rank || t('notRecorded')}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Agent Pool */}
-              {player.champion_pool && player.champion_pool.length > 0 && (
+              {/* Agent Pool - Only for Valorant */}
+              {gameType === 'valorant' && player.champion_pool && player.champion_pool.length > 0 && (
                 <div>
                   <p className="text-gray-400 text-sm mb-3">{t('championPool')}</p>
                   <div className="flex flex-wrap gap-2">
@@ -243,21 +286,54 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
             </div>
 
             {/* External Links */}
-            {(player.valorant_tracker_url || player.twitter_url) && (
+            {(player.valorant_tracker_url || player.tracker_url || player.steam_url || player.faceit_url || player.twitter_url) && (
               <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">{t('externalLinks')}</h3>
                 
                 <div className="space-y-3">
-                  {player.valorant_tracker_url && (
+                  {/* Valorant Tracker */}
+                  {gameType === 'valorant' && (player.valorant_tracker_url || player.tracker_url) && (
                     <a 
-                      href={player.valorant_tracker_url} 
+                      href={player.tracker_url || player.valorant_tracker_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700 hover:border-primary/50 transition"
+                      className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700 hover:border-red-500/50 transition"
                     >
-                      <ExternalLink className="w-5 h-5 text-primary" />
+                      <ExternalLink className="w-5 h-5 text-red-400" />
                       <div>
                         <p className="text-white text-sm font-medium">{t('valorantTracker')}</p>
+                        <p className="text-gray-400 text-xs">{t('viewDetailedStats')}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {/* CS2: Steam Profile */}
+                  {gameType === 'cs2' && player.steam_url && (
+                    <a 
+                      href={player.steam_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700 hover:border-blue-500/50 transition"
+                    >
+                      <ExternalLink className="w-5 h-5 text-blue-400" />
+                      <div>
+                        <p className="text-white text-sm font-medium">Steam Profile</p>
+                        <p className="text-gray-400 text-xs">{t('viewDetailedStats')}</p>
+                      </div>
+                    </a>
+                  )}
+                  
+                  {/* CS2: Faceit Profile */}
+                  {gameType === 'cs2' && player.faceit_url && (
+                    <a 
+                      href={player.faceit_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-dark rounded-lg border border-gray-700 hover:border-orange-500/50 transition"
+                    >
+                      <ExternalLink className="w-5 h-5 text-orange-400" />
+                      <div>
+                        <p className="text-white text-sm font-medium">Faceit Profile</p>
                         <p className="text-gray-400 text-xs">{t('viewDetailedStats')}</p>
                       </div>
                     </a>

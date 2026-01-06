@@ -198,6 +198,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
       case '21L': return '21L'
       case '21GC': return '21GC'
       case '21ACA': return '21 ACA'
+      case '21CS2': return '21 CS2'
     }
   }
 
@@ -225,9 +226,9 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
         <div className="border-l-4 border-primary pl-4">
           <h1 className="flex items-center gap-3 text-3xl font-bold text-white">
             <Calendar className="w-8 h-8 text-primary" />
-            {t('createTryoutWeekTitle', { team: getTeamLabel(teamCategory) })}
+            {t('createTryoutWeekTitle', { team: getTeamLabel(teamCategory) || '' })}
           </h1>
-          <p className="text-gray-400 mt-2">{t('scheduleWeek', { team: team.name })}</p>
+          <p className="text-gray-400 mt-2">{t('scheduleWeek', { team: team?.name || '' })}</p>
         </div>
       </div>
 
@@ -252,7 +253,7 @@ export default function NewTryoutWeekFormManager({ team, teamCategory }: NewTryo
               </label>
               <input
                 type="text"
-                value={`${team.name} (${getTeamLabel(teamCategory)})`}
+                value={`${team?.name || ''} (${getTeamLabel(teamCategory) || ''})`}
                 readOnly
                 className="w-full px-4 py-2.5 bg-dark border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed"
               />

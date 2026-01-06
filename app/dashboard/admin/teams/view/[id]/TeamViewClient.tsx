@@ -353,7 +353,7 @@ export default function TeamViewClient({ teamId, userId, userName, userRole }: T
       )}
 
       {activeTab === 'strat_map' && (
-        <StratMapSelection teamId={teamId} />
+        <StratMapSelection teamId={teamId} gameType={team?.game} />
       )}
 
       {activeTab === 'review_praccs' && (

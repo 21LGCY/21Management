@@ -6,22 +6,27 @@ import { Users, Search, Plus, Mail, Phone, MapPin, Trophy, Target, Award, Activi
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+import { GameType, getGameConfig, getFaceitLevelImage } from '@/lib/types/games'
 
-// Utility function to get rank image
-const getRankImage = (rank: string | undefined | null): string | null => {
+// Utility function to get rank image for both Valorant and CS2
+const getRankImage = (rank: string | undefined | null, game: GameType = 'valorant'): string | null => {
   if (!rank) return null
   
-  const rankMap: { [key: string]: string } = {
-    'Ascendant 1': '/images/asc_1_rank.webp',
-    'Ascendant 2': '/images/asc_2_rank.webp',
-    'Ascendant 3': '/images/asc_3_rank.webp',
-    'Immortal 1': '/images/immo_1_rank.webp',
-    'Immortal 2': '/images/immo_2_rank.webp',
-    'Immortal 3': '/images/immo_3_rank.webp',
-    'Radiant': '/images/rad_rank.webp'
+  if (game === 'valorant') {
+    const rankMap: { [key: string]: string } = {
+      'Ascendant 1': '/images/asc_1_rank.webp',
+      'Ascendant 2': '/images/asc_2_rank.webp',
+      'Ascendant 3': '/images/asc_3_rank.webp',
+      'Immortal 1': '/images/immo_1_rank.webp',
+      'Immortal 2': '/images/immo_2_rank.webp',
+      'Immortal 3': '/images/immo_3_rank.webp',
+      'Radiant': '/images/rad_rank.webp'
+    }
+    return rankMap[rank] || null
   }
   
-  return rankMap[rank] || null
+  // CS2 ranks don't have images, we use Faceit level images
+  return null
 }
 
 interface Player {
@@ -40,21 +45,28 @@ interface Player {
   twitter_url?: string
   avatar_url?: string
   created_at: string
-  teams?: { name: string }
+  // CS2-specific fields
+  faceit_level?: number
+  steam_url?: string
+  faceit_url?: string
+  tracker_url?: string
+  teams?: { name: string; game?: string }
 }
 
 interface PlayersPageProps {
   players: Player[]
   user: any
   team: any
+  gameType: GameType
 }
 
-export default function PlayersPageClient({ players, user, team }: PlayersPageProps) {
+export default function PlayersPageClient({ players, user, team, gameType }: PlayersPageProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [rankFilter, setRankFilter] = useState('')
   const t = useTranslations('players')
   const tCommon = useTranslations('common')
+  const gameConfig = getGameConfig(gameType)
 
   const filteredPlayers = useMemo(() => {
     return players.filter(player => {
@@ -231,19 +243,40 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                     )}
                   </div>
 
-                  {/* Rank and Nationality */}
+                  {/* Rank/Faceit Level and Nationality */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
-                      <p className="text-gray-400 text-xs mb-1.5">{t('rankLabel')}</p>
+                      <p className="text-gray-400 text-xs mb-1.5">
+                        {gameType === 'cs2' ? t('faceitLevel') || 'Faceit Level' : t('rankLabel')}
+                      </p>
                       <div className="flex items-center gap-2">
-                        {getRankImage(player.rank) ? (
-                          <img 
-                            src={getRankImage(player.rank)!} 
-                            alt={player.rank}
-                            className="w-6 h-6"
-                          />
-                        ) : null}
-                        <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
+                        {gameType === 'cs2' ? (
+                          // CS2: Show Faceit Level
+                          player.faceit_level ? (
+                            <>
+                              <img 
+                                src={getFaceitLevelImage(player.faceit_level)} 
+                                alt={`Level ${player.faceit_level}`}
+                                className="w-6 h-6"
+                              />
+                              <p className="text-white font-semibold text-sm">Level {player.faceit_level}</p>
+                            </>
+                          ) : (
+                            <p className="text-gray-400 font-semibold text-sm">{player.rank || t('unranked')}</p>
+                          )
+                        ) : (
+                          // Valorant: Show Rank
+                          <>
+                            {getRankImage(player.rank, gameType) ? (
+                              <img 
+                                src={getRankImage(player.rank, gameType)!} 
+                                alt={player.rank}
+                                className="w-6 h-6"
+                              />
+                            ) : null}
+                            <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
@@ -263,8 +296,8 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                     </div>
                   </div>
 
-                  {/* Agent Pool */}
-                  {player.champion_pool && player.champion_pool.length > 0 && (
+                  {/* Agent Pool - Only for Valorant */}
+                  {gameType === 'valorant' && player.champion_pool && player.champion_pool.length > 0 && (
                     <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
                       <p className="text-gray-400 text-xs mb-2 font-medium">{t('mainAgents')}</p>
                       <div className="flex flex-wrap gap-1.5">
@@ -299,16 +332,38 @@ export default function PlayersPageClient({ players, user, team }: PlayersPagePr
                   </div>
 
                   {/* External Links */}
-                  {(player.valorant_tracker_url || player.twitter_url) && (
-                    <div className="flex gap-2 pt-2">
-                      {player.valorant_tracker_url && (
+                  {(player.valorant_tracker_url || player.tracker_url || player.steam_url || player.faceit_url || player.twitter_url) && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {/* Valorant Tracker */}
+                      {gameType === 'valorant' && (player.valorant_tracker_url || player.tracker_url) && (
                         <a 
-                          href={player.valorant_tracker_url} 
+                          href={player.tracker_url || player.valorant_tracker_url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs rounded-lg font-medium transition-all border border-primary/30"
+                          className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs rounded-lg font-medium transition-all border border-red-500/30"
                         >
                           {t('tracker')}
+                        </a>
+                      )}
+                      {/* CS2 Links */}
+                      {gameType === 'cs2' && player.steam_url && (
+                        <a 
+                          href={player.steam_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs rounded-lg font-medium transition-all border border-blue-500/30"
+                        >
+                          Steam
+                        </a>
+                      )}
+                      {gameType === 'cs2' && player.faceit_url && (
+                        <a 
+                          href={player.faceit_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 text-xs rounded-lg font-medium transition-all border border-orange-500/30"
+                        >
+                          Faceit
                         </a>
                       )}
                       {player.twitter_url && (

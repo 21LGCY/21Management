@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/auth/server'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import PlayerTeamsClient from './PlayerTeamsClient'
 import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
+import { GameType, DEFAULT_GAME } from '@/lib/types/games'
 
 export default async function PlayerTeamsPage() {
   const user = await requireRole(['player'])
@@ -20,7 +21,7 @@ export default async function PlayerTeamsPage() {
   // Get all team players for roster display
   const { data: teamPlayers } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, in_game_name, full_name, position, is_igl, is_substitute, avatar_url, rank, staff_role, faceit_level')
     .eq('role', 'player')
     .eq('team_id', playerData?.team_id || '')
     .order('is_substitute', { ascending: true })
@@ -41,6 +42,7 @@ export default async function PlayerTeamsPage() {
         <PlayerTeamsClient 
           teamId={playerData?.team_id || ''}
           teamName={playerData?.teams?.name || ''}
+          teamGame={(playerData?.teams?.game as GameType) || DEFAULT_GAME}
           currentPlayerId={user.user_id}
           teamPlayers={teamPlayers || []}
           staffMembers={staffMembers || []}

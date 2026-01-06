@@ -37,30 +37,48 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
   const t = useTranslations('tryouts')
   const tCommon = useTranslations('common')
 
+  const isCS2Team = team?.game === 'cs2'
+  const teamGameConfig = team?.game ? GAME_CONFIGS[team.game] : GAME_CONFIGS.valorant
+  const availableRoles = isCS2Team ? GAME_CONFIGS.cs2.roles : (teamGameConfig?.roles || GAME_CONFIGS.valorant.roles)
+
   useEffect(() => {
     fetchTryouts()
-  }, [teamCategory])
+  }, [teamCategory, isCS2Team])
 
   const fetchTryouts = async () => {
     try {
-      // Filter by team_category column directly from the database
-      if (!teamCategory) {
-        setTryouts([])
-        setLoading(false)
-        return
+      setLoading(true)
+      
+      // For CS2 teams, show all CS2 tryouts (no category filter)
+      // For Valorant teams, filter by team_category (21GC, 21ACA, 21L)
+      if (isCS2Team) {
+        const { data, error } = await supabase
+          .from('profiles_tryouts')
+          .select('*')
+          .eq('game', 'cs2')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setTryouts(data || [])
+      } else {
+        // Valorant teams use team_category
+        if (!teamCategory) {
+          setTryouts([])
+          setLoading(false)
+          return
+        }
+
+        const { data, error } = await supabase
+          .from('profiles_tryouts')
+          .select('*')
+          .eq('team_category', teamCategory)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setTryouts(data || [])
       }
-
-      const { data, error } = await supabase
-        .from('profiles_tryouts')
-        .select('*')
-        .eq('team_category', teamCategory)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      setTryouts(data || [])
-    } catch (error) {
-      console.error('Error fetching tryouts:', error)
+    } catch (error: any) {
+      console.error('Error fetching tryouts:', error?.message || error)
       setTryouts([])
     } finally {
       setLoading(false)
@@ -92,23 +110,36 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
     if (!confirm(t('confirmPromote', { name: tryout.in_game_name || tryout.username }))) return
 
     try {
-      // First create a user profile
+      const gameType = team?.game || 'valorant'
+      
+      // Prepare profile data based on game type
+      const profileData: any = {
+        username: tryout.username,
+        role: 'player',
+        full_name: tryout.full_name,
+        in_game_name: tryout.in_game_name,
+        position: tryout.position,
+        is_igl: tryout.is_igl,
+        nationality: tryout.nationality,
+        twitter_url: tryout.twitter_url,
+        team_id: teamId
+      }
+
+      // Add game-specific fields
+      if (gameType === 'valorant') {
+        profileData.champion_pool = tryout.champion_pool
+        profileData.rank = tryout.rank
+        profileData.valorant_tracker_url = tryout.valorant_tracker_url
+      } else if (gameType === 'cs2') {
+        profileData.faceit_level = tryout.faceit_level
+        profileData.steam_url = tryout.steam_url
+        profileData.faceit_url = tryout.faceit_url
+      }
+
+      // Create user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          username: tryout.username,
-          role: 'player',
-          full_name: tryout.full_name,
-          in_game_name: tryout.in_game_name,
-          position: tryout.position,
-          is_igl: tryout.is_igl,
-          nationality: tryout.nationality,
-          champion_pool: tryout.champion_pool,
-          rank: tryout.rank,
-          valorant_tracker_url: tryout.valorant_tracker_url,
-          twitter_url: tryout.twitter_url,
-          team_id: teamId
-        })
+        .insert(profileData)
         .select()
         .single()
 
@@ -184,8 +215,19 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
     }
   }
 
-  const getRankImage = (rank: string | null | undefined): string | null => {
-    if (!rank) return null
+  const getRankImage = (tryout: ProfileTryout): string | null => {
+    const gameType = tryout.game || 'valorant'
+    
+    if (gameType === 'cs2') {
+      // For CS2, use faceit level
+      if (tryout.faceit_level) {
+        return `/images/cs2/faceit_${tryout.faceit_level}.svg`
+      }
+      return null
+    }
+    
+    // For Valorant, use rank
+    if (!tryout.rank) return null
     const rankMap: Record<string, string> = {
       'Ascendant 1': '/images/asc_1_rank.webp',
       'Ascendant 2': '/images/asc_2_rank.webp',
@@ -195,7 +237,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       'Immortal 3': '/images/immo_3_rank.webp',
       'Radiant': '/images/rad_rank.webp',
     }
-    return rankMap[rank] || null
+    return rankMap[tryout.rank] || null
   }
 
   const getStatusLabel = (status: TryoutStatus) => {
@@ -253,20 +295,9 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
             onChange={(value) => setRoleFilter(value)}
             options={[
               { value: 'all', label: t('allRoles') },
-              ...ALL_ROLES.map(role => ({ value: role, label: role }))
+              ...availableRoles.map(role => ({ value: role, label: role }))
             ]}
             className="min-w-[140px]"
-          />
-
-          <CustomSelect
-            value={gameFilter}
-            onChange={(value) => setGameFilter(value as GameType | 'all')}
-            options={[
-              { value: 'all', label: tCommon('all') + ' Games' },
-              { value: 'valorant', label: 'Valorant' },
-              { value: 'cs2', label: 'CS2' }
-            ]}
-            className="min-w-[120px]"
           />
 
           <Link
@@ -284,14 +315,12 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
         <div className="bg-dark-card border border-gray-800 rounded-lg p-4">
           <p className="text-white">
             {t('scoutingFor')}: <span className="font-semibold text-primary">{team.name}</span>
-            {teamCategory && (
-              <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
+            <span className="ml-2 px-2 py-1 bg-primary/20 text-primary text-sm rounded">
+              {team.game === 'cs2' ? 'CS2' : 'Valorant'}
+            </span>
+            {teamCategory && !isCS2Team && (
+              <span className="ml-2 px-2 py-1 bg-purple-500/20 text-purple-300 text-sm rounded">
                 {teamCategory}
-              </span>
-            )}
-            {!teamCategory && (
-              <span className="ml-2 px-2 py-1 bg-red-500/20 text-red-300 text-sm rounded">
-                {t('noTeamCategory')} - {t('contactAdmin')}
               </span>
             )}
           </p>
@@ -301,8 +330,8 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
         </div>
       )}
 
-      {/* Show warning if no team category detected */}
-      {!teamCategory && (
+      {/* Show warning if no team category for Valorant teams */}
+      {!teamCategory && !isCS2Team && (
         <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
           <p className="text-yellow-300">
             ⚠️ {t('noTeamCategoryWarning')}
@@ -323,8 +352,10 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTryouts.map((tryout) => {
-            const rankImage = getRankImage(tryout.rank)
+            const rankImage = getRankImage(tryout)
             const nationality = getNationalityDisplay(tryout.nationality)
+            const gameType = tryout.game || 'valorant'
+            const displayCategory = isCS2Team ? (gameType === 'cs2' ? 'CS2' : 'VAL') : teamCategory
             
             return (
               <div 
@@ -353,10 +384,10 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
                         </div>
                       </div>
 
-                      {/* Team|Status Badge - Top Right */}
+                      {/* Game|Status Badge - Top Right */}
                       <div className="flex-shrink-0">
                         <span className={`px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold ${getStatusColor(tryout.status)}`}>
-                          {teamCategory} | {getStatusLabel(tryout.status)}
+                          {displayCategory} | {getStatusLabel(tryout.status)}
                         </span>
                       </div>
                     </div>

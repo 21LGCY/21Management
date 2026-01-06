@@ -9,6 +9,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
 import { useTranslations } from 'next-intl'
+import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
+import { GameBadge } from '@/components/GameSelector'
 
 interface UserViewClientProps {
   userId: string
@@ -183,18 +185,23 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
             {/* Account Type */}
             <div className="mb-6">
               <p className="text-gray-500 text-sm mb-3">Account Type</p>
-              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold border ${
-                user.role === 'admin' 
-                  ? 'bg-red-500/20 text-red-400 border-red-500/50' 
-                  : user.role === 'manager' 
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' 
-                  : 'bg-green-500/20 text-green-400 border-green-500/50'
-              }`}>
-                {user.role === 'admin' && <Shield className="w-4 h-4" />}
-                {user.role === 'manager' && <Crown className="w-4 h-4" />}
-                {user.role === 'player' && <Users className="w-4 h-4" />}
-                {user.role.toUpperCase()}
-              </span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold border ${
+                  user.role === 'admin' 
+                    ? 'bg-red-500/20 text-red-400 border-red-500/50' 
+                    : user.role === 'manager' 
+                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' 
+                    : 'bg-green-500/20 text-green-400 border-green-500/50'
+                }`}>
+                  {user.role === 'admin' && <Shield className="w-4 h-4" />}
+                  {user.role === 'manager' && <Crown className="w-4 h-4" />}
+                  {user.role === 'player' && <Users className="w-4 h-4" />}
+                  {user.role.toUpperCase()}
+                </span>
+                {user.role === 'player' && (
+                  <GameBadge game={(user.game as GameType) || DEFAULT_GAME} size="md" />
+                )}
+              </div>
             </div>
 
             {/* Player-specific details */}
@@ -231,19 +238,36 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
                 {/* Rank and Nationality */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                    <p className="text-gray-500 text-sm mb-2">Rank</p>
-                    <div className="flex items-center gap-3">
-                      {getRankImage(user.rank) && (
-                        <Image
-                          src={getRankImage(user.rank)!}
-                          alt={user.rank || ''}
-                          width={28}
-                          height={28}
-                          className="object-contain"
-                        />
-                      )}
-                      <p className="text-white font-semibold">{user.rank || 'Unranked'}</p>
-                    </div>
+                    <p className="text-gray-500 text-sm mb-2">
+                      {((user.game as GameType) || DEFAULT_GAME) === 'cs2' ? 'Faceit Level' : 'Rank'}
+                    </p>
+                    {((user.game as GameType) || DEFAULT_GAME) === 'cs2' ? (
+                      <div className="flex items-center gap-3">
+                        {user.faceit_level && (
+                          <Image
+                            src={getFaceitLevelImage(user.faceit_level)}
+                            alt={`Faceit Level ${user.faceit_level}`}
+                            width={48}
+                            height={48}
+                            className="object-contain"
+                          />
+                        )}
+                        <p className="text-white font-semibold">Level {user.faceit_level || 'Not set'}</p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        {getRankImage(user.rank) && (
+                          <Image
+                            src={getRankImage(user.rank)!}
+                            alt={user.rank || ''}
+                            width={28}
+                            height={28}
+                            className="object-contain"
+                          />
+                        )}
+                        <p className="text-white font-semibold">{user.rank || 'Unranked'}</p>
+                      </div>
+                    )}
                   </div>
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
                     <p className="text-gray-500 text-sm mb-2">Nationality</p>
@@ -267,8 +291,8 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
                   </div>
                 </div>
 
-                {/* Agent Pool */}
-                {user.champion_pool && user.champion_pool.length > 0 && (
+                {/* Agent Pool - Valorant only */}
+                {((user.game as GameType) || DEFAULT_GAME) === 'valorant' && user.champion_pool && user.champion_pool.length > 0 && (
                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
                     <p className="text-gray-500 text-sm mb-3">Agent Pool</p>
                     <div className="flex flex-wrap gap-2">
@@ -277,6 +301,37 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
                           {agent}
                         </span>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* CS2 Links */}
+                {((user.game as GameType) || DEFAULT_GAME) === 'cs2' && (user.steam_url || user.faceit_url) && (
+                  <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
+                    <p className="text-gray-500 text-sm mb-3">CS2 Profiles</p>
+                    <div className="flex flex-wrap gap-3">
+                      {user.steam_url && (
+                        <a
+                          href={user.steam_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600/50 hover:border-gray-500 transition-all group text-sm"
+                        >
+                          <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-white transition" />
+                          <span className="text-gray-300 group-hover:text-white transition">Steam</span>
+                        </a>
+                      )}
+                      {user.faceit_url && (
+                        <a
+                          href={user.faceit_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 rounded-lg border border-orange-500/30 hover:border-orange-500/50 transition-all group text-sm"
+                        >
+                          <ExternalLink className="w-3 h-3 text-orange-400 group-hover:text-orange-300 transition" />
+                          <span className="text-orange-400 group-hover:text-orange-300 transition">Faceit</span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 )}
@@ -317,14 +372,15 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
           </div>
 
           {/* External Links */}
-          {(user.valorant_tracker_url || user.twitter_url) && (
+          {(user.valorant_tracker_url || user.twitter_url || (((user.game as GameType) || DEFAULT_GAME) === 'cs2' && (user.steam_url || user.faceit_url))) && (
             <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
               <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 External Links
               </h2>
               <div className="space-y-3">
-                {user.valorant_tracker_url && (
+                {/* Valorant Links */}
+                {((user.game as GameType) || DEFAULT_GAME) === 'valorant' && user.valorant_tracker_url && (
                   <a
                     href={user.valorant_tracker_url}
                     target="_blank"
@@ -335,6 +391,34 @@ export default function UserViewClient({ userId }: UserViewClientProps) {
                     <span className="text-gray-300 group-hover:text-white transition">Valorant Tracker</span>
                   </a>
                 )}
+                {/* CS2 Links */}
+                {((user.game as GameType) || DEFAULT_GAME) === 'cs2' && (
+                  <>
+                    {user.steam_url && (
+                      <a
+                        href={user.steam_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-gray-500/50 transition-all group"
+                      >
+                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span className="text-gray-300 group-hover:text-white transition">Steam Profile</span>
+                      </a>
+                    )}
+                    {user.faceit_url && (
+                      <a
+                        href={user.faceit_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-orange-500/10 hover:bg-orange-500/20 rounded-lg border border-orange-500/30 hover:border-orange-500/50 transition-all group"
+                      >
+                        <ExternalLink className="w-4 h-4 text-orange-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span className="text-orange-400 group-hover:text-orange-300 transition">Faceit Profile</span>
+                      </a>
+                    )}
+                  </>
+                )}
+                {/* Twitter - common to both games */}
                 {user.twitter_url && (
                   <a
                     href={user.twitter_url}

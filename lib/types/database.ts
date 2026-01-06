@@ -68,8 +68,11 @@ export interface UserProfile {
   champion_pool?: string[] // Legacy: Array of agent names (Valorant)
   character_pool?: string[] // NEW: Generic pool (agents for Valorant, weapons for CS2)
   rank?: string // Changed from ValorantRank to string for multi-game support
+  faceit_level?: number // CS2: Faceit level (1-10)
   valorant_tracker_url?: string // Legacy: kept for backward compatibility
   tracker_url?: string // NEW: Generic tracker URL
+  steam_url?: string // CS2: Steam profile URL
+  faceit_url?: string // CS2: Faceit profile URL
   twitter_url?: string
   stats?: Record<string, any>
   
@@ -106,8 +109,11 @@ export interface ProfileTryout {
   champion_pool?: string[] // Legacy: Array of agent names
   character_pool?: string[] // NEW: Generic pool
   rank?: string // Changed from ValorantRank to string for multi-game support
+  faceit_level?: number // CS2: Faceit level (1-10)
   valorant_tracker_url?: string // Legacy: kept for backward compatibility
   tracker_url?: string // NEW: Generic tracker URL
+  steam_url?: string // CS2: Steam profile URL
+  faceit_url?: string // CS2: Faceit profile URL
   twitter_url?: string
   discord?: string
   status: TryoutStatus // Keep as 'status' to match database column name

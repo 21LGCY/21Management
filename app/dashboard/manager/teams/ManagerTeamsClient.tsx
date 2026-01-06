@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, TeamCategory } from '@/lib/types/database'
 import { TimezoneOffset } from '@/lib/utils/timezone'
 import { useTranslations } from 'next-intl'
+import { GameType } from '@/lib/types/games'
 
 interface ManagerTeamsClientProps {
   teamId: string
@@ -17,12 +18,13 @@ interface ManagerTeamsClientProps {
   playerCount: number
   tryouts: any[]
   teamCategory: TeamCategory
+  teamGame: GameType
   userTimezone: TimezoneOffset
 }
 
 type TabType = 'overview' | 'strat_map' | 'review_praccs'
 
-export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryouts, teamCategory, userTimezone }: ManagerTeamsClientProps) {
+export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryouts, teamCategory, teamGame, userTimezone }: ManagerTeamsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [currentTryouts, setCurrentTryouts] = useState<TryoutWeek[]>([])
   const [loadingTryouts, setLoadingTryouts] = useState(true)
@@ -297,7 +299,7 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
       )}
 
       {activeTab === 'strat_map' && (
-        <StratMapSelection teamId={teamId} />
+        <StratMapSelection teamId={teamId} gameType={teamGame} />
       )}
 
       {activeTab === 'review_praccs' && (

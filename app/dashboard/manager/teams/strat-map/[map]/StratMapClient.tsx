@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, ValorantMap, UserRole, StratType } from '@/lib/types/database'
+import { Team, UserRole, StratType } from '@/lib/types/database'
+import { GameType } from '@/lib/types/games'
 import { ArrowLeft, Map as MapIcon, Target, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import TeamCommunication from '@/app/dashboard/admin/teams/view/[id]/TeamCommunication'
@@ -10,7 +11,8 @@ import { useTranslations } from 'next-intl'
 
 interface StratMapClientProps {
   teamId: string
-  mapName: ValorantMap
+  mapName: string
+  gameType: GameType
   userId: string
   userName: string
   userRole: UserRole
@@ -18,7 +20,8 @@ interface StratMapClientProps {
 
 export default function StratMapClient({ 
   teamId, 
-  mapName, 
+  mapName,
+  gameType,
   userId, 
   userName, 
   userRole 
@@ -222,47 +225,49 @@ export default function StratMapClient({
             </div>
           </div>
 
-          {/* Team Composition Filter */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-5 h-5 text-primary" />
-              <label className="text-sm font-medium text-gray-300">{t('teamComposition')}</label>
-            </div>
+          {/* Team Composition Filter - Only for Valorant */}
+          {gameType === 'valorant' && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="w-5 h-5 text-primary" />
+                <label className="text-sm font-medium text-gray-300">{t('teamComposition')}</label>
+              </div>
 
-            {/* Agent Selection Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setShowAgentMenu(!showAgentMenu)}
-                className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-gray-400 hover:border-gray-700 transition text-left"
-              >
-                {selectedAgents.length > 0 ? selectedAgents.join(', ') : t('addAgentsToComposition')}
-              </button>
-              
-              {showAgentMenu && (
-                <div className="absolute z-10 mt-2 w-full bg-dark-card border border-gray-800 rounded-lg p-4 shadow-xl max-h-64 overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-2">
-                    {VALORANT_AGENTS.map((agent) => (
-                      <button
-                        key={agent}
-                        onClick={() => toggleAgent(agent)}
-                        className={`px-3 py-2 rounded-lg border text-sm transition ${
-                          selectedAgents.includes(agent)
-                            ? 'bg-primary/20 border-primary text-primary'
-                            : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
-                        }`}
-                      >
-                        {agent}
-                      </button>
-                    ))}
+              {/* Agent Selection Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowAgentMenu(!showAgentMenu)}
+                  className="w-full px-4 py-2 bg-dark border border-gray-800 rounded-lg text-gray-400 hover:border-gray-700 transition text-left"
+                >
+                  {selectedAgents.length > 0 ? selectedAgents.join(', ') : t('addAgentsToComposition')}
+                </button>
+                
+                {showAgentMenu && (
+                  <div className="absolute z-10 mt-2 w-full bg-dark-card border border-gray-800 rounded-lg p-4 shadow-xl max-h-64 overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-2">
+                      {VALORANT_AGENTS.map((agent) => (
+                        <button
+                          key={agent}
+                          onClick={() => toggleAgent(agent)}
+                          className={`px-3 py-2 rounded-lg border text-sm transition ${
+                            selectedAgents.includes(agent)
+                              ? 'bg-primary/20 border-primary text-primary'
+                              : 'bg-dark border-gray-800 text-gray-400 hover:border-gray-700'
+                          }`}
+                        >
+                          {agent}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              
+              <p className="text-xs text-gray-500 mt-1">
+                {t('selectAgentsHint')}
+              </p>
             </div>
-            
-            <p className="text-xs text-gray-500 mt-1">
-              {t('selectAgentsHint')}
-            </p>
-          </div>
+          )}
         </div>
       </div>
 

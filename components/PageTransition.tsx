@@ -18,18 +18,25 @@ interface PageTransitionProviderProps {
 export function PageTransitionProvider({ children }: PageTransitionProviderProps) {
   const pathname = usePathname()
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     // Quick fade transition - minimal delay
     setIsTransitioning(true)
     const timer = setTimeout(() => setIsTransitioning(false), 50)
     return () => clearTimeout(timer)
-  }, [pathname])
+  }, [pathname, mounted])
 
+  // Prevent hydration mismatch by not applying transition class on server
   return (
     <TransitionContext.Provider value={{ isTransitioning }}>
       <div
-        className={`transition-opacity duration-150 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
+        className={mounted ? `transition-opacity duration-150 ${isTransitioning ? 'opacity-90' : 'opacity-100'}` : ''}
       >
         {children}
       </div>

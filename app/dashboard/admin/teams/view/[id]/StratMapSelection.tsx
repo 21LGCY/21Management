@@ -1,32 +1,20 @@
 'use client'
 
-import { ValorantMap } from '@/lib/types/database'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Map as MapIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { GameType, getMapsForGame, getGameConfig } from '@/lib/types/games'
 
 interface StratMapSelectionProps {
   teamId: string
+  gameType?: GameType
 }
 
-const VALORANT_MAPS: ValorantMap[] = [
-  'Ascent',
-  'Bind',
-  'Haven',
-  'Split',
-  'Icebox',
-  'Breeze',
-  'Fracture',
-  'Pearl',
-  'Lotus',
-  'Sunset',
-  'Abyss',
-  'Corrode'
-]
-
-export default function StratMapSelection({ teamId }: StratMapSelectionProps) {
+export default function StratMapSelection({ teamId, gameType = 'valorant' }: StratMapSelectionProps) {
   const t = useTranslations('stratMaps')
+  const gameConfig = getGameConfig(gameType)
+  const maps = getMapsForGame(gameType)
   
   return (
     <div className="space-y-6">
@@ -40,7 +28,7 @@ export default function StratMapSelection({ teamId }: StratMapSelectionProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {VALORANT_MAPS.map((map) => (
+          {maps.map((map) => (
             <Link
               key={map}
               href={`/dashboard/admin/teams/view/${teamId}/strat-map/${map.toLowerCase()}`}
@@ -48,11 +36,16 @@ export default function StratMapSelection({ teamId }: StratMapSelectionProps) {
             >
               <div className="aspect-video relative">
                 <Image
-                  src={`/images/${map.toLowerCase()}.webp`}
+                  src={`/images/${gameType}/${map.toLowerCase()}.webp`}
                   alt={map}
                   fill
                   className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  onError={(e) => {
+                    // Fallback to old path for backward compatibility
+                    const target = e.target as HTMLImageElement
+                    target.src = `/images/${map.toLowerCase()}.webp`
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
                 

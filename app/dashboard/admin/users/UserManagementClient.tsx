@@ -13,6 +13,8 @@ import { getTeamColors } from '@/lib/utils/teamColors'
 import CustomSelect from '@/components/CustomSelect'
 import { getRankImage, getUserRoleColor, getUserRoleLabel, getValorantRoleColor } from '@/lib/utils/styling'
 import { useTranslations } from 'next-intl'
+import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
+import { GameBadge } from '@/components/GameSelector'
 
 export default function UserManagementClient() {
   const [users, setUsers] = useState<UserProfile[]>([])
@@ -21,6 +23,7 @@ export default function UserManagementClient() {
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
   const [teamFilter, setTeamFilter] = useState<string>('all')
   const [positionFilter, setPositionFilter] = useState<string>('all')
+  const [gameFilter, setGameFilter] = useState<GameType | 'all'>('all')
   const [teams, setTeams] = useState<any[]>([])
   
   const supabase = createClient()
@@ -72,8 +75,9 @@ export default function UserManagementClient() {
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     const matchesTeam = teamFilter === 'all' || user.team_id === teamFilter || (teamFilter === 'none' && !user.team_id)
     const matchesPosition = positionFilter === 'all' || user.position === positionFilter
+    const matchesGame = gameFilter === 'all' || (user.game || DEFAULT_GAME) === gameFilter
     
-    return matchesSearch && matchesRole && matchesTeam && matchesPosition
+    return matchesSearch && matchesRole && matchesTeam && matchesPosition && matchesGame
   })
 
   const roles = [...new Set(users.filter(u => u.role === 'player').map(u => u.position).filter(Boolean))]
@@ -153,6 +157,17 @@ export default function UserManagementClient() {
                 value: role as string,
                 label: role as string
               }))
+            ]}
+            className=""
+          />
+
+          <CustomSelect
+            value={gameFilter}
+            onChange={(value) => setGameFilter(value as GameType | 'all')}
+            options={[
+              { value: 'all', label: tCommon('all') + ' Games' },
+              { value: 'valorant', label: 'Valorant' },
+              { value: 'cs2', label: 'CS2' }
             ]}
             className=""
           />
@@ -247,6 +262,8 @@ export default function UserManagementClient() {
                     {/* Role and Status Badges */}
                     {user.role === 'player' && (
                       <div className="flex items-center gap-2 flex-wrap">
+                        {/* Game Badge */}
+                        <GameBadge game={(user.game as GameType) || DEFAULT_GAME} size="sm" />
                         {user.position && (
                           <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getValorantRoleColor(user.position)}`}>
                             {user.position}
@@ -265,25 +282,40 @@ export default function UserManagementClient() {
                       </div>
                     )}
 
-                    {/* Rank and Nationality Grid */}
+                    {/* Rank/Faceit Level and Nationality Grid */}
                     {user.role === 'player' && (
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/rank relative">
-                          {rankImage ? (
-                            <>
+                          {/* Show Faceit Level for CS2, Rank image for Valorant */}
+                          {(user.game || DEFAULT_GAME) === 'cs2' ? (
+                            (user as any).faceit_level ? (
                               <Image
-                                src={rankImage}
-                                alt={user.rank || 'Unranked'}
-                                width={32}
-                                height={32}
+                                src={getFaceitLevelImage((user as any).faceit_level)}
+                                alt={`Faceit Level ${(user as any).faceit_level}`}
+                                width={48}
+                                height={48}
                                 className="object-contain"
                               />
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                {user.rank}
-                              </div>
-                            </>
+                            ) : (
+                              <span className="text-gray-500 text-xs">N/A</span>
+                            )
                           ) : (
-                            <span className="text-gray-500 text-xs">N/A</span>
+                            rankImage ? (
+                              <>
+                                <Image
+                                  src={rankImage}
+                                  alt={user.rank || 'Unranked'}
+                                  width={32}
+                                  height={32}
+                                  className="object-contain"
+                                />
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/rank:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                  {user.rank}
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-gray-500 text-xs">N/A</span>
+                            )
                           )}
                         </div>
                         <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/nation relative">
@@ -307,8 +339,8 @@ export default function UserManagementClient() {
                       </div>
                     )}
 
-                    {/* Agent Pool */}
-                    {user.role === 'player' && user.champion_pool && user.champion_pool.length > 0 && (
+                    {/* Agent Pool - Only for Valorant */}
+                    {user.role === 'player' && (user.game || DEFAULT_GAME) === 'valorant' && user.champion_pool && user.champion_pool.length > 0 && (
                       <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
                         <p className="text-gray-400 text-xs mb-2 font-medium">{tPlayers('championPool')}</p>
                         <div className="flex flex-wrap gap-1.5">

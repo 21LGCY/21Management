@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole, StaffRole } from '@/lib/types/database'
-import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
 import { Save, X, User, Shield, Award, Link as LinkIcon, Globe, Gamepad2 } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
@@ -69,6 +70,10 @@ export default function UserForm({ userId }: UserFormProps) {
     staff_role: '' as StaffRole | '',
     avatar_url: '',
     game: DEFAULT_GAME as GameType,
+    // CS2 specific fields
+    faceit_level: 0,
+    steam_url: '',
+    faceit_url: '',
   })
 
   const [championInput, setChampionInput] = useState('')
@@ -128,6 +133,10 @@ export default function UserForm({ userId }: UserFormProps) {
         staff_role: data.staff_role || '',
         avatar_url: data.avatar_url || '',
         game: userGame,
+        // CS2 specific fields
+        faceit_level: data.faceit_level || 0,
+        steam_url: data.steam_url || '',
+        faceit_url: data.faceit_url || '',
       })
     }
   }
@@ -159,6 +168,10 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
           updates.game = formData.game
+          // CS2 specific fields
+          updates.faceit_level = formData.faceit_level || null
+          updates.steam_url = formData.steam_url || null
+          updates.faceit_url = formData.faceit_url || null
         }
 
         // Include manager-specific fields if user is a manager
@@ -223,6 +236,10 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
           updates.game = formData.game
+          // CS2 specific fields
+          updates.faceit_level = formData.faceit_level || null
+          updates.steam_url = formData.steam_url || null
+          updates.faceit_url = formData.faceit_url || null
         }
 
         if (formData.role === 'manager') {
@@ -384,13 +401,13 @@ export default function UserForm({ userId }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {t('inGameName')}
+                {gameConfig.usernameLabel}
               </label>
               <input
                 type="text"
                 value={formData.in_game_name}
                 onChange={(e) => setFormData({ ...formData, in_game_name: e.target.value })}
-                placeholder={t('enterValorantUsername')}
+                placeholder={gameConfig.usernamePlaceholder}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
@@ -457,10 +474,45 @@ export default function UserForm({ userId }: UserFormProps) {
               />
             </div>
 
-            {/* Agent/Weapon Pool */}
+            {/* Faceit Level - Only for CS2 */}
+            {gameType === 'cs2' && gameConfig.faceitLevels && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('faceitLevel')}
+                </label>
+                <div className="flex items-center gap-4">
+                  <CustomSelect
+                    value={formData.faceit_level?.toString() || ''}
+                    onChange={(value) => setFormData({ ...formData, faceit_level: parseInt(value) || 0 })}
+                    options={[
+                      { value: '', label: t('selectFaceitLevel') },
+                      ...gameConfig.faceitLevels.map(level => ({
+                        value: level.toString(),
+                        label: `Level ${level}`
+                      }))
+                    ]}
+                    className="flex-1"
+                  />
+                  {formData.faceit_level > 0 && (
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={getFaceitLevelImage(formData.faceit_level)}
+                        alt={`Faceit Level ${formData.faceit_level}`}
+                        width={64}
+                        height={64}
+                        className="rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Agent Pool - Only for Valorant */}
+            {gameConfig.hasCharacterPool && (
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
+                {t('agentPool')}
               </label>
               <div className="space-y-3">
                 <div className="flex gap-2">
@@ -468,7 +520,7 @@ export default function UserForm({ userId }: UserFormProps) {
                     value={championInput}
                     onChange={(value) => setChampionInput(value)}
                     options={[
-                      { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                      { value: '', label: t('selectAgent') },
                       ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({
                         value: char,
                         label: char
@@ -506,11 +558,12 @@ export default function UserForm({ userId }: UserFormProps) {
                 )}
                 {formData.character_pool.length === 0 && (
                   <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                    <p className="text-sm text-gray-500">{gameType === 'valorant' ? t('noAgentsAdded') : t('noWeaponsAdded')}</p>
+                    <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
                   </div>
                 )}
               </div>
             </div>
+            )}
 
             <div className="md:col-span-2 space-y-3">
               <label className="flex items-center gap-3 p-3 bg-dark/50 border border-gray-800 rounded-lg cursor-pointer hover:border-primary/50 transition-all group">
@@ -561,18 +614,53 @@ export default function UserForm({ userId }: UserFormProps) {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {gameType === 'valorant' ? t('valorantTrackerUrl') : t('trackerUrl')}
-              </label>
-              <input
-                type="url"
-                value={formData.tracker_url}
-                onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
-                placeholder={gameType === 'valorant' ? 'https://tracker.gg/valorant/profile/...' : 'https://csstats.gg/player/...'}
-                className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-            </div>
+            {/* Valorant Tracker URL - For Valorant */}
+            {gameType === 'valorant' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('valorantTrackerUrl')}
+                </label>
+                <input
+                  type="url"
+                  value={formData.tracker_url}
+                  onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
+                  placeholder="https://tracker.gg/valorant/profile/..."
+                  className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            )}
+
+            {/* Steam URL - For CS2 */}
+            {gameType === 'cs2' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('steamUrl')}
+                </label>
+                <input
+                  type="url"
+                  value={formData.steam_url}
+                  onChange={(e) => setFormData({ ...formData, steam_url: e.target.value })}
+                  placeholder="https://steamcommunity.com/id/..."
+                  className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            )}
+
+            {/* Faceit URL - For CS2 */}
+            {gameType === 'cs2' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('faceitUrl')}
+                </label>
+                <input
+                  type="url"
+                  value={formData.faceit_url}
+                  onChange={(e) => setFormData({ ...formData, faceit_url: e.target.value })}
+                  placeholder="https://www.faceit.com/en/players/..."
+                  className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">

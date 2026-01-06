@@ -9,6 +9,7 @@ import StratMapSelection from './sections/StratMapSelection'
 import PraccsReviewSelection from './sections/PraccsReviewSelection'
 import ActionButton from '@/components/ActionButton'
 import { TimezoneOffset, convertTimeSlotToUserTimezone, getTimezoneShort, getDayName } from '@/lib/utils/timezone'
+import { GameType, getFaceitLevelImage } from '@/lib/types/games'
 
 interface Player {
   id: string
@@ -21,11 +22,13 @@ interface Player {
   avatar_url?: string
   rank?: string
   staff_role?: string
+  faceit_level?: number
 }
 
 interface PlayerTeamsClientProps {
   teamId: string
   teamName: string
+  teamGame: GameType
   currentPlayerId: string
   teamPlayers: Player[]
   staffMembers: Player[]
@@ -37,6 +40,7 @@ type TabType = 'overview' | 'roster' | 'strat_map' | 'review_praccs'
 export default function PlayerTeamsClient({ 
   teamId, 
   teamName, 
+  teamGame,
   currentPlayerId,
   teamPlayers,
   staffMembers,
@@ -151,7 +155,7 @@ export default function PlayerTeamsClient({
   }
 
   const getRankImage = (rank?: string) => {
-    if (!rank) return null
+    if (!rank || teamGame === 'cs2') return null
     const rankMap: { [key: string]: string } = {
       'Ascendant 1': '/images/asc_1_rank.webp',
       'Ascendant 2': '/images/asc_2_rank.webp',
@@ -162,6 +166,24 @@ export default function PlayerTeamsClient({
       'Radiant': '/images/rad_rank.webp'
     }
     return rankMap[rank] || null
+  }
+
+  // Get rank/level display for a player
+  const getRankDisplay = (player: Player) => {
+    if (teamGame === 'cs2') {
+      // CS2: Show Faceit Level
+      if (player.faceit_level) {
+        return {
+          image: getFaceitLevelImage(player.faceit_level),
+          text: `Lvl ${player.faceit_level}`,
+          alt: `Level ${player.faceit_level}`
+        }
+      }
+      return { image: null, text: player.rank || '-', alt: player.rank || 'Unranked' }
+    }
+    // Valorant: Show Rank
+    const rankImage = getRankImage(player.rank)
+    return { image: rankImage, text: null, alt: player.rank || 'Unranked' }
   }
 
   const openActivityDetails = (activity: any) => {
@@ -176,7 +198,7 @@ export default function PlayerTeamsClient({
 
   // Player Card Component
   const renderPlayerCard = (player: Player, isCurrentPlayer: boolean) => {
-    const rankImage = getRankImage(player.rank)
+    const rankDisplay = getRankDisplay(player)
     
     return (
       <div 
@@ -238,14 +260,25 @@ export default function PlayerTeamsClient({
               {player.position}
             </span>
           )}
-          {rankImage && (
-            <div className="flex items-center gap-2 bg-gray-900/50 px-2.5 py-1.5 rounded-lg border border-gray-800">
-              <img 
-                src={rankImage} 
-                alt={player.rank} 
-                className="w-6 h-6 object-contain"
-              />
-              <span className="text-xs font-semibold text-gray-300 hidden sm:inline">{player.rank}</span>
+          {(rankDisplay.image || rankDisplay.text) && (
+            <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border ${
+              teamGame === 'cs2' ? 'bg-orange-900/30 border-orange-800' : 'bg-gray-900/50 border-gray-800'
+            }`}>
+              {rankDisplay.image && (
+                <img 
+                  src={rankDisplay.image} 
+                  alt={rankDisplay.alt} 
+                  className="w-6 h-6 object-contain"
+                />
+              )}
+              {rankDisplay.text && (
+                <span className={`text-xs font-semibold ${teamGame === 'cs2' ? 'text-orange-300' : 'text-gray-300'}`}>
+                  {rankDisplay.text}
+                </span>
+              )}
+              {teamGame === 'valorant' && player.rank && (
+                <span className="text-xs font-semibold text-gray-300 hidden sm:inline">{player.rank}</span>
+              )}
             </div>
           )}
         </div>
@@ -545,7 +578,7 @@ export default function PlayerTeamsClient({
       )}
 
       {activeTab === 'strat_map' && (
-        <StratMapSelection teamId={teamId} />
+        <StratMapSelection teamId={teamId} gameType={teamGame} />
       )}
 
       {activeTab === 'review_praccs' && (

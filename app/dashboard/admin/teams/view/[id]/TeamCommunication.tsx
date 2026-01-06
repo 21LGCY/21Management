@@ -108,7 +108,15 @@ export default function TeamCommunication({
 
       const { data, error } = await query.order('created_at', { ascending: true })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        throw error
+      }
       
       // Apply client-side filters
       let filteredData = data || []
@@ -122,8 +130,15 @@ export default function TeamCommunication({
       }
       
       setMessages(filteredData)
-    } catch (error) {
-      console.error('Error fetching messages:', error)
+    } catch (error: any) {
+      console.error('Error fetching messages:', {
+        error,
+        teamId,
+        section,
+        mapName,
+        errorMessage: error?.message || 'No message',
+        errorCode: error?.code || 'No code'
+      })
     } finally {
       setLoading(false)
     }
@@ -151,14 +166,22 @@ export default function TeamCommunication({
           author_role: userRole
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('Error inserting message:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        throw error
+      }
       setMessage('')
       
       // Refetch messages to ensure UI updates
       await fetchMessages()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error)
-      alert('Failed to send message')
+      alert(`Failed to send message: ${error?.message || 'Unknown error'}`)
     } finally {
       setSending(false)
     }
@@ -244,22 +267,47 @@ export default function TeamCommunication({
     if (!confirm('Delete this message?')) return
 
     try {
-      setLoading(true)
+      console.log('Attempting to delete message:', messageId)
       
-      // Use server action to delete message and Cloudinary image
-      const result = await deleteTeamMessageImage(messageId, userId)
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete message')
+      // Get message first to check for image
+      const { data: message } = await supabase
+        .from('team_messages')
+        .select('image_url, author_id')
+        .eq('id', messageId)
+        .single()
+
+      console.log('Message to delete:', message)
+      console.log('Current user ID:', userId)
+
+      // Delete from database directly (using client, not server action)
+      const { data: deleteData, error: deleteError } = await supabase
+        .from('team_messages')
+        .delete()
+        .eq('id', messageId)
+
+      console.log('Delete response:', { data: deleteData, error: deleteError })
+
+      if (deleteError) {
+        console.error('Delete error:', deleteError)
+        throw deleteError
       }
 
-      // Refetch messages to ensure UI updates
-      await fetchMessages()
+      // Immediately remove from local state for instant feedback
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+
+      console.log('Message deleted successfully from UI')
+
+      // Delete from Cloudinary if it has an image (optional, non-blocking)
+      if (message?.image_url) {
+        deleteTeamMessageImage(messageId, userId).catch(err => 
+          console.warn('Failed to delete Cloudinary image:', err)
+        )
+      }
     } catch (error: any) {
       console.error('Error deleting message:', error)
-      alert(error.message || 'Failed to delete message')
-    } finally {
-      setLoading(false)
+      alert(`Failed to delete message: ${error?.message || 'Unknown error'}`)
+      // Refetch to restore correct state
+      await fetchMessages()
     }
   }
 

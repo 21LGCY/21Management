@@ -86,6 +86,28 @@ export const getTeamColors = (teamTag: string | null | undefined) => {
         },
         hoverShadow: 'rgba(59, 130, 246, 0.25)',
       }
+    case '21CS2':
+      return {
+        border: '',
+        hoverBorder: '',
+        gradient: 'from-dark-card via-dark-card',
+        shadow: '',
+        style: {
+          border: '1.5px solid transparent',
+          borderRadius: '0.75rem',
+          backgroundImage: 'linear-gradient(#141414, #141414), linear-gradient(135deg, rgba(222, 155, 53, 0.5), rgba(255, 200, 100, 0.3))',
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+          '--tw-shadow-color': 'rgba(222, 155, 53, 0.1)',
+        } as React.CSSProperties,
+        badgeColors: '',
+        badgeStyle: {
+          backgroundColor: 'rgba(222, 155, 53, 0.2)',
+          color: 'rgb(255, 200, 100)',
+          borderColor: 'rgba(222, 155, 53, 0.5)',
+        },
+        hoverShadow: 'rgba(222, 155, 53, 0.25)',
+      }
     default:
       return {
         border: 'border-gray-800',

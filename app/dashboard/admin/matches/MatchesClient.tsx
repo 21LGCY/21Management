@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, MatchHistoryWithStats } from '@/lib/types/database'
+import { Team, MatchHistoryWithStats, GameType } from '@/lib/types/database'
 import { Trophy, Calendar, Search, Eye, Edit, Trash2, Filter, Plus } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
@@ -22,6 +22,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTeam, setSelectedTeam] = useState<string>('all')
+  const [selectedGame, setSelectedGame] = useState<GameType | 'all'>('all')
   const [filterType, setFilterType] = useState<FilterType>('all')
 
   useEffect(() => {
@@ -69,6 +70,12 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
     // Team filter
     if (selectedTeam !== 'all' && match.team_id !== selectedTeam) return false
     
+    // Game filter
+    if (selectedGame !== 'all') {
+      const team = teams.find(t => t.id === match.team_id)
+      if (team && team.game !== selectedGame) return false
+    }
+    
     // Result filter
     if (filterType !== 'all' && match.result !== filterType.slice(0, -1)) return false
     
@@ -87,10 +94,10 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
   })
 
   const stats = {
-    total: matches.length,
-    wins: matches.filter(m => m.result === 'win').length,
-    losses: matches.filter(m => m.result === 'loss').length,
-    draws: matches.filter(m => m.result === 'draw').length,
+    total: filteredMatches.length,
+    wins: filteredMatches.filter(m => m.result === 'win').length,
+    losses: filteredMatches.filter(m => m.result === 'loss').length,
+    draws: filteredMatches.filter(m => m.result === 'draw').length,
   }
 
   return (
@@ -148,7 +155,7 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
 
       {/* Filters & Search */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">{tCommon('search')}</label>
@@ -164,6 +171,21 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
             </div>
           </div>
 
+          {/* Game Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Game</label>
+            <CustomSelect
+              value={selectedGame}
+              onChange={(value) => setSelectedGame(value as GameType | 'all')}
+              options={[
+                { value: 'all', label: 'All Games' },
+                { value: 'valorant', label: 'Valorant' },
+                { value: 'cs2', label: 'CS2' }
+              ]}
+              className="min-w-[140px]"
+            />
+          </div>
+
           {/* Team Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">{t('selectTeam')}</label>
@@ -172,7 +194,9 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
               onChange={(value) => setSelectedTeam(value)}
               options={[
                 { value: 'all', label: t('allTeams') },
-                ...teams.map((team) => ({ value: team.id, label: team.name }))
+                ...teams
+                  .filter(team => selectedGame === 'all' || team.game === selectedGame)
+                  .map((team) => ({ value: team.id, label: `${team.name} (${team.game})` }))
               ]}
               className="min-w-[180px]"
             />

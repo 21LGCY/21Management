@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+import { getMapsForGame, getGameConfig } from '@/lib/types/games'
 
 interface RecordMatchClientProps {
   teams: Team[]
@@ -389,13 +390,26 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">{t('mapName')}</label>
-              <input
-                type="text"
-                value={mapName}
-                onChange={(e) => setMapName(e.target.value)}
-                placeholder={t('mapPlaceholder')}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
-              />
+              {selectedTeam ? (
+                <CustomSelect
+                  value={mapName}
+                  onChange={(value) => setMapName(value)}
+                  options={getMapsForGame(selectedTeam.game).map(map => ({
+                    value: map,
+                    label: map
+                  }))}
+                  placeholder={t('mapPlaceholder')}
+                  className="w-full"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={mapName}
+                  onChange={(e) => setMapName(e.target.value)}
+                  placeholder={t('mapPlaceholder')}
+                  className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+                />
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -575,53 +589,55 @@ export default function RecordMatchClient({ teams, userId }: RecordMatchClientPr
                     </div>
                   </div>
 
-                  {/* Agent Selection */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-2">{t('agent')}</label>
-                    {stat.championPool && stat.championPool.length > 0 ? (
-                      <>
-                        <CustomSelect
-                          value={stat.championPool.includes(stat.agent || '') ? stat.agent : 'other'}
-                          onChange={(value) => {
-                            if (value !== 'other') {
-                              updatePlayerStat(index, 'agent', value)
-                            }
-                          }}
-                          options={[
-                            { value: '', label: t('selectDots') },
-                            ...stat.championPool.map(champion => ({
-                              value: champion,
-                              label: champion
-                            })),
-                            { value: 'other', label: t('otherCustom') }
-                          ]}
-                          className="w-full"
-                        />
-                        {!stat.championPool.includes(stat.agent || '') && stat.agent !== '' && (
+                  {/* Agent Selection - Only for Valorant */}
+                  {selectedTeam?.game === 'valorant' && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">{t('agent')}</label>
+                      {stat.championPool && stat.championPool.length > 0 ? (
+                        <>
+                          <CustomSelect
+                            value={stat.championPool.includes(stat.agent || '') ? stat.agent : 'other'}
+                            onChange={(value) => {
+                              if (value !== 'other') {
+                                updatePlayerStat(index, 'agent', value)
+                              }
+                            }}
+                            options={[
+                              { value: '', label: t('selectDots') },
+                              ...stat.championPool.map(champion => ({
+                                value: champion,
+                                label: champion
+                              })),
+                              { value: 'other', label: t('otherCustom') }
+                            ]}
+                            className="w-full"
+                          />
+                          {!stat.championPool.includes(stat.agent || '') && stat.agent !== '' && (
+                            <input
+                              type="text"
+                              value={stat.agent || ''}
+                              onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
+                              placeholder={t('enterAgentName')}
+                              className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none mt-2"
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <>
                           <input
                             type="text"
                             value={stat.agent || ''}
                             onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
-                            placeholder={t('enterAgentName')}
-                            className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none mt-2"
+                            placeholder={t('agentPlaceholder')}
+                            className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
                           />
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <input
-                          type="text"
-                          value={stat.agent || ''}
-                          onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
-                          placeholder={t('agentPlaceholder')}
-                          className="w-full px-3 py-2 bg-dark border border-gray-700 rounded-lg text-white text-sm focus:border-primary focus:outline-none"
-                        />
-                        {stat.playerId && (
-                          <p className="text-xs text-yellow-400 mt-1">{t('noAgentPoolDefined')}</p>
-                        )}
-                      </>
-                    )}
-                  </div>
+                          {stat.playerId && (
+                            <p className="text-xs text-yellow-400 mt-1">{t('noAgentPoolDefined')}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   {/* Remove Button */}
                   <div className="flex justify-end">

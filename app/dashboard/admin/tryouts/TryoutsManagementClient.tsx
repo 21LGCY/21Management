@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus } from '@/lib/types/database'
-import { GameType, GAME_CONFIGS, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { GameType, GAME_CONFIGS, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
 import { Plus, Edit, Trash2, Search, Eye, ExternalLink, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
 
@@ -293,7 +294,22 @@ export default function TryoutsManagementClient() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                      {tryout.rank || '-'}
+                      {(tryout.game || DEFAULT_GAME) === 'cs2' ? (
+                        tryout.faceit_level ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Image
+                              src={getFaceitLevelImage(tryout.faceit_level)}
+                              alt={`Faceit Level ${tryout.faceit_level}`}
+                              width={28}
+                              height={28}
+                              className="object-contain"
+                            />
+                            <span className="text-orange-400 text-xs">Lvl {tryout.faceit_level}</span>
+                          </span>
+                        ) : '-'
+                      ) : (
+                        tryout.rank || '-'
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                       {tryout.managed_by || '-'}
@@ -305,15 +321,44 @@ export default function TryoutsManagementClient() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
-                        {(tryout.tracker_url || tryout.valorant_tracker_url) && (
+                        {/* Valorant Tracker */}
+                        {(tryout.game || DEFAULT_GAME) === 'valorant' && (tryout.tracker_url || tryout.valorant_tracker_url) && (
                           <a
                             href={tryout.tracker_url || tryout.valorant_tracker_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded transition"
+                            title="Valorant Tracker"
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
+                        )}
+                        {/* CS2 Links */}
+                        {(tryout.game || DEFAULT_GAME) === 'cs2' && (
+                          <>
+                            {tryout.steam_url && (
+                              <a
+                                href={tryout.steam_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-400 hover:text-white hover:bg-gray-600/20 rounded transition"
+                                title="Steam"
+                              >
+                                <Gamepad2 className="w-4 h-4" />
+                              </a>
+                            )}
+                            {tryout.faceit_url && (
+                              <a
+                                href={tryout.faceit_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 rounded transition"
+                                title="Faceit"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </>
                         )}
                         <Link
                           href={`/dashboard/admin/tryouts/${tryout.id}`}

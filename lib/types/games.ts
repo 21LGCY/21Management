@@ -43,19 +43,20 @@ export const VALORANT_MAPS: ValorantMap[] = [
 ]
 
 // ===== CS2 TYPES =====
-export type CS2Role = 'Entry Fragger' | 'AWPer' | 'Support' | 'Lurker' | 'IGL' | 'Flex'
+export type CS2Role = 'Entry Fragger' | 'Second Entry' | 'AWPer' | 'Support' | 'Lurker' | 'IGL'
 
 export type CS2Rank = 
-  | 'Silver I' | 'Silver II' | 'Silver III' | 'Silver IV' | 'Silver Elite' | 'Silver Elite Master'
-  | 'Gold Nova I' | 'Gold Nova II' | 'Gold Nova III' | 'Gold Nova Master'
-  | 'Master Guardian I' | 'Master Guardian II' | 'Master Guardian Elite'
-  | 'Distinguished Master Guardian'
-  | 'Legendary Eagle' | 'Legendary Eagle Master'
-  | 'Supreme Master First Class' | 'Global Elite'
+  | 'Legendary Eagle Master'
+  | 'Supreme Master First Class' 
+  | 'Global Elite'
+
+export type FaceitLevel = 8 | 9 | 10
 
 export type CS2Map = 
   | 'Dust2' | 'Mirage' | 'Inferno' | 'Nuke' | 'Overpass' 
-  | 'Vertigo' | 'Ancient' | 'Anubis' | 'Train'
+  | 'Vertigo' | 'Ancient' | 'Anubis'
+
+export const CS2_FACEIT_LEVELS: FaceitLevel[] = [8, 9, 10]
 
 // Main weapons/loadouts for CS2 player preferences
 export const CS2_WEAPONS = [
@@ -71,20 +72,17 @@ export const CS2_WEAPONS = [
   'Nova', 'XM1014', 'MAG-7', 'Negev', 'M249'
 ] as const
 
-export const CS2_ROLES: CS2Role[] = ['Entry Fragger', 'AWPer', 'Support', 'Lurker', 'IGL', 'Flex']
+export const CS2_ROLES: CS2Role[] = ['Entry Fragger', 'Second Entry', 'AWPer', 'Support', 'Lurker', 'IGL']
 
 export const CS2_RANKS: CS2Rank[] = [
-  'Silver I', 'Silver II', 'Silver III', 'Silver IV', 'Silver Elite', 'Silver Elite Master',
-  'Gold Nova I', 'Gold Nova II', 'Gold Nova III', 'Gold Nova Master',
-  'Master Guardian I', 'Master Guardian II', 'Master Guardian Elite',
-  'Distinguished Master Guardian',
-  'Legendary Eagle', 'Legendary Eagle Master',
-  'Supreme Master First Class', 'Global Elite'
+  'Legendary Eagle Master',
+  'Supreme Master First Class', 
+  'Global Elite'
 ]
 
 export const CS2_MAPS: CS2Map[] = [
   'Dust2', 'Mirage', 'Inferno', 'Nuke', 'Overpass',
-  'Vertigo', 'Ancient', 'Anubis', 'Train'
+  'Vertigo', 'Ancient', 'Anubis'
 ]
 
 // ===== GENERIC TYPES =====
@@ -109,6 +107,12 @@ export interface GameConfig {
   rankImagePath: string // Path to rank images
   primaryColor: string // Theme color for UI
   icon: string // Icon identifier
+  hasCharacterPool: boolean // Whether to show character/weapon pool
+  usernameLabel: string // Label for in-game name field
+  usernamePlaceholder: string // Placeholder for in-game name
+  faceitLevels?: readonly number[] // Faceit levels for CS2
+  steamUrlLabel?: string // Steam profile URL label
+  faceitUrlLabel?: string // Faceit profile URL label
 }
 
 export const GAME_CONFIGS: Record<GameType, GameConfig> = {
@@ -127,7 +131,10 @@ export const GAME_CONFIGS: Record<GameType, GameConfig> = {
     trackerBaseUrl: 'https://tracker.gg/valorant',
     rankImagePath: '/images/ranks/valorant',
     primaryColor: '#ff4655', // Valorant red
-    icon: 'valorant'
+    icon: 'valorant',
+    hasCharacterPool: true,
+    usernameLabel: 'Riot ID',
+    usernamePlaceholder: 'Username#TAG'
   },
   cs2: {
     id: 'cs2',
@@ -139,12 +146,18 @@ export const GAME_CONFIGS: Record<GameType, GameConfig> = {
     characters: CS2_WEAPONS,
     characterLabel: 'Weapon',
     characterLabelPlural: 'Weapons',
-    trackerUrlLabel: 'CS2 Stats URL',
-    trackerUrlPlaceholder: 'https://leetify.com/app/profile/...',
-    trackerBaseUrl: 'https://leetify.com',
+    trackerUrlLabel: 'Faceit URL',
+    trackerUrlPlaceholder: 'https://www.faceit.com/en/players/...',
+    trackerBaseUrl: 'https://www.faceit.com',
     rankImagePath: '/images/ranks/cs2',
     primaryColor: '#de9b35', // CS2 orange/gold
-    icon: 'cs2'
+    icon: 'cs2',
+    hasCharacterPool: false, // No weapon pool needed
+    usernameLabel: 'Steam / Faceit',
+    usernamePlaceholder: 'Steam or Faceit username',
+    faceitLevels: CS2_FACEIT_LEVELS,
+    steamUrlLabel: 'Steam Profile URL',
+    faceitUrlLabel: 'Faceit Profile URL'
   }
 }
 
@@ -204,6 +217,13 @@ export const getRolesForGame = (game: GameType): readonly string[] => {
  */
 export const getRanksForGame = (game: GameType): readonly string[] => {
   return GAME_CONFIGS[game].ranks
+}
+
+/**
+ * Get Faceit level image path
+ */
+export const getFaceitLevelImage = (level: number): string => {
+  return `/images/cs2/faceit_${level}.svg`
 }
 
 /**

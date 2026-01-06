@@ -21,6 +21,7 @@
     "next": "Suivant",
     "previous": "Précédent",
     "submit": "Soumettre",
+    "send": "Envoyer",
     "confirm": "Confirmer",
     "close": "Fermer",
     "view": "Voir",
@@ -332,7 +333,19 @@
     "selectAgentsHint": "Sélectionnez des agents pour cette composition stratégique",
     "teamCompsManaged": "Les compositions d'équipe peuvent être gérées par votre Staff",
     "pleaseSelectAgent": "Veuillez sélectionner au moins un agent",
-    "failedSaveComposition": "Échec de l'enregistrement de la composition"
+    "failedSaveComposition": "Échec de l'enregistrement de la composition",
+    "tryoutsNotAvailableForCS2": "Tryouts Non Disponibles pour CS2",
+    "tryoutsValorantOnly": "Le système de tryouts et de scouting est actuellement uniquement disponible pour les équipes Valorant.",
+    "noCategoryAssigned": "Aucune Catégorie d'Équipe Assignée",
+    "contactAdmin": "Veuillez contacter un administrateur pour assigner une catégorie d'équipe afin d'accéder aux tryouts.",
+    "zonesNotAvailableForCS2": "Zones Géographiques Non Disponibles pour CS2",
+    "zonesValorantOnly": "L'analyse des zones géographiques est spécifique aux régions compétitives EMEA de Valorant.",
+    "noTryoutWeeks": "Aucune Semaine de Tryouts",
+    "createFirstTryoutWeek": "Créez votre première semaine de tryouts pour planifier des sessions avec des prospects.",
+    "tryoutWeeksCS2Title": "{team} - Semaines de Tryouts",
+    "cs2ZonesTitle": "{team} - Zones Géographiques (CS2)",
+    "cs2ZoneDefinitions": "Définitions des zones CS2",
+    "valorantZoneDefinitions": "Définitions des zones VALORANT"
   },
   "practiceReviews": {
     "title": "Revues d'Entraînement",
@@ -378,6 +391,7 @@
     "allRanks": "Tous les Rangs",
     "showingOfPlayers": "Affichage de {filtered} sur {total} joueurs",
     "rankLabel": "Rang",
+    "faceitLevel": "Niveau Faceit",
     "nation": "Nation",
     "unranked": "Non classé",
     "unknown": "Inconnu",
@@ -463,7 +477,7 @@
     "noTeamCategory": "Aucune catégorie d'équipe assignée",
     "contactAdmin": "Contacter l'admin",
     "noTeamCategoryWarning": "Aucune catégorie d'équipe assignée. Impossible de charger la base de scouting.",
-    "contactAdminForCategory": "Veuillez contacter un administrateur pour assigner une catégorie d'équipe (21L, 21GC ou 21ACA) à votre équipe.",
+    "contactAdminForCategory": "Veuillez contacter un administrateur pour assigner une catégorie d'équipe (21L, 21GC, 21ACA ou 21CS2) à votre équipe.",
     "noScoutingProfiles": "Aucun profil de scouting trouvé pour {category}",
     "clickAddScout": "Cliquez sur \"Ajouter un scout\" pour en créer un",
     "player": "Joueur",
@@ -1233,7 +1247,11 @@
     "trackerUrl": "URL Tracker",
     "cs2TrackerUrl": "URL Stats CS2",
     "enterInGameName": "Entrez le pseudo en jeu",
-    "gameInfoDescCS2": "Rôle, rang et préférences d'armes"
+    "gameInfoDescCS2": "Rôle, rang et préférences d'armes",
+    "faceitLevel": "Niveau Faceit",
+    "selectFaceitLevel": "Sélectionner le niveau Faceit",
+    "steamUrl": "URL du profil Steam",
+    "faceitUrl": "URL du profil Faceit"
   },
   "games": {
     "valorant": "Valorant",
@@ -1252,11 +1270,11 @@
       },
       "cs2": {
         "Entry Fragger": "Entry Fragger",
+        "Second Entry": "Second Entry",
         "AWPer": "AWPer",
         "Support": "Support",
         "Lurker": "Lurker",
-        "IGL": "IGL",
-        "Flex": "Flex"
+        "IGL": "IGL"
       }
     }
   },

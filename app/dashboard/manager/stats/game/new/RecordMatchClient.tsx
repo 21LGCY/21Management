@@ -8,10 +8,12 @@ import Link from 'next/link'
 import { Save, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+import { getMapsForGame } from '@/lib/types/games'
 
 interface RecordMatchClientProps {
   teamId: string
   teamName: string
+  teamGame: 'valorant' | 'cs2'
   userId: string
 }
 
@@ -32,7 +34,7 @@ interface PlayerStats {
 
 type RecordStep = 'match-details' | 'player-stats'
 
-export default function RecordMatchClient({ teamId, teamName, userId }: RecordMatchClientProps) {
+export default function RecordMatchClient({ teamId, teamName, teamGame, userId }: RecordMatchClientProps) {
   const router = useRouter()
   const supabase = createClient()
   const t = useTranslations('matches')
@@ -333,12 +335,16 @@ export default function RecordMatchClient({ teamId, teamName, userId }: RecordMa
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">{t('mapName')}</label>
-              <input
-                type="text"
+              <CustomSelect
                 value={mapName}
-                onChange={(e) => setMapName(e.target.value)}
-                placeholder={t('mapPlaceholder')}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+                onChange={(value) => setMapName(value)}
+                options={[
+                  { value: '', label: t('selectMap') || 'Select Map...' },
+                  ...getMapsForGame(teamGame).map(map => ({
+                    value: map,
+                    label: map
+                  }))
+                ]}
               />
             </div>
 
@@ -420,29 +426,31 @@ export default function RecordMatchClient({ teamId, teamName, userId }: RecordMa
                     />
                   </div>
 
-                  {/* Agent Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPlayed')}</label>
-                    {stat.championPool && stat.championPool.length > 0 ? (
-                      <CustomSelect
-                        value={stat.agent}
-                        onChange={(value) => updatePlayerStat(index, 'agent', value)}
-                        placeholder={t('selectAgent')}
-                        options={stat.championPool.map(agent => ({
-                          value: agent,
-                          label: agent
-                        }))}
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={stat.agent}
-                        onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
-                        placeholder={t('enterAgentName')}
-                        className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
-                      />
-                    )}
-                  </div>
+                  {/* Agent Selection - Only for Valorant */}
+                  {teamGame === 'valorant' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPlayed')}</label>
+                      {stat.championPool && stat.championPool.length > 0 ? (
+                        <CustomSelect
+                          value={stat.agent}
+                          onChange={(value) => updatePlayerStat(index, 'agent', value)}
+                          placeholder={t('selectAgent')}
+                          options={stat.championPool.map(agent => ({
+                            value: agent,
+                            label: agent
+                          }))}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={stat.agent}
+                          onChange={(e) => updatePlayerStat(index, 'agent', e.target.value)}
+                          placeholder={t('enterAgentName')}
+                          className="w-full px-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+                        />
+                      )}
+                    </div>
+                  )}
 
                   {/* Stats */}
                   <div>

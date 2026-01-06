@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Calendar, Users, CheckCircle, Clock } from 'lucide-react'
+import { Plus, Calendar, Users, CheckCircle, Clock, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutWeek, PlayerAvailability, TeamCategory, TryoutWeekStatus } from '@/lib/types/database'
@@ -28,25 +28,43 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
   const supabase = createClient()
   const t = useTranslations('tryouts')
 
+  const isCS2Team = team?.game === 'cs2'
+
   useEffect(() => {
-    if (teamCategory) {
-      fetchTryoutWeeks()
-    }
-  }, [teamCategory])
+    fetchTryoutWeeks()
+  }, [teamCategory, isCS2Team])
 
   const fetchTryoutWeeks = async () => {
-    if (!teamCategory) return
-    
     setLoading(true)
     try {
-      // Fetch tryout weeks for manager's team only
-      const { data: weeks, error: weeksError } = await supabase
-        .from('tryout_weeks')
-        .select('*')
-        .eq('team_category', teamCategory)
-        .order('week_start', { ascending: false })
+      let weeks
+      
+      // For CS2 teams, filter by game='cs2'
+      // For Valorant teams, filter by team_category
+      if (isCS2Team) {
+        const { data, error } = await supabase
+          .from('tryout_weeks')
+          .select('*')
+          .eq('game', 'cs2')
+          .order('week_start', { ascending: false })
 
-      if (weeksError) throw weeksError
+        if (error) throw error
+        weeks = data
+      } else {
+        if (!teamCategory) {
+          setLoading(false)
+          return
+        }
+        
+        const { data, error } = await supabase
+          .from('tryout_weeks')
+          .select('*')
+          .eq('team_category', teamCategory)
+          .order('week_start', { ascending: false })
+
+        if (error) throw error
+        weeks = data
+      }
 
       // Fetch all availabilities for these weeks
       if (weeks && weeks.length > 0) {
@@ -100,6 +118,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
       case '21L': return '21L'
       case '21GC': return '21GC'
       case '21ACA': return '21 ACA'
+      case '21CS2': return '21 CS2'
     }
   }
 
@@ -131,7 +150,29 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
     )
   }
 
-  if (!teamCategory) {
+  // Show message for CS2 teams - Tryout weeks can still work for CS2
+  if (isCS2Team) {
+    // CS2 teams can use tryout weeks, just without category filtering
+    if (tryoutWeeks.length === 0) {
+      return (
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-8 text-center">
+          <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">
+            {t('noTryoutWeeks') || 'No Tryout Weeks Yet'}
+          </h3>
+          <p className="text-gray-400 max-w-md mx-auto mb-4">
+            {t('createFirstTryoutWeek') || 'Create your first tryout week to schedule sessions with CS2 prospects.'}
+          </p>
+          <Link href="/dashboard/manager/teams/tryouts/new">
+            <button className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+              <Plus className="w-4 h-4 inline-block mr-2" />
+              {t('createTryoutWeek')}
+            </button>
+          </Link>
+        </div>
+      )
+    }
+  } else if (!teamCategory) {
     return (
       <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 text-center">
         <Calendar className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
@@ -148,7 +189,10 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
         <div>
           <h2 className="flex items-center gap-3 text-2xl font-bold text-white">
             <Calendar className="w-6 h-6 text-primary" />
-            {t('tryoutWeeksTitle', { team: getTeamLabel(teamCategory) })}
+            {isCS2Team 
+              ? t('tryoutWeeksCS2Title', { team: team?.name || 'CS2' })
+              : t('tryoutWeeksTitle', { team: getTeamLabel(teamCategory) || '' })
+            }
           </h2>
           <p className="text-gray-400 mt-1">{t('manageTryoutsDescription')}</p>
         </div>
@@ -175,7 +219,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
         <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">{t('noSessions')}</h3>
-          <p className="text-gray-400 mb-6">{t('createTryoutFor', { team: getTeamLabel(teamCategory) })}</p>
+          <p className="text-gray-400 mb-6">{t('createTryoutFor', { team: getTeamLabel(teamCategory) || '' })}</p>
           <Link href="/dashboard/manager/teams/tryouts/new">
             <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition mx-auto">
               <Plus className="w-4 h-4" />

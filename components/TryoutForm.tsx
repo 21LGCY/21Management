@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { TryoutStatus } from '@/lib/types/database'
-import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage, CS2_FACEIT_LEVELS } from '@/lib/types/games'
 import { Save, X, Gamepad2 } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
@@ -70,8 +71,11 @@ export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: Tryout
     champion_pool: [] as string[], // Legacy
     character_pool: [] as string[], // New
     rank: '',
+    faceit_level: '' as string | number, // CS2 specific
     valorant_tracker_url: '', // Legacy
     tracker_url: '', // New
+    steam_url: '', // CS2 specific
+    faceit_url: '', // CS2 specific
     twitter_url: '',
     contact_status: 'not_contacted' as TryoutStatus,
     last_contact_date: '',
@@ -112,8 +116,11 @@ export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: Tryout
         champion_pool: data.champion_pool || [],
         character_pool: data.character_pool || data.champion_pool || [],
         rank: data.rank || '',
+        faceit_level: data.faceit_level || '',
         valorant_tracker_url: data.valorant_tracker_url || '',
         tracker_url: data.tracker_url || data.valorant_tracker_url || '',
+        steam_url: data.steam_url || '',
+        faceit_url: data.faceit_url || '',
         twitter_url: data.twitter_url || '',
         contact_status: data.status || 'not_contacted',
         last_contact_date: data.last_contact_date ? new Date(data.last_contact_date).toISOString().split('T')[0] : '',
@@ -140,9 +147,12 @@ export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: Tryout
         nationality: formData.nationality || null,
         champion_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // Legacy
         character_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // New
-        rank: formData.rank || null,
-        valorant_tracker_url: formData.tracker_url || null, // Legacy
-        tracker_url: formData.tracker_url || null, // New
+        rank: gameType === 'valorant' ? (formData.rank || null) : null,
+        faceit_level: gameType === 'cs2' ? (formData.faceit_level ? Number(formData.faceit_level) : null) : null,
+        valorant_tracker_url: gameType === 'valorant' ? (formData.tracker_url || null) : null, // Legacy
+        tracker_url: gameType === 'valorant' ? (formData.tracker_url || null) : null, // New
+        steam_url: gameType === 'cs2' ? (formData.steam_url || null) : null,
+        faceit_url: gameType === 'cs2' ? (formData.faceit_url || null) : null,
         twitter_url: formData.twitter_url || null,
         status: formData.contact_status,
         last_contact_date: formData.last_contact_date || null,
@@ -293,30 +303,57 @@ export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: Tryout
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              {t('rank')}
+              {gameType === 'cs2' ? t('faceitLevel') : t('rank')}
             </label>
-            <CustomSelect
-              value={formData.rank}
-              onChange={(value) => setFormData({ ...formData, rank: value })}
-              placeholder={t('selectRank')}
-              options={[
-                { value: '', label: t('selectRank') },
-                ...gameConfig.ranks.map(rank => ({ value: rank, label: rank }))
-              ]}
-            />
+            {gameType === 'cs2' ? (
+              <div className="flex items-center gap-4">
+                <CustomSelect
+                  value={String(formData.faceit_level)}
+                  onChange={(value) => setFormData({ ...formData, faceit_level: value })}
+                  placeholder={t('selectFaceitLevel')}
+                  options={[
+                    { value: '', label: t('selectFaceitLevel') },
+                    ...CS2_FACEIT_LEVELS.map(level => ({ value: String(level), label: `Level ${level}` }))
+                  ]}
+                />
+                {formData.faceit_level && Number(formData.faceit_level) >= 8 && (
+                  <div className="flex-shrink-0">
+                    <Image
+                      src={getFaceitLevelImage(Number(formData.faceit_level))}
+                      alt={`Faceit Level ${formData.faceit_level}`}
+                      width={64}
+                      height={64}
+                      className="rounded"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <CustomSelect
+                value={formData.rank}
+                onChange={(value) => setFormData({ ...formData, rank: value })}
+                placeholder={t('selectRank')}
+                options={[
+                  { value: '', label: t('selectRank') },
+                  ...gameConfig.ranks.map(rank => ({ value: rank, label: rank }))
+                ]}
+              />
+            )}
           </div>
 
+          {/* Agent Pool - Only for Valorant */}
+          {gameConfig.hasCharacterPool && (
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
+              {t('agentPool')}
             </label>
             <div className="flex gap-2 mb-2">
               <CustomSelect
                 value={championInput}
                 onChange={(value) => setChampionInput(value)}
-                placeholder={gameType === 'valorant' ? t('selectAgent') : t('selectWeapon')}
+                placeholder={t('selectAgent')}
                 options={[
-                  { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                  { value: '', label: t('selectAgent') },
                   ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({ value: char, label: char }))
                 ]}
                 className="flex-1"
@@ -348,19 +385,53 @@ export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: Tryout
               ))}
             </div>
           </div>
+          )}
 
+          {/* Valorant Tracker - Only for Valorant */}
+          {gameType === 'valorant' && (
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               {t('valorantTrackerUrl')}
             </label>
             <input
               type="url"
-              value={formData.valorant_tracker_url}
-              onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
+              value={formData.tracker_url}
+              onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
               placeholder="https://tracker.gg/valorant/profile/..."
               className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
             />
           </div>
+          )}
+
+          {/* CS2 Links - Only for CS2 */}
+          {gameType === 'cs2' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t('steamUrl')}
+              </label>
+              <input
+                type="url"
+                value={formData.steam_url}
+                onChange={(e) => setFormData({ ...formData, steam_url: e.target.value })}
+                placeholder="https://steamcommunity.com/id/..."
+                className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t('faceitUrl')}
+              </label>
+              <input
+                type="url"
+                value={formData.faceit_url}
+                onChange={(e) => setFormData({ ...formData, faceit_url: e.target.value })}
+                placeholder="https://www.faceit.com/en/players/..."
+                className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+              />
+            </div>
+          </>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">

@@ -3,6 +3,7 @@ import { requireManagerTeamAccess } from '@/lib/auth/team-access'
 import NavbarWrapper from '@/components/NavbarWrapper'
 import ManagerTeamsClient from './ManagerTeamsClient'
 import { TimezoneOffset, DEFAULT_TIMEZONE } from '@/lib/utils/timezone'
+import { GameType, DEFAULT_GAME } from '@/lib/types/games'
 
 export default async function ManagerTeamsPage() {
   // Require manager role and get team access
@@ -42,6 +43,7 @@ export default async function ManagerTeamsPage() {
           teamId={teamId || ''} 
           teamName={team?.name || ''}
           teamCategory={teamCategory || '21GC'}
+          teamGame={(team?.game as GameType) || DEFAULT_GAME}
           playerCount={playerCount || 0}
           tryouts={tryouts || []}
           userTimezone={userTimezone}

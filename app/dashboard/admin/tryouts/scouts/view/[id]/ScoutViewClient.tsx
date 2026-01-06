@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, TeamCategory } from '@/lib/types/database'
-import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
 import { ArrowLeft, Edit, Trash2, User as UserIcon, ExternalLink, Calendar, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -254,19 +254,36 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
             {/* Rank and Nationality */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
-                <p className="text-gray-500 text-sm mb-2">{tForm('rank')}</p>
-                <div className="flex items-center gap-3">
-                  {getRankImage(scout.rank) && (
-                    <Image
-                      src={getRankImage(scout.rank)!}
-                      alt={scout.rank || ''}
-                      width={28}
-                      height={28}
-                      className="object-contain"
-                    />
-                  )}
-                  <p className="text-white font-semibold">{scout.rank || t('unranked')}</p>
-                </div>
+                <p className="text-gray-500 text-sm mb-2">
+                  {((scout.game as GameType) || DEFAULT_GAME) === 'cs2' ? 'Faceit Level' : tForm('rank')}
+                </p>
+                {((scout.game as GameType) || DEFAULT_GAME) === 'cs2' ? (
+                  <div className="flex items-center gap-3">
+                    {scout.faceit_level && (
+                      <Image
+                        src={getFaceitLevelImage(scout.faceit_level)}
+                        alt={`Faceit Level ${scout.faceit_level}`}
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                      />
+                    )}
+                    <p className="text-white font-semibold">Level {scout.faceit_level || 'Not set'}</p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    {getRankImage(scout.rank) && (
+                      <Image
+                        src={getRankImage(scout.rank)!}
+                        alt={scout.rank || ''}
+                        width={28}
+                        height={28}
+                        className="object-contain"
+                      />
+                    )}
+                    <p className="text-white font-semibold">{scout.rank || t('unranked')}</p>
+                  </div>
+                )}
               </div>
               <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-800/50">
                 <p className="text-gray-500 text-sm mb-2">{tForm('nationality')}</p>
@@ -407,22 +424,47 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
           </div>
 
           {/* External Links */}
-          {(scout.valorant_tracker_url || scout.twitter_url || scout.links) && (
+          {(scout.valorant_tracker_url || scout.steam_url || scout.faceit_url || scout.twitter_url || scout.links) && (
             <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
                 {t('externalLinks')}
               </h3>
               <div className="space-y-3">
+                {/* Valorant Tracker */}
                 {scout.valorant_tracker_url && (
                   <a
                     href={scout.valorant_tracker_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-primary/50 transition-all group"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-[#ff4655]/50 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ExternalLink className="w-4 h-4 text-[#ff4655] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     <span className="text-gray-300 group-hover:text-white transition">{t('valorantTracker')}</span>
+                  </a>
+                )}
+                {/* Steam Profile - CS2 */}
+                {scout.steam_url && (
+                  <a
+                    href={scout.steam_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-[#1b2838]/50 transition-all group"
+                  >
+                    <Gamepad2 className="w-4 h-4 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-gray-300 group-hover:text-white transition">Steam Profile</span>
+                  </a>
+                )}
+                {/* Faceit Profile - CS2 */}
+                {scout.faceit_url && (
+                  <a
+                    href={scout.faceit_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-[#de9b35]/50 transition-all group"
+                  >
+                    <ExternalLink className="w-4 h-4 text-[#de9b35] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-gray-300 group-hover:text-white transition">Faceit Profile</span>
                   </a>
                 )}
                 {scout.twitter_url && (
@@ -430,10 +472,10 @@ export default function ScoutViewClient({ scoutId }: ScoutViewClientProps) {
                     href={scout.twitter_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-primary/50 transition-all group"
+                    className="flex items-center gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg border border-gray-800/50 hover:border-blue-500/50 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    <span className="text-gray-300 group-hover:text-white transition">Twitter</span>
+                    <ExternalLink className="w-4 h-4 text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-gray-300 group-hover:text-white transition">Twitter / X</span>
                   </a>
                 )}
                 {scout.links && (

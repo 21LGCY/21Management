@@ -3,11 +3,9 @@ import NavbarWrapper from '@/components/NavbarWrapper'
 import { notFound } from 'next/navigation'
 import StratMapClient from './StratMapClient'
 import { ValorantMap } from '@/lib/types/database'
+import { VALORANT_MAPS, CS2_MAPS } from '@/lib/types/games'
 
-const VALID_MAPS: ValorantMap[] = [
-  'Ascent', 'Bind', 'Haven', 'Split', 'Icebox', 'Breeze',
-  'Fracture', 'Pearl', 'Lotus', 'Sunset', 'Abyss', 'Corrode'
-]
+const VALID_MAPS = [...VALORANT_MAPS, ...CS2_MAPS]
 
 export default async function StratMapPage({ 
   params 
@@ -17,8 +15,8 @@ export default async function StratMapPage({
   const { id, map } = await params
   const user = await requireRole(['admin', 'manager', 'player'])
   
-  // Capitalize first letter to match enum
-  const mapName = map.charAt(0).toUpperCase() + map.slice(1) as ValorantMap
+  // Capitalize first letter to match map name format
+  const mapName = map.charAt(0).toUpperCase() + map.slice(1)
   
   // Validate map name
   if (!VALID_MAPS.includes(mapName)) {
@@ -32,7 +30,7 @@ export default async function StratMapPage({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StratMapClient 
           teamId={id}
-          mapName={mapName}
+          mapName={mapName as ValorantMap}
           userId={user.user_id}
           userName={user.username}
           userRole={user.role}

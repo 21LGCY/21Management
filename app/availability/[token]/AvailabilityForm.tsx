@@ -27,6 +27,7 @@ const getTeamLabel = (teamCategory: string): string => {
     case '21L': return '21L'
     case '21GC': return '21GC'
     case '21ACA': return '21 ACA'
+    case '21CS2': return '21 CS2'
     default: return teamCategory.toUpperCase()
   }
 }

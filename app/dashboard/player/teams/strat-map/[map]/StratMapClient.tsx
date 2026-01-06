@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, ValorantMap, UserRole, StratType } from '@/lib/types/database'
+import { Team, UserRole, StratType } from '@/lib/types/database'
+import { GameType } from '@/lib/types/games'
 import { ArrowLeft, Map as MapIcon, Target, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import TeamCommunication from '@/app/dashboard/admin/teams/view/[id]/TeamCommunication'
@@ -10,7 +11,8 @@ import { useTranslations } from 'next-intl'
 
 interface StratMapClientProps {
   teamId: string
-  mapName: ValorantMap
+  mapName: string
+  gameType: GameType
   userId: string
   userName: string
   userRole: UserRole
@@ -18,7 +20,8 @@ interface StratMapClientProps {
 
 export default function StratMapClient({ 
   teamId, 
-  mapName, 
+  mapName,
+  gameType,
   userId, 
   userName, 
   userRole 

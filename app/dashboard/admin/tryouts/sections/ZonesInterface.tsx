@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
+import { GameType, CS2_ROLES } from '@/lib/types/games'
 import { Globe, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
@@ -17,6 +18,21 @@ const VALORANT_ZONES: Record<string, string[]> = {
   'France': ['France', 'FR'],
   'IBIT': ['Spain', 'Portugal', 'Italy', 'ES', 'PT', 'IT'],
   'Turkey & MENA': ['Turkey', 'TR', 'Middle East', 'North Africa'],
+}
+
+// CS2 FACEIT/ESL Competitive Zones mapping
+const CS2_ZONES: Record<string, string[]> = {
+  'EU West': ['France', 'FR', 'United Kingdom', 'GB', 'UK', 'Ireland', 'IE', 'Spain', 'ES', 'Portugal', 'PT', 'Belgium', 'BE', 'Netherlands', 'NL', 'Luxembourg', 'LU'],
+  'EU North': ['Denmark', 'DK', 'Finland', 'FI', 'Sweden', 'SE', 'Norway', 'NO', 'Iceland', 'IS', 'Estonia', 'EE', 'Latvia', 'LV', 'Lithuania', 'LT'],
+  'EU Central': ['Germany', 'DE', 'Austria', 'AT', 'Switzerland', 'CH', 'Poland', 'PL', 'Czech Republic', 'Czechia', 'CZ', 'Hungary', 'HU', 'Slovakia', 'SK'],
+  'EU South': ['Italy', 'IT', 'Greece', 'GR', 'Croatia', 'HR', 'Slovenia', 'SI', 'Serbia', 'RS', 'Bosnia', 'BA', 'Montenegro', 'ME', 'Albania', 'AL', 'North Macedonia', 'MK'],
+  'CIS': ['Russia', 'RU', 'Ukraine', 'UA', 'Belarus', 'BY', 'Kazakhstan', 'KZ', 'Uzbekistan', 'UZ', 'Armenia', 'AM', 'Azerbaijan', 'AZ', 'Georgia', 'GE', 'Moldova', 'MD'],
+  'Turkey': ['Turkey', 'TR'],
+}
+
+// Helper to determine if team is CS2
+const isCS2Team = (teamCategory: TeamCategory | 'all'): boolean => {
+  return teamCategory === '21CS2'
 }
 
 interface ZoneStats {
@@ -37,6 +53,16 @@ export default function ZonesInterface() {
   const supabase = createClient()
   const t = useTranslations('tryouts')
   const tRoles = useTranslations('roles')
+
+  // Determine current game based on team filter
+  const currentGame: GameType = useMemo(() => {
+    return isCS2Team(teamFilter) ? 'cs2' : 'valorant'
+  }, [teamFilter])
+
+  // Get current zones based on game
+  const currentZones = useMemo(() => {
+    return currentGame === 'cs2' ? CS2_ZONES : VALORANT_ZONES
+  }, [currentGame])
 
   useEffect(() => {
     fetchTryouts()
@@ -65,7 +91,7 @@ export default function ZonesInterface() {
     const normalizedNationality = nationality.toLowerCase().trim()
     const isCountryCode = normalizedNationality.length <= 3
     
-    for (const [zone, countries] of Object.entries(VALORANT_ZONES)) {
+    for (const [zone, countries] of Object.entries(currentZones)) {
       if (countries.some(country => {
         const normalizedCountry = country.toLowerCase().trim()
         const isCountryCodeInList = normalizedCountry.length <= 3
@@ -81,7 +107,7 @@ export default function ZonesInterface() {
         return zone
       }
     }
-    return 'Autre'
+    return 'Other'
   }
 
   // Compute zone stats inline based on current filters
@@ -128,7 +154,8 @@ export default function ZonesInterface() {
   })()
 
   const getZoneColor = (zone: string): string => {
-    const colors: Record<string, string> = {
+    // Valorant zone colors
+    const valorantColors: Record<string, string> = {
       'Northern Europe': 'from-blue-500 to-cyan-600',
       'Eastern Europe': 'from-purple-500 to-violet-600',
       'DACH': 'from-yellow-500 to-orange-500',
@@ -136,8 +163,21 @@ export default function ZonesInterface() {
       'France': 'from-blue-600 to-indigo-700',
       'IBIT': 'from-red-500 to-pink-500',
       'Turkey & MENA': 'from-red-600 to-orange-600',
-      'Autre': 'from-gray-500 to-gray-600'
+      'Other': 'from-gray-500 to-gray-600'
     }
+    
+    // CS2 zone colors
+    const cs2Colors: Record<string, string> = {
+      'EU West': 'from-blue-500 to-cyan-600',
+      'EU North': 'from-cyan-500 to-teal-600',
+      'EU Central': 'from-yellow-500 to-orange-500',
+      'EU South': 'from-red-500 to-pink-500',
+      'CIS': 'from-purple-500 to-violet-600',
+      'Turkey': 'from-red-600 to-orange-600',
+      'Other': 'from-gray-500 to-gray-600'
+    }
+    
+    const colors = currentGame === 'cs2' ? cs2Colors : valorantColors
     return colors[zone] || 'from-gray-500 to-gray-600'
   }
 
@@ -197,8 +237,8 @@ export default function ZonesInterface() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Globe className="w-7 h-7 text-primary" />
-            {t('valorantZones')}
+            <Globe className={`w-7 h-7 ${currentGame === 'cs2' ? 'text-[#de9b35]' : 'text-primary'}`} />
+            {currentGame === 'cs2' ? 'Zones CS2' : t('valorantZones')}
           </h2>
           <p className="text-gray-400 mt-1">
             {t('geoDistribution', { count: totalPlayersWithNationality })}
@@ -215,7 +255,8 @@ export default function ZonesInterface() {
               { value: 'all', label: t('allCategories') },
               { value: '21L', label: '21L' },
               { value: '21GC', label: '21GC' },
-              { value: '21ACA', label: '21 ACA' }
+              { value: '21ACA', label: '21 ACA' },
+              { value: '21CS2', label: '21 CS2' }
             ]}
             className="min-w-[140px]"
           />
@@ -237,11 +278,19 @@ export default function ZonesInterface() {
             className="min-w-[160px]"
           />
 
-          {/* Role Filter */}
+          {/* Role Filter - Dynamic based on game */}
           <CustomSelect
             value={roleFilter}
             onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
-            options={[
+            options={currentGame === 'cs2' ? [
+              { value: 'all', label: t('allRoles') },
+              { value: 'Entry Fragger', label: 'Entry Fragger' },
+              { value: 'Second Entry', label: 'Second Entry' },
+              { value: 'AWPer', label: 'AWPer' },
+              { value: 'Support', label: 'Support' },
+              { value: 'Lurker', label: 'Lurker' },
+              { value: 'IGL', label: 'IGL' }
+            ] : [
               { value: 'all', label: t('allRoles') },
               { value: 'Duelist', label: tRoles('duelist') },
               { value: 'Initiator', label: tRoles('initiator') },
@@ -337,13 +386,19 @@ export default function ZonesInterface() {
       )}
 
       {/* Zone Legend */}
-      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+      <div className={`bg-gradient-to-br from-dark-card via-dark-card border border-gray-800 rounded-xl p-6 shadow-xl ${
+        currentGame === 'cs2' ? 'to-[#de9b35]/5' : 'to-primary/5'
+      }`}>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-dark rounded-full"></div>
-          {t('zoneDefinitions')}
+          <div className={`w-1 h-6 rounded-full ${
+            currentGame === 'cs2' 
+              ? 'bg-gradient-to-b from-[#de9b35] to-[#b8802a]' 
+              : 'bg-gradient-to-b from-primary to-primary-dark'
+          }`}></div>
+          {currentGame === 'cs2' ? 'CS2 Zone Definitions (FACEIT/ESL)' : t('zoneDefinitions')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-          {Object.entries(VALORANT_ZONES).map(([zone, countries]) => (
+          {Object.entries(currentZones).map(([zone, countries]) => (
             <div key={zone} className="text-gray-400">
               <span className={`inline-block px-2 py-1 rounded bg-gradient-to-r ${getZoneColor(zone)} text-white text-xs font-bold mr-2`}>
                 {zone}

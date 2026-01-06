@@ -95,6 +95,7 @@ export default function TryoutWeeks() {
       case '21L': return '21L'
       case '21GC': return '21GC'
       case '21ACA': return '21 ACA'
+      case '21CS2': return '21 CS2'
     }
   }
 
@@ -145,7 +146,7 @@ export default function TryoutWeeks() {
 
       {/* Team Selector */}
       <div className="flex gap-3 flex-wrap">
-        {(['21L', '21GC', '21ACA'] as TeamCategory[]).map((team) => (
+        {(['21L', '21GC', '21ACA', '21CS2'] as TeamCategory[]).map((team) => (
           <button
             key={team}
             onClick={() => setSelectedTeam(team)}

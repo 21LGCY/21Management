@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, UserProfile, PlayerMatchStats } from '@/lib/types/database'
+import { Team, UserProfile, PlayerMatchStats, GameType } from '@/lib/types/database'
 import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp, ChevronUp, ChevronDown, Search, Medal } from 'lucide-react'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
@@ -85,11 +85,18 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
   const tRoles = useTranslations('roles')
   const [viewMode, setViewMode] = useState<ViewMode>('all')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
+  const [selectedGame, setSelectedGame] = useState<GameType>('valorant')
   const [stats, setStats] = useState<PlayerAggregatedStats[]>([])
   const [loading, setLoading] = useState(false)
   const [sortField, setSortField] = useState<SortField>('averageACS')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter teams by selected game
+  const filteredTeams = useMemo(() => 
+    teams.filter(t => t.game === selectedGame),
+    [teams, selectedGame]
+  )
 
   // Calculate max values for stat bars
   const maxValues = useMemo(() => ({
@@ -128,16 +135,17 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
     } else if (viewMode === 'team' && selectedTeamId) {
       fetchTeamStats(selectedTeamId)
     }
-  }, [viewMode, selectedTeamId])
+  }, [viewMode, selectedTeamId, selectedGame])
 
   const fetchAllStats = async () => {
     setLoading(true)
     try {
-      // Get all players
+      // Get all players for the selected game
       const { data: allPlayers } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, teams!inner(game)')
         .eq('role', 'player')
+        .eq('teams.game', selectedGame)
         .not('team_id', 'is', null)
 
       if (!allPlayers) {
@@ -227,6 +235,86 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
   return (
     <div className="space-y-6">
+      {/* Game Selector */}
+      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+        <p className="text-sm text-gray-400 mb-3 font-medium">Select Game</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setSelectedGame('valorant')
+              setSelectedTeamId('')
+              setViewMode('all')
+            }}
+            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
+              selectedGame === 'valorant'
+                ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md shadow-red-500/25'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+            }`}
+          >
+            Valorant
+          </button>
+
+          <button
+            onClick={() => {
+              setSelectedGame('cs2')
+              setSelectedTeamId('')
+              setViewMode('all')
+            }}
+            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
+              selectedGame === 'cs2'
+                ? 'bg-gradient-to-r from-orange-500 to-yellow-600 text-white shadow-md shadow-orange-500/25'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+            }`}
+          >
+            CS2
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400 mb-1">{selectedGame === 'valorant' ? 'Joueurs Actifs (Valorant)' : 'Joueurs Actifs (CS2)'}</p>
+              <p className="text-3xl font-bold text-white">{stats.length}</p>
+            </div>
+            <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <UsersIcon className="w-6 h-6 text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400 mb-1">Total des Matchs</p>
+              <p className="text-3xl font-bold text-white">{stats.reduce((sum, s) => sum + s.matchesPlayed, 0)}</p>
+            </div>
+            <div className="p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+              <Trophy className="w-6 h-6 text-green-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-dark-card to-dark-card/50 border border-gray-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400 mb-1">Meilleur joueur</p>
+              <p className="text-lg font-bold text-white truncate">
+                {stats.length > 0 ? (stats[0].player.in_game_name || stats[0].player.username) : 'N/A'}
+              </p>
+              {stats.length > 0 && (
+                <p className="text-xs text-primary">{stats[0].averageACS} ACS (Meilleur)</p>
+              )}
+            </div>
+            <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+              <TrendingUp className="w-6 h-6 text-primary" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* View Mode Selector */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
         <p className="text-sm text-gray-400 mb-3 font-medium">{t('filterStatistics')}</p>
@@ -266,7 +354,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
           <div className="mt-5 pt-5 border-t border-gray-800">
             <p className="text-sm text-gray-400 mb-3 font-medium">{t('selectTeam')}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {teams.map(team => {
+              {filteredTeams.map(team => {
                 const teamColors = getTeamColors(team.tag || team.name)
                 const isSelected = selectedTeamId === team.id
                 
@@ -350,7 +438,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
                 )
               })}
             </div>
-            {teams.length === 0 && (
+            {filteredTeams.length === 0 && (
               <p className="text-gray-500 text-sm text-center py-4">{t('noTeamsAvailable')}</p>
             )}
           </div>

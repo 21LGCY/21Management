@@ -5,8 +5,9 @@ import { Users, Search, Filter, Crown, Shield, UserMinus, Edit, Eye } from 'luci
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+import { GameType, getFaceitLevelImage } from '@/lib/types/games'
 
-// Utility function to get rank image
+// Utility function to get rank image for Valorant
 const getRankImage = (rank: string | undefined | null): string | null => {
   if (!rank) return null
   
@@ -35,13 +36,14 @@ interface Player {
   champion_pool?: string[]
   avatar_url?: string
   created_at: string
+  faceit_level?: number
 }
 
 interface Team {
   id: string
   name: string
   tag?: string
-  game: string
+  game: GameType
   created_at: string
 }
 
@@ -196,18 +198,33 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
                       <div className="flex items-center gap-4 text-sm text-gray-400">
                         <span>@{player.username}</span>
                         
-                        {/* Rank */}
-                        {player.rank && (
-                          <div className="flex items-center gap-1">
-                            {getRankImage(player.rank) && (
+                        {/* Rank / Faceit Level */}
+                        {team?.game === 'cs2' ? (
+                          // CS2: Show Faceit Level
+                          player.faceit_level && (
+                            <div className="flex items-center gap-1">
                               <img 
-                                src={getRankImage(player.rank)!} 
-                                alt={player.rank}
+                                src={getFaceitLevelImage(player.faceit_level)} 
+                                alt={`Level ${player.faceit_level}`}
                                 className="w-4 h-4"
                               />
-                            )}
-                            <span>{player.rank}</span>
-                          </div>
+                              <span>Lvl {player.faceit_level}</span>
+                            </div>
+                          )
+                        ) : (
+                          // Valorant: Show Rank
+                          player.rank && (
+                            <div className="flex items-center gap-1">
+                              {getRankImage(player.rank) && (
+                                <img 
+                                  src={getRankImage(player.rank)!} 
+                                  alt={player.rank}
+                                  className="w-4 h-4"
+                                />
+                              )}
+                              <span>{player.rank}</span>
+                            </div>
+                          )
                         )}
 
                         {/* Nationality */}
@@ -226,8 +243,8 @@ export default function RosterManagementClient({ players, team, user }: RosterMa
                         <span>{t('joined')} {new Date(player.created_at).toLocaleDateString()}</span>
                       </div>
 
-                      {/* Agent Pool */}
-                      {player.champion_pool && player.champion_pool.length > 0 && (
+                      {/* Agent Pool - Only for Valorant */}
+                      {team?.game === 'valorant' && player.champion_pool && player.champion_pool.length > 0 && (
                         <div className="mt-2">
                           <div className="flex flex-wrap gap-1">
                             {player.champion_pool.slice(0, 4).map((agent: string) => (
