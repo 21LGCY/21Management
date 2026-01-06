@@ -43,10 +43,12 @@ export default function ManagerTeamsClient({ teamId, teamName, playerCount, tryo
 
   const fetchCurrentTryouts = async () => {
     try {
+      // Filter by both team_category and game to ensure we only show tryouts for this manager's team
       const { data, error } = await supabase
         .from('tryout_weeks')
         .select('*')
         .eq('team_category', teamCategory)
+        .eq('game', teamGame)
         .in('status', ['scheduled', 'in_progress'])
         .order('week_start', { ascending: true })
         .limit(3)

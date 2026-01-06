@@ -324,19 +324,7 @@
     "selectAgentsHint": "Select agents for this strategy composition",
     "teamCompsManaged": "Team compositions can be managed by your Staff",
     "pleaseSelectAgent": "Please select at least one agent",
-    "failedSaveComposition": "Failed to save composition",
-    "tryoutsNotAvailableForCS2": "Tryouts Not Available for CS2",
-    "tryoutsValorantOnly": "The tryouts and scouting system is currently only available for Valorant teams.",
-    "noCategoryAssigned": "No Team Category Assigned",
-    "contactAdmin": "Please contact an administrator to assign a team category for accessing tryouts.",
-    "zonesNotAvailableForCS2": "Geographic Zones Not Available for CS2",
-    "zonesValorantOnly": "Geographic zones analysis is specific to Valorant EMEA competitive regions.",
-    "noTryoutWeeks": "No Tryout Weeks Yet",
-    "createFirstTryoutWeek": "Create your first tryout week to schedule sessions with prospects.",
-    "tryoutWeeksCS2Title": "{team} - Tryout Weeks",
-    "cs2ZonesTitle": "{team} - Geographic Zones (CS2)",
-    "cs2ZoneDefinitions": "CS2 Zone Definitions",
-    "valorantZoneDefinitions": "VALORANT Zone Definitions"
+    "failedSaveComposition": "Failed to save composition"
   },
   "practiceReviews": {
     "title": "Practice Reviews",
@@ -891,6 +879,7 @@
     "opponentScore": "Opponent Score",
     "mapPlaceholder": "e.g., Ascent, Haven",
     "mapName": "Map Name",
+    "selectMap": "Select Map...",
     "notes": "Notes",
     "notesPlaceholder": "Additional notes...",
     "noStatsAdded": "No player statistics added yet.",
