@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Save } from 'lucide-react'
+import { Save, Gamepad2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { GameType, GAME_CONFIGS, DEFAULT_GAME } from '@/lib/types/games'
+import CustomSelect from '@/components/CustomSelect'
 
 interface TeamFormProps {
   teamId?: string
@@ -16,11 +18,13 @@ export default function TeamForm({ teamId }: TeamFormProps) {
   const [loading, setLoading] = useState(false)
   const t = useTranslations('forms')
   const tCommon = useTranslations('common')
+  const tGames = useTranslations('games')
   
   const [formData, setFormData] = useState({
     name: '',
     tag: '',
     logo_url: '',
+    game: DEFAULT_GAME as GameType,
   })
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
           name: teamData.name,
           tag: teamData.tag || '',
           logo_url: teamData.logo_url || '',
+          game: (teamData.game as GameType) || DEFAULT_GAME,
         })
       }
     } catch (error) {
@@ -66,6 +71,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
             name: formData.name,
             tag: formData.tag || null,
             logo_url: formData.logo_url || null,
+            game: formData.game,
             updated_at: new Date().toISOString(),
           })
           .eq('id', teamId)
@@ -85,6 +91,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
             name: formData.name,
             tag: formData.tag || null,
             logo_url: formData.logo_url || null,
+            game: formData.game,
           })
           .select()
           .single()
@@ -109,7 +116,7 @@ export default function TeamForm({ teamId }: TeamFormProps) {
         <h3 className="text-lg font-semibold text-white mb-4">{t('teamInfo')}</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column - Team Name & Tag */}
+          {/* Left Column - Team Name, Tag & Game */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -138,6 +145,27 @@ export default function TeamForm({ teamId }: TeamFormProps) {
                 className="w-full px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary uppercase font-sans"
               />
               <p className="mt-1 text-xs text-gray-400">Max 5 characters</p>
+            </div>
+
+            {/* Game Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4" />
+                  {t('game')} *
+                </div>
+              </label>
+              <CustomSelect
+                value={formData.game}
+                onChange={(value) => setFormData({ ...formData, game: value as GameType })}
+                options={Object.values(GAME_CONFIGS).map(config => ({
+                  value: config.id,
+                  label: config.name
+                }))}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                {formData.game === 'valorant' ? 'Agents, Valorant ranks' : 'Weapons, CS2 ranks'}
+              </p>
             </div>
           </div>
 

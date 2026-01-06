@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { ValorantRole, ValorantRank } from '@/lib/types/database'
+import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
 import { Save, X, Plus, User, Gamepad2, Link as LinkIcon } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
@@ -14,14 +14,6 @@ interface PlayerFormProps {
   teamName?: string
   playerId?: string
 }
-
-const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
-
-const VALORANT_RANKS: ValorantRank[] = [
-  'Ascendant 1', 'Ascendant 2', 'Ascendant 3',
-  'Immortal 1', 'Immortal 2', 'Immortal 3',
-  'Radiant'
-]
 
 const EUROPEAN_COUNTRIES = [
   { code: 'AL', name: 'Albania' },
@@ -73,36 +65,41 @@ const EUROPEAN_COUNTRIES = [
   { code: 'VA', name: 'Vatican City' },
 ]
 
-const VALORANT_AGENTS = [
-  'Astra', 'Breach', 'Brimstone', 'Chamber', 'Clove', 'Cypher', 
-  'Deadlock', 'Fade', 'Gekko', 'Harbor', 'Iso', 'Jett', 
-  'KAY/O', 'Killjoy', 'Neon', 'Omen', 'Phoenix', 'Raze', 
-  'Reyna', 'Sage', 'Skye', 'Sova', 'Viper', 'Vyse', 'Yoru'
-]
-
 export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [gameType, setGameType] = useState<GameType>(DEFAULT_GAME)
   const t = useTranslations('forms')
   const tCommon = useTranslations('common')
+  
+  // Get game configuration based on selected game
+  const gameConfig = getGameConfig(gameType)
   
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     in_game_name: '',
-    position: '' as ValorantRole | '',
+    position: '',
     is_igl: false,
     is_substitute: false,
     nationality: '',
-    champion_pool: [] as string[],
-    rank: '' as ValorantRank | '',
-    valorant_tracker_url: '',
+    champion_pool: [] as string[], // Legacy field
+    character_pool: [] as string[], // New generic field
+    rank: '',
+    valorant_tracker_url: '', // Legacy field
+    tracker_url: '', // New generic field
     twitter_url: '',
     avatar_url: '',
+    game: DEFAULT_GAME as GameType,
   })
 
   const [championInput, setChampionInput] = useState('')
+
+  // Load team's game type on mount
+  useEffect(() => {
+    loadTeamGame()
+  }, [teamId])
 
   // Load player data when editing
   useEffect(() => {
@@ -110,6 +107,20 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
       loadPlayerData()
     }
   }, [playerId])
+
+  const loadTeamGame = async () => {
+    const { data: team } = await supabase
+      .from('teams')
+      .select('game')
+      .eq('id', teamId)
+      .single()
+    
+    if (team?.game) {
+      const game = team.game as GameType
+      setGameType(game)
+      setFormData(prev => ({ ...prev, game }))
+    }
+  }
 
   const loadPlayerData = async () => {
     if (!playerId) return
@@ -134,11 +145,19 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
       is_substitute: player.is_substitute || false,
       nationality: player.nationality || '',
       champion_pool: player.champion_pool || [],
+      character_pool: player.character_pool || player.champion_pool || [],
       rank: player.rank || '',
       valorant_tracker_url: player.valorant_tracker_url || '',
+      tracker_url: player.tracker_url || player.valorant_tracker_url || '',
       twitter_url: player.twitter_url || '',
       avatar_url: player.avatar_url || '',
+      game: (player.game as GameType) || gameType,
     })
+    
+    // Update game type from player data
+    if (player.game) {
+      setGameType(player.game as GameType)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,11 +173,14 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           is_igl: formData.is_igl,
           is_substitute: formData.is_substitute,
           nationality: formData.nationality || null,
-          champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
+          champion_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // Legacy
+          character_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // New
           rank: formData.rank || null,
-          valorant_tracker_url: formData.valorant_tracker_url || null,
+          valorant_tracker_url: formData.tracker_url || null, // Legacy
+          tracker_url: formData.tracker_url || null, // New
           twitter_url: formData.twitter_url || null,
           avatar_url: formData.avatar_url || null,
+          game: gameType,
         }
 
         const { error: updateError } = await supabase
@@ -196,11 +218,14 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           is_igl: formData.is_igl,
           is_substitute: formData.is_substitute,
           nationality: formData.nationality || null,
-          champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
+          champion_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // Legacy
+          character_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // New
           rank: formData.rank || null,
-          valorant_tracker_url: formData.valorant_tracker_url || null,
+          valorant_tracker_url: formData.tracker_url || null, // Legacy
+          tracker_url: formData.tracker_url || null, // New
           twitter_url: formData.twitter_url || null,
           avatar_url: formData.avatar_url || null,
+          game: gameType,
         }
 
         const { error: updateError } = await supabase
@@ -223,10 +248,10 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
   }
 
   const addChampion = () => {
-    if (championInput.trim() && !formData.champion_pool.includes(championInput.trim())) {
+    if (championInput.trim() && !formData.character_pool.includes(championInput.trim())) {
       setFormData({
         ...formData,
-        champion_pool: [...formData.champion_pool, championInput.trim()]
+        character_pool: [...formData.character_pool, championInput.trim()]
       })
       setChampionInput('')
     }
@@ -235,7 +260,7 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
   const removeChampion = (champion: string) => {
     setFormData({
       ...formData,
-      champion_pool: formData.champion_pool.filter(c => c !== champion)
+      character_pool: formData.character_pool.filter(c => c !== champion)
     })
   }
 
@@ -345,8 +370,18 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
           </div>
           <div>
             <h2 className="text-lg font-semibold text-white">{t('gameInfo')}</h2>
-            <p className="text-xs text-gray-400">{t('gameInfoDesc')}</p>
+            <p className="text-xs text-gray-400">
+              {gameType === 'valorant' ? t('gameInfoDesc') : t('gameInfoDescCS2') || t('gameInfoDesc')}
+            </p>
           </div>
+          {/* Game badge */}
+          <span className={`ml-auto px-3 py-1 rounded-full text-xs font-medium ${
+            gameType === 'valorant' 
+              ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+              : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+          }`}>
+            {gameConfig.shortName}
+          </span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -354,11 +389,11 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <label className="block text-sm font-medium text-gray-300 mb-2">{t('rolePosition')}</label>
             <CustomSelect
               value={formData.position}
-              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              onChange={(value) => setFormData({ ...formData, position: value })}
               placeholder={t('selectRole')}
               options={[
                 { value: '', label: t('selectRole') },
-                ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
+                ...gameConfig.roles.map(role => ({ value: role, label: role }))
               ]}
               className="w-full"
             />
@@ -368,29 +403,31 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
             <label className="block text-sm font-medium text-gray-300 mb-2">{t('rank')}</label>
             <CustomSelect
               value={formData.rank}
-              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              onChange={(value) => setFormData({ ...formData, rank: value })}
               placeholder={t('selectRank')}
               options={[
                 { value: '', label: t('selectRank') },
-                ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
+                ...gameConfig.ranks.map(rank => ({ value: rank, label: rank }))
               ]}
               className="w-full"
             />
           </div>
         </div>
 
-        {/* Agent Pool */}
+        {/* Character/Weapon Pool */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-300 mb-2">{t('agentPool')}</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
+          </label>
           <div className="space-y-3">
             <div className="flex gap-2">
               <CustomSelect
                 value={championInput}
                 onChange={(value) => setChampionInput(value)}
-                placeholder={t('selectAgentToAdd')}
+                placeholder={gameType === 'valorant' ? t('selectAgentToAdd') : t('selectWeaponToAdd')}
                 options={[
-                  { value: '', label: t('selectAgent') },
-                  ...VALORANT_AGENTS.filter(agent => !formData.champion_pool.includes(agent)).map(agent => ({ value: agent, label: agent }))
+                  { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                  ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({ value: char, label: char }))
                 ]}
                 className="flex-1"
               />
@@ -404,17 +441,17 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 {tCommon('add')}
               </button>
             </div>
-            {formData.champion_pool.length > 0 && (
+            {formData.character_pool.length > 0 && (
               <div className="flex flex-wrap gap-2 p-4 bg-dark/50 border border-gray-800 rounded-lg">
-                {formData.champion_pool.map((agent) => (
+                {formData.character_pool.map((item) => (
                   <span
-                    key={agent}
+                    key={item}
                     className="group px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary flex items-center gap-2 hover:bg-primary/20 transition-all"
                   >
-                    {agent}
+                    {item}
                     <button
                       type="button"
-                      onClick={() => removeChampion(agent)}
+                      onClick={() => removeChampion(item)}
                       className="opacity-70 group-hover:opacity-100 hover:text-red-400 transition-all"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -423,9 +460,11 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
                 ))}
               </div>
             )}
-            {formData.champion_pool.length === 0 && (
+            {formData.character_pool.length === 0 && (
               <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
+                <p className="text-sm text-gray-500">
+                  {gameType === 'valorant' ? t('noAgentsAdded') : t('noWeaponsAdded')}
+                </p>
               </div>
             )}
           </div>
@@ -493,13 +532,15 @@ export default function PlayerForm({ teamId, teamName, playerId }: PlayerFormPro
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">{t('valorantTrackerUrl')}</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              {gameConfig.trackerUrlLabel}
+            </label>
             <input
               type="url"
-              value={formData.valorant_tracker_url}
-              onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
+              value={formData.tracker_url}
+              onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
               className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="https://tracker.gg/valorant/profile/..."
+              placeholder={gameConfig.trackerUrlPlaceholder}
             />
           </div>
 

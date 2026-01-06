@@ -1220,7 +1220,45 @@
     "enterDiscordId": "Entrez l'ID Discord",
     "userUpdated": "Utilisateur mis à jour avec succès !",
     "userCreated": "Utilisateur créé avec succès !",
-    "errorSavingUser": "Erreur lors de l'enregistrement de l'utilisateur"
+    "errorSavingUser": "Erreur lors de l'enregistrement de l'utilisateur",
+    "game": "Jeu",
+    "selectGame": "Sélectionner un jeu",
+    "valorant": "Valorant",
+    "cs2": "Counter-Strike 2",
+    "weaponPool": "Pool d'armes",
+    "selectWeapon": "Sélectionner une arme...",
+    "selectWeaponToAdd": "Sélectionner une arme à ajouter",
+    "noWeaponsAdded": "Aucune arme ajoutée",
+    "characterPool": "Pool de personnages/armes",
+    "trackerUrl": "URL Tracker",
+    "cs2TrackerUrl": "URL Stats CS2",
+    "enterInGameName": "Entrez le pseudo en jeu",
+    "gameInfoDescCS2": "Rôle, rang et préférences d'armes"
+  },
+  "games": {
+    "valorant": "Valorant",
+    "cs2": "Counter-Strike 2",
+    "valorantShort": "VAL",
+    "cs2Short": "CS2",
+    "selectGame": "Sélectionner un jeu",
+    "allGames": "Tous les jeux",
+    "roles": {
+      "valorant": {
+        "Duelist": "Duelliste",
+        "Initiator": "Initiateur", 
+        "Controller": "Contrôleur",
+        "Sentinel": "Sentinelle",
+        "Flex": "Flex"
+      },
+      "cs2": {
+        "Entry Fragger": "Entry Fragger",
+        "AWPer": "AWPer",
+        "Support": "Support",
+        "Lurker": "Lurker",
+        "IGL": "IGL",
+        "Flex": "Flex"
+      }
+    }
   },
   "communication": {
     "noMessagesYet": "Aucun message pour l'instant. Lancez la conversation !",

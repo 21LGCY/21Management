@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ValorantRole, ValorantRank, UserRole, StaffRole } from '@/lib/types/database'
-import { Save, X, User, Shield, Award, Link as LinkIcon, Globe } from 'lucide-react'
+import { UserRole, StaffRole } from '@/lib/types/database'
+import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { Save, X, User, Shield, Award, Link as LinkIcon, Globe, Gamepad2 } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import SearchableCountrySelect from '@/components/SearchableCountrySelect'
 import { useTranslations } from 'next-intl'
@@ -13,26 +14,7 @@ interface UserFormProps {
   userId?: string
 }
 
-const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
 const STAFF_ROLES: StaffRole[] = ['Coach', 'Manager', 'Analyst']
-
-// All Valorant agents organized by role
-const VALORANT_AGENTS = [
-  // Duelists
-  'Jett', 'Phoenix', 'Reyna', 'Raze', 'Yoru', 'Neon', 'Iso',
-  // Initiators
-  'Sova', 'Breach', 'Skye', 'KAY/O', 'Fade', 'Gekko',
-  // Controllers
-  'Brimstone', 'Omen', 'Viper', 'Astra', 'Harbor', 'Clove',
-  // Sentinels
-  'Killjoy', 'Cypher', 'Sage', 'Chamber', 'Deadlock', 'Vyse',
-]
-
-const VALORANT_RANKS: ValorantRank[] = [
-  'Ascendant 1', 'Ascendant 2', 'Ascendant 3',
-  'Immortal 1', 'Immortal 2', 'Immortal 3',
-  'Radiant'
-]
 
 const EUROPEAN_COUNTRIES = [
   { code: 'FR', name: 'France' },
@@ -65,6 +47,10 @@ export default function UserForm({ userId }: UserFormProps) {
   const tRoles = useTranslations('roles')
   const [loading, setLoading] = useState(false)
   const [teams, setTeams] = useState<any[]>([])
+  const [gameType, setGameType] = useState<GameType>(DEFAULT_GAME)
+  
+  // Get game config based on current game
+  const gameConfig = getGameConfig(gameType)
   
   const [formData, setFormData] = useState({
     username: '',
@@ -72,16 +58,17 @@ export default function UserForm({ userId }: UserFormProps) {
     role: 'player' as UserRole,
     in_game_name: '',
     team_id: '',
-    position: '' as ValorantRole | '',
+    position: '',
     is_igl: false,
     is_substitute: false,
     nationality: '',
-    champion_pool: [] as string[],
-    rank: '' as ValorantRank | '',
-    valorant_tracker_url: '',
+    character_pool: [] as string[],
+    rank: '',
+    tracker_url: '',
     twitter_url: '',
     staff_role: '' as StaffRole | '',
     avatar_url: '',
+    game: DEFAULT_GAME as GameType,
   })
 
   const [championInput, setChampionInput] = useState('')
@@ -93,10 +80,21 @@ export default function UserForm({ userId }: UserFormProps) {
     }
   }, [userId])
 
+  // Update game type when team changes
+  useEffect(() => {
+    if (formData.team_id) {
+      const selectedTeam = teams.find(t => t.id === formData.team_id)
+      if (selectedTeam?.game) {
+        setGameType(selectedTeam.game)
+        setFormData(prev => ({ ...prev, game: selectedTeam.game }))
+      }
+    }
+  }, [formData.team_id, teams])
+
   const fetchTeams = async () => {
     const { data } = await supabase
       .from('teams')
-      .select('*')
+      .select('*, game')
       .order('name')
     setTeams(data || [])
   }
@@ -111,6 +109,8 @@ export default function UserForm({ userId }: UserFormProps) {
       .single()
 
     if (data && !error) {
+      const userGame = (data.game as GameType) || DEFAULT_GAME
+      setGameType(userGame)
       setFormData({
         username: data.username,
         password: '', // Don't populate password for security
@@ -121,12 +121,13 @@ export default function UserForm({ userId }: UserFormProps) {
         is_igl: data.is_igl || false,
         is_substitute: data.is_substitute || false,
         nationality: data.nationality || '',
-        champion_pool: data.champion_pool || [],
+        character_pool: data.character_pool || data.champion_pool || [],
         rank: data.rank || '',
-        valorant_tracker_url: data.valorant_tracker_url || '',
+        tracker_url: data.tracker_url || data.valorant_tracker_url || '',
         twitter_url: data.twitter_url || '',
         staff_role: data.staff_role || '',
         avatar_url: data.avatar_url || '',
+        game: userGame,
       })
     }
   }
@@ -151,10 +152,13 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.is_igl = formData.is_igl
           updates.is_substitute = formData.is_substitute
           updates.nationality = formData.nationality || null
-          updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
+          updates.character_pool = formData.character_pool.length > 0 ? formData.character_pool : null
+          updates.champion_pool = formData.character_pool.length > 0 ? formData.character_pool : null // Legacy
           updates.rank = formData.rank || null
-          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.tracker_url = formData.tracker_url || null
+          updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
+          updates.game = formData.game
         }
 
         // Include manager-specific fields if user is a manager
@@ -162,7 +166,8 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.team_id = formData.team_id || null
           updates.staff_role = formData.staff_role || null
           updates.nationality = formData.nationality || null
-          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.tracker_url = formData.tracker_url || null
+          updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
         }
 
@@ -211,17 +216,21 @@ export default function UserForm({ userId }: UserFormProps) {
           updates.is_igl = formData.is_igl
           updates.is_substitute = formData.is_substitute
           updates.nationality = formData.nationality || null
-          updates.champion_pool = formData.champion_pool.length > 0 ? formData.champion_pool : null
+          updates.character_pool = formData.character_pool.length > 0 ? formData.character_pool : null
+          updates.champion_pool = formData.character_pool.length > 0 ? formData.character_pool : null // Legacy
           updates.rank = formData.rank || null
-          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.tracker_url = formData.tracker_url || null
+          updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
+          updates.game = formData.game
         }
 
         if (formData.role === 'manager') {
           updates.team_id = formData.team_id || null
           updates.staff_role = formData.staff_role || null
           updates.nationality = formData.nationality || null
-          updates.valorant_tracker_url = formData.valorant_tracker_url || null
+          updates.tracker_url = formData.tracker_url || null
+          updates.valorant_tracker_url = formData.tracker_url || null // Legacy
           updates.twitter_url = formData.twitter_url || null
         }
 
@@ -249,10 +258,10 @@ export default function UserForm({ userId }: UserFormProps) {
   }
 
   const addChampion = () => {
-    if (championInput.trim() && !formData.champion_pool.includes(championInput.trim())) {
+    if (championInput.trim() && !formData.character_pool.includes(championInput.trim())) {
       setFormData({
         ...formData,
-        champion_pool: [...formData.champion_pool, championInput.trim()]
+        character_pool: [...formData.character_pool, championInput.trim()]
       })
       setChampionInput('')
     }
@@ -261,7 +270,7 @@ export default function UserForm({ userId }: UserFormProps) {
   const removeChampion = (champion: string) => {
     setFormData({
       ...formData,
-      champion_pool: formData.champion_pool.filter(c => c !== champion)
+      character_pool: formData.character_pool.filter(c => c !== champion)
     })
   }
 
@@ -397,11 +406,19 @@ export default function UserForm({ userId }: UserFormProps) {
                   { value: '', label: 'No Team' },
                   ...teams.map(team => ({
                     value: team.id,
-                    label: team.name
+                    label: `${team.name} ${team.game ? `(${team.game.toUpperCase()})` : ''}`
                   }))
                 ]}
                 className="w-full"
               />
+              {formData.team_id && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-400">
+                    {t('game')}: <span className="text-primary font-medium">{gameConfig.name}</span>
+                  </span>
+                </div>
+              )}
             </div>
 
             <div>
@@ -410,10 +427,10 @@ export default function UserForm({ userId }: UserFormProps) {
               </label>
               <CustomSelect
                 value={formData.position}
-                onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+                onChange={(value) => setFormData({ ...formData, position: value })}
                 options={[
                   { value: '', label: t('selectRole') },
-                  ...VALORANT_ROLES.map(role => ({
+                  ...gameConfig.roles.map(role => ({
                     value: role,
                     label: role
                   }))
@@ -428,10 +445,10 @@ export default function UserForm({ userId }: UserFormProps) {
               </label>
               <CustomSelect
                 value={formData.rank}
-                onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+                onChange={(value) => setFormData({ ...formData, rank: value })}
                 options={[
                   { value: '', label: t('selectRank') },
-                  ...VALORANT_RANKS.map(rank => ({
+                  ...gameConfig.ranks.map(rank => ({
                     value: rank,
                     label: rank
                   }))
@@ -440,10 +457,10 @@ export default function UserForm({ userId }: UserFormProps) {
               />
             </div>
 
-            {/* Agent Pool */}
+            {/* Agent/Weapon Pool */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {t('agentPool')}
+                {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
               </label>
               <div className="space-y-3">
                 <div className="flex gap-2">
@@ -451,10 +468,10 @@ export default function UserForm({ userId }: UserFormProps) {
                     value={championInput}
                     onChange={(value) => setChampionInput(value)}
                     options={[
-                      { value: '', label: t('selectAgent') },
-                      ...VALORANT_AGENTS.map(agent => ({
-                        value: agent,
-                        label: agent
+                      { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                      ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({
+                        value: char,
+                        label: char
                       }))
                     ]}
                     className="flex-1"
@@ -468,17 +485,17 @@ export default function UserForm({ userId }: UserFormProps) {
                     {tCommon('add')}
                   </button>
                 </div>
-                {formData.champion_pool.length > 0 && (
+                {formData.character_pool.length > 0 && (
                   <div className="flex flex-wrap gap-2 p-4 bg-dark/50 border border-gray-800 rounded-lg">
-                    {formData.champion_pool.map((champion) => (
+                    {formData.character_pool.map((item) => (
                       <span
-                        key={champion}
+                        key={item}
                         className="group px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary flex items-center gap-2 hover:bg-primary/20 transition-all"
                       >
-                        {champion}
+                        {item}
                         <button
                           type="button"
-                          onClick={() => removeChampion(champion)}
+                          onClick={() => removeChampion(item)}
                           className="opacity-70 group-hover:opacity-100 hover:text-red-400 transition-all"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -487,9 +504,9 @@ export default function UserForm({ userId }: UserFormProps) {
                     ))}
                   </div>
                 )}
-                {formData.champion_pool.length === 0 && (
+                {formData.character_pool.length === 0 && (
                   <div className="p-4 bg-dark/30 border border-gray-800 rounded-lg text-center">
-                    <p className="text-sm text-gray-500">{t('noAgentsAdded')}</p>
+                    <p className="text-sm text-gray-500">{gameType === 'valorant' ? t('noAgentsAdded') : t('noWeaponsAdded')}</p>
                   </div>
                 )}
               </div>
@@ -546,13 +563,13 @@ export default function UserForm({ userId }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {t('valorantTrackerUrl')}
+                {gameType === 'valorant' ? t('valorantTrackerUrl') : t('trackerUrl')}
               </label>
               <input
                 type="url"
-                value={formData.valorant_tracker_url}
-                onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-                placeholder="https://tracker.gg/valorant/profile/..."
+                value={formData.tracker_url}
+                onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
+                placeholder={gameType === 'valorant' ? 'https://tracker.gg/valorant/profile/...' : 'https://csstats.gg/player/...'}
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
@@ -643,13 +660,13 @@ export default function UserForm({ userId }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {t('valorantTrackerUrl')}
+                {t('trackerUrl')}
               </label>
               <input
                 type="url"
-                value={formData.valorant_tracker_url}
-                onChange={(e) => setFormData({ ...formData, valorant_tracker_url: e.target.value })}
-                placeholder="https://tracker.gg/valorant/profile/..."
+                value={formData.tracker_url}
+                onChange={(e) => setFormData({ ...formData, tracker_url: e.target.value })}
+                placeholder="https://tracker.gg/..."
                 className="w-full px-4 py-2.5 bg-dark border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>

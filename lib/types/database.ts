@@ -1,13 +1,17 @@
+import { GameType } from './games'
+
 export type UserRole = 'admin' | 'manager' | 'player'
 export type TimezoneOffset = 'UTC+0' | 'UTC+1' | 'UTC+2' | 'UTC+3'
 export type Locale = 'en' | 'fr'
+// Legacy Valorant types - kept for backward compatibility
+// For new code, use GameType and game-specific configs from './games'
 export type ValorantRole = 'Duelist' | 'Initiator' | 'Controller' | 'Flex' | 'Sentinel' | 'Staff'
 export type StaffRole = 'Coach' | 'Manager' | 'Analyst'
 export type ValorantRank = 
   | 'Ascendant 1' | 'Ascendant 2' | 'Ascendant 3'
   | 'Immortal 1' | 'Immortal 2' | 'Immortal 3'
   | 'Radiant'
-export type TeamCategory = '21L' | '21GC' | '21ACA'
+export type TeamCategory = '21L' | '21GC' | '21ACA' | '21CS2'
 export type TryoutWeekStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 export type HourSlot = 0 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
@@ -51,18 +55,21 @@ export interface UserProfile {
   full_name: string
   avatar_url?: string
   team_id?: string
+  game?: GameType // NEW: Player's game (valorant or cs2)
   timezone?: TimezoneOffset // User's timezone for schedule display (default: UTC+1)
   locale?: Locale // User's preferred language (default: 'en')
   
   // Player-specific fields (only populated when role = 'player')
   in_game_name?: string
-  position?: ValorantRole
+  position?: string // Changed from ValorantRole to string for multi-game support
   is_igl?: boolean
   is_substitute?: boolean
   nationality?: string // ISO country code
-  champion_pool?: string[] // Array of agent names
-  rank?: ValorantRank
-  valorant_tracker_url?: string
+  champion_pool?: string[] // Legacy: Array of agent names (Valorant)
+  character_pool?: string[] // NEW: Generic pool (agents for Valorant, weapons for CS2)
+  rank?: string // Changed from ValorantRank to string for multi-game support
+  valorant_tracker_url?: string // Legacy: kept for backward compatibility
+  tracker_url?: string // NEW: Generic tracker URL
   twitter_url?: string
   stats?: Record<string, any>
   
@@ -77,7 +84,7 @@ export interface Team {
   id: string
   name: string
   tag?: string
-  game: string
+  game: GameType // Changed from string to GameType
   logo_url?: string
   created_at: string
   updated_at: string
@@ -90,14 +97,17 @@ export interface ProfileTryout {
   id: string
   username: string
   team_category: TeamCategory
+  game?: GameType // NEW: Tryout's game
   full_name?: string
   in_game_name?: string
-  position?: ValorantRole
+  position?: string // Changed from ValorantRole to string for multi-game support
   is_igl?: boolean
   nationality?: string // ISO country code
-  champion_pool?: string[] // Array of agent names
-  rank?: ValorantRank
-  valorant_tracker_url?: string
+  champion_pool?: string[] // Legacy: Array of agent names
+  character_pool?: string[] // NEW: Generic pool
+  rank?: string // Changed from ValorantRank to string for multi-game support
+  valorant_tracker_url?: string // Legacy: kept for backward compatibility
+  tracker_url?: string // NEW: Generic tracker URL
   twitter_url?: string
   discord?: string
   status: TryoutStatus // Keep as 'status' to match database column name

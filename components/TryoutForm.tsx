@@ -3,16 +3,17 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ValorantRole, ValorantRank, TryoutStatus } from '@/lib/types/database'
-import { Save, X } from 'lucide-react'
+import { TryoutStatus } from '@/lib/types/database'
+import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { Save, X, Gamepad2 } from 'lucide-react'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
 
 interface TryoutFormProps {
   tryoutId?: string
+  teamGame?: GameType // Pass the team's game
 }
 
-const VALORANT_ROLES: ValorantRole[] = ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex']
 const TRYOUT_STATUSES: TryoutStatus[] = [
   'not_contacted',
   'contacted',
@@ -21,12 +22,6 @@ const TRYOUT_STATUSES: TryoutStatus[] = [
   'substitute',
   'rejected',
   'left'
-]
-
-const VALORANT_RANKS: ValorantRank[] = [
-  'Ascendant 1', 'Ascendant 2', 'Ascendant 3',
-  'Immortal 1', 'Immortal 2', 'Immortal 3',
-  'Radiant'
 ]
 
 const EUROPEAN_COUNTRIES = [
@@ -52,32 +47,39 @@ const EUROPEAN_COUNTRIES = [
   { code: 'UA', name: 'Ukraine' },
 ]
 
-export default function TryoutForm({ tryoutId }: TryoutFormProps) {
+export default function TryoutForm({ tryoutId, teamGame = DEFAULT_GAME }: TryoutFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [gameType, setGameType] = useState<GameType>(teamGame)
   const t = useTranslations('forms')
   const tCommon = useTranslations('common')
   const tTryouts = useTranslations('tryouts')
   const tPlayers = useTranslations('players')
   
+  // Get game configuration
+  const gameConfig = getGameConfig(gameType)
+  
   const [formData, setFormData] = useState({
     username: '',
     full_name: '',
     in_game_name: '',
-    position: '' as ValorantRole | '',
+    position: '',
     is_igl: false,
     nationality: '',
-    champion_pool: [] as string[],
-    rank: '' as ValorantRank | '',
-    valorant_tracker_url: '',
+    champion_pool: [] as string[], // Legacy
+    character_pool: [] as string[], // New
+    rank: '',
+    valorant_tracker_url: '', // Legacy
+    tracker_url: '', // New
     twitter_url: '',
-    contact_status: 'Not Contacted' as TryoutStatus,
+    contact_status: 'not_contacted' as TryoutStatus,
     last_contact_date: '',
     managed_by: '',
     contacted_by: '',
     notes: '',
     links: '',
+    game: teamGame,
   })
 
   const [championInput, setChampionInput] = useState('')
@@ -98,6 +100,8 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
       .single()
 
     if (data && !error) {
+      const loadedGame = (data.game as GameType) || teamGame
+      setGameType(loadedGame)
       setFormData({
         username: data.username,
         full_name: data.full_name || '',
@@ -106,15 +110,18 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
         is_igl: data.is_igl || false,
         nationality: data.nationality || '',
         champion_pool: data.champion_pool || [],
+        character_pool: data.character_pool || data.champion_pool || [],
         rank: data.rank || '',
         valorant_tracker_url: data.valorant_tracker_url || '',
+        tracker_url: data.tracker_url || data.valorant_tracker_url || '',
         twitter_url: data.twitter_url || '',
-        contact_status: data.contact_status,
+        contact_status: data.status || 'not_contacted',
         last_contact_date: data.last_contact_date ? new Date(data.last_contact_date).toISOString().split('T')[0] : '',
         managed_by: data.managed_by || '',
         contacted_by: data.contacted_by || '',
         notes: data.notes || '',
         links: data.links || '',
+        game: loadedGame,
       })
     }
   }
@@ -131,16 +138,19 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
         position: formData.position || null,
         is_igl: formData.is_igl,
         nationality: formData.nationality || null,
-        champion_pool: formData.champion_pool.length > 0 ? formData.champion_pool : null,
+        champion_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // Legacy
+        character_pool: formData.character_pool.length > 0 ? formData.character_pool : null, // New
         rank: formData.rank || null,
-        valorant_tracker_url: formData.valorant_tracker_url || null,
+        valorant_tracker_url: formData.tracker_url || null, // Legacy
+        tracker_url: formData.tracker_url || null, // New
         twitter_url: formData.twitter_url || null,
-        contact_status: formData.contact_status,
+        status: formData.contact_status,
         last_contact_date: formData.last_contact_date || null,
         managed_by: formData.managed_by || null,
         contacted_by: formData.contacted_by || null,
         notes: formData.notes || null,
         links: formData.links || null,
+        game: gameType,
         updated_at: new Date().toISOString(),
       }
 
@@ -172,10 +182,10 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
   }
 
   const addChampion = () => {
-    if (championInput.trim() && !formData.champion_pool.includes(championInput.trim())) {
+    if (championInput.trim() && !formData.character_pool.includes(championInput.trim())) {
       setFormData({
         ...formData,
-        champion_pool: [...formData.champion_pool, championInput.trim()]
+        character_pool: [...formData.character_pool, championInput.trim()]
       })
       setChampionInput('')
     }
@@ -184,12 +194,25 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
   const removeChampion = (champion: string) => {
     setFormData({
       ...formData,
-      champion_pool: formData.champion_pool.filter(c => c !== champion)
+      character_pool: formData.character_pool.filter(c => c !== champion)
     })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Game Badge */}
+      <div className="flex items-center gap-3 p-3 bg-dark-card border border-gray-800 rounded-lg">
+        <Gamepad2 className="w-5 h-5 text-gray-400" />
+        <span className="text-sm text-gray-300">{t('game')}:</span>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+          gameType === 'valorant' 
+            ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+            : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+        }`}>
+          {gameConfig.name}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Information */}
         <div className="space-y-4">
@@ -226,11 +249,11 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             </label>
             <CustomSelect
               value={formData.position}
-              onChange={(value) => setFormData({ ...formData, position: value as ValorantRole })}
+              onChange={(value) => setFormData({ ...formData, position: value })}
               placeholder={t('selectRole')}
               options={[
                 { value: '', label: t('selectRole') },
-                ...VALORANT_ROLES.map(role => ({ value: role, label: role }))
+                ...gameConfig.roles.map(role => ({ value: role, label: role }))
               ]}
             />
           </div>
@@ -274,46 +297,49 @@ export default function TryoutForm({ tryoutId }: TryoutFormProps) {
             </label>
             <CustomSelect
               value={formData.rank}
-              onChange={(value) => setFormData({ ...formData, rank: value as ValorantRank })}
+              onChange={(value) => setFormData({ ...formData, rank: value })}
               placeholder={t('selectRank')}
               options={[
                 { value: '', label: t('selectRank') },
-                ...VALORANT_RANKS.map(rank => ({ value: rank, label: rank }))
+                ...gameConfig.ranks.map(rank => ({ value: rank, label: rank }))
               ]}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              {t('agentPool')}
+              {gameType === 'valorant' ? t('agentPool') : t('weaponPool')}
             </label>
             <div className="flex gap-2 mb-2">
-              <input
-                type="text"
+              <CustomSelect
                 value={championInput}
-                onChange={(e) => setChampionInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addChampion())}
-                placeholder={t('selectAgent')}
-                className="flex-1 px-4 py-2 bg-dark-card border border-gray-800 rounded-lg text-white focus:outline-none focus:border-primary"
+                onChange={(value) => setChampionInput(value)}
+                placeholder={gameType === 'valorant' ? t('selectAgent') : t('selectWeapon')}
+                options={[
+                  { value: '', label: gameType === 'valorant' ? t('selectAgent') : t('selectWeapon') },
+                  ...gameConfig.characters.filter(char => !formData.character_pool.includes(char)).map(char => ({ value: char, label: char }))
+                ]}
+                className="flex-1"
               />
               <button
                 type="button"
                 onClick={addChampion}
-                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
+                disabled={!championInput}
+                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition disabled:opacity-50"
               >
                 {tCommon('add')}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.champion_pool.map((champion) => (
+              {formData.character_pool.map((item) => (
                 <span
-                  key={champion}
+                  key={item}
                   className="px-3 py-1 bg-dark border border-gray-800 rounded-full text-sm text-white flex items-center gap-2"
                 >
-                  {champion}
+                  {item}
                   <button
                     type="button"
-                    onClick={() => removeChampion(champion)}
+                    onClick={() => removeChampion(item)}
                     className="hover:text-red-400"
                   >
                     <X className="w-3 h-3" />
