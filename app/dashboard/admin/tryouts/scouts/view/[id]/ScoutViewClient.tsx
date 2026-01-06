@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
-import { ArrowLeft, Edit, Trash2, User as UserIcon, ExternalLink, Calendar } from 'lucide-react'
+import { ProfileTryout, TryoutStatus, TeamCategory } from '@/lib/types/database'
+import { GameType, getGameConfig, DEFAULT_GAME } from '@/lib/types/games'
+import { ArrowLeft, Edit, Trash2, User as UserIcon, ExternalLink, Calendar, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -14,11 +15,12 @@ interface ScoutViewClientProps {
   scoutId: string
 }
 
-// Utility function to get rank image
-const getRankImage = (rank: string | undefined | null): string | null => {
+// Utility function to get rank image - supports both Valorant and CS2
+const getRankImage = (rank: string | undefined | null, game: GameType = 'valorant'): string | null => {
   if (!rank) return null
   
-  const rankMap: { [key: string]: string } = {
+  // Valorant ranks
+  const valorantRankMap: { [key: string]: string } = {
     'Ascendant 1': '/images/asc_1_rank.webp',
     'Ascendant 2': '/images/asc_2_rank.webp',
     'Ascendant 3': '/images/asc_3_rank.webp',
@@ -28,7 +30,14 @@ const getRankImage = (rank: string | undefined | null): string | null => {
     'Radiant': '/images/rad_rank.webp'
   }
   
-  return rankMap[rank] || null
+  // CS2 ranks (placeholder - add actual images when available)
+  const cs2RankMap: { [key: string]: string } = {
+    'Global Elite': '/images/ranks/cs2/global_elite.webp',
+    'Supreme Master First Class': '/images/ranks/cs2/supreme.webp',
+    // Add more CS2 rank images as needed
+  }
+  
+  return game === 'valorant' ? valorantRankMap[rank] : cs2RankMap[rank] || null
 }
 
 const getStatusColor = (status: TryoutStatus) => {
@@ -43,12 +52,22 @@ const getStatusColor = (status: TryoutStatus) => {
   }
 }
 
-const getRoleColor = (role?: ValorantRole) => {
+const getRoleColor = (role?: string) => {
+  if (!role) return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+  
   switch (role) {
+    // Valorant roles
     case 'Duelist': return 'bg-red-500/20 text-red-300 border-red-500/30'
     case 'Initiator': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
     case 'Controller': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
     case 'Sentinel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+    // CS2 roles
+    case 'Entry Fragger': return 'bg-red-500/20 text-red-300 border-red-500/30'
+    case 'AWPer': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+    case 'Support': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+    case 'Lurker': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+    case 'IGL': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+    // Shared
     case 'Flex': return 'bg-green-500/20 text-green-300 border-green-500/30'
     case 'Staff': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
     default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'

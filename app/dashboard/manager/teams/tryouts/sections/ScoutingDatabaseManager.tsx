@@ -2,14 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
-import { Plus, Edit, Trash2, Search, User as UserIcon, ExternalLink } from 'lucide-react'
+import { ProfileTryout, TryoutStatus, TeamCategory } from '@/lib/types/database'
+import { GameType, GAME_CONFIGS, DEFAULT_GAME } from '@/lib/types/games'
+import { Plus, Edit, Trash2, Search, User as UserIcon, ExternalLink, Gamepad2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getNationalityDisplay } from '@/lib/utils/nationality'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+
+// Get all roles from all games for filtering
+const ALL_ROLES = [...new Set([
+  ...GAME_CONFIGS.valorant.roles,
+  ...GAME_CONFIGS.cs2.roles
+])]
 
 interface ScoutingDatabaseManagerProps {
   teamId: string | null
@@ -22,7 +29,8 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
-  const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
+  const [roleFilter, setRoleFilter] = useState<string | 'all'>('all')
+  const [gameFilter, setGameFilter] = useState<GameType | 'all'>('all')
   
   const supabase = createClient()
   const router = useRouter()
@@ -137,8 +145,9 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
     
     const matchesStatus = statusFilter === 'all' || tryout.status === statusFilter
     const matchesRole = roleFilter === 'all' || tryout.position === roleFilter
+    const matchesGame = gameFilter === 'all' || (tryout.game || DEFAULT_GAME) === gameFilter
     
-    return matchesSearch && matchesStatus && matchesRole
+    return matchesSearch && matchesStatus && matchesRole && matchesGame
   })
 
   const getStatusColor = (status: TryoutStatus) => {
@@ -153,12 +162,22 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
     }
   }
 
-  const getRoleColor = (role?: ValorantRole) => {
+  const getRoleColor = (role?: string) => {
+    if (!role) return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    
     switch (role) {
+      // Valorant roles
       case 'Duelist': return 'bg-red-500/20 text-red-300 border-red-500/30'
       case 'Initiator': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
       case 'Controller': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
       case 'Sentinel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      // CS2 roles
+      case 'Entry Fragger': return 'bg-red-500/20 text-red-300 border-red-500/30'
+      case 'AWPer': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+      case 'Support': return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      case 'Lurker': return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+      case 'IGL': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+      // Shared
       case 'Flex': return 'bg-green-500/20 text-green-300 border-green-500/30'
       case 'Staff': return 'bg-orange-500/20 text-orange-300 border-orange-500/30'
       default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
@@ -231,17 +250,23 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
 
           <CustomSelect
             value={roleFilter}
-            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
+            onChange={(value) => setRoleFilter(value)}
             options={[
               { value: 'all', label: t('allRoles') },
-              { value: 'Duelist', label: 'Duelist' },
-              { value: 'Initiator', label: 'Initiator' },
-              { value: 'Controller', label: 'Controller' },
-              { value: 'Sentinel', label: 'Sentinel' },
-              { value: 'Flex', label: 'Flex' },
-              { value: 'Staff', label: 'Staff' }
+              ...ALL_ROLES.map(role => ({ value: role, label: role }))
             ]}
             className="min-w-[140px]"
+          />
+
+          <CustomSelect
+            value={gameFilter}
+            onChange={(value) => setGameFilter(value as GameType | 'all')}
+            options={[
+              { value: 'all', label: tCommon('all') + ' Games' },
+              { value: 'valorant', label: 'Valorant' },
+              { value: 'cs2', label: 'CS2' }
+            ]}
+            className="min-w-[120px]"
           />
 
           <Link

@@ -41,7 +41,7 @@ export default function GameSelector({
         value={value}
         onChange={(val) => onChange(val as GameType)}
         options={gameOptions}
-        disabled={disabled}
+        className={disabled ? 'opacity-50 pointer-events-none' : ''}
       />
     </div>
   )
