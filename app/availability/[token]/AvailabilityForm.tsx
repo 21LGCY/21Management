@@ -9,6 +9,7 @@ import { TimeSlots, TimezoneOffset } from '@/lib/types/database'
 import { ORG_TIMEZONE, getTimezoneShort } from '@/lib/utils/timezone'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import { LOCALE_COOKIE } from '@/lib/i18n/config'
 
 interface AvailabilityFormProps {
   token: string
@@ -49,7 +50,7 @@ export default function AvailabilityForm({ token }: AvailabilityFormProps) {
   // Initialize locale from cookie
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const match = document.cookie.match(/NEXT_LOCALE=([^;]+)/)
+      const match = document.cookie.match(new RegExp(`${LOCALE_COOKIE}=([^;]+)`))
       if (match && (match[1] === 'en' || match[1] === 'fr')) {
         setCurrentLocale(match[1])
       }
@@ -151,12 +152,8 @@ export default function AvailabilityForm({ token }: AvailabilityFormProps) {
 
   const handleLocaleChange = (locale: 'en' | 'fr') => {
     setCurrentLocale(locale)
-    // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('preferredLocale', locale)
-    }
-    // Set cookie for next-intl
-    document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000`
+    // Set cookie for next-intl with secure settings
+    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; secure; samesite=strict`
     // Reload the page to apply new locale
     window.location.reload()
   }
