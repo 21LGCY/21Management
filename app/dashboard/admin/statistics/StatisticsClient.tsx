@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, UserProfile, PlayerMatchStats, GameType } from '@/lib/types/database'
+import { Team, UserProfile, PlayerMatchStats } from '@/lib/types/database'
+import { GameType } from '@/lib/types/games'
 import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp, ChevronUp, ChevronDown, Search, Medal } from 'lucide-react'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import { useTranslations } from 'next-intl'
+import { GameSelectorWithLogo } from '@/components/GameSelector'
 
 interface StatisticsClientProps {
   teams: Team[]
@@ -236,39 +238,18 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
   return (
     <div className="space-y-6">
       {/* Game Selector */}
-      <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
-        <p className="text-sm text-gray-400 mb-3 font-medium">Select Game</p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setSelectedGame('valorant')
+      <div className="flex items-center justify-between mb-6">
+        <GameSelectorWithLogo 
+          value={selectedGame} 
+          onChange={(game) => {
+            if (game !== 'all') {
+              setSelectedGame(game as GameType)
               setSelectedTeamId('')
               setViewMode('all')
-            }}
-            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-              selectedGame === 'valorant'
-                ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-md shadow-red-500/25'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-            }`}
-          >
-            Valorant
-          </button>
-
-          <button
-            onClick={() => {
-              setSelectedGame('cs2')
-              setSelectedTeamId('')
-              setViewMode('all')
-            }}
-            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-              selectedGame === 'cs2'
-                ? 'bg-gradient-to-r from-orange-500 to-yellow-600 text-white shadow-md shadow-orange-500/25'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-            }`}
-          >
-            CS2
-          </button>
-        </div>
+            }
+          }}
+          showAllOption={false}
+        />
       </div>
 
       {/* Quick Stats Overview */}

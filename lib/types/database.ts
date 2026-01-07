@@ -76,6 +76,17 @@ export interface UserProfile {
   twitter_url?: string
   stats?: Record<string, any>
   
+  // FACEIT Integration fields (CS2)
+  faceit_player_id?: string // FACEIT unique player ID
+  faceit_nickname?: string // FACEIT display nickname
+  faceit_elo?: number // FACEIT ELO rating
+  faceit_avatar?: string // FACEIT avatar URL
+  faceit_country?: string // Country code from FACEIT
+  faceit_region?: string // FACEIT region (EU, NA, etc.)
+  faceit_stats?: Record<string, any> // Cached FACEIT statistics
+  faceit_linked_at?: string // Timestamp when FACEIT account was linked
+  faceit_last_sync?: string // Timestamp of last FACEIT data sync
+  
   // Manager-specific fields (only populated when role = 'manager')
   staff_role?: StaffRole
   

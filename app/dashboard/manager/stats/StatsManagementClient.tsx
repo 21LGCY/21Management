@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { MatchHistory, PlayerMatchStats, UserProfile } from '@/lib/types/database'
-import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Trophy, Calendar, TrendingDown, Eye, Edit, Trash2 } from 'lucide-react'
+import { TrendingUp, Target, Award, BarChart3, Plus, Filter, Download, Users, Trophy, Calendar, TrendingDown, Eye, Edit, Trash2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import ActionButton from '@/components/ActionButton'
@@ -13,21 +13,50 @@ interface StatsManagementClientProps {
   user: UserProfile
   teamId: string
   teamName: string
+  teamGame?: string
+  playersWithFaceit?: any[]
 }
 
 interface MatchWithStats extends MatchHistory {
   player_stats?: (PlayerMatchStats & { player: UserProfile })[]
 }
 
-export default function StatsManagementClient({ user, teamId, teamName }: StatsManagementClientProps) {
+export default function StatsManagementClient({ user, teamId, teamName, teamGame = 'valorant', playersWithFaceit = [] }: StatsManagementClientProps) {
   const [matches, setMatches] = useState<MatchWithStats[]>([])
   const [players, setPlayers] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'win' | 'loss' | 'draw'>('all')
   const [timeFilter, setTimeFilter] = useState<'all' | 'last5' | 'last10' | 'last15'>('all')
+  const [syncingTeam, setSyncingTeam] = useState(false)
   const supabase = createClient()
   const t = useTranslations('stats')
   const tCommon = useTranslations('common')
+  const tFaceit = useTranslations('faceit')
+
+  const handleSyncTeam = async () => {
+    setSyncingTeam(true)
+    try {
+      const response = await fetch('/api/faceit/team/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`${tFaceit('syncComplete')}: ${data.synced} ${tFaceit('playersUpdated')}`)
+        window.location.reload()
+      } else {
+        alert(data.error || 'Failed to sync team')
+      }
+    } catch (error) {
+      console.error('Error syncing team:', error)
+      alert('Failed to sync team')
+    } finally {
+      setSyncingTeam(false)
+    }
+  }
 
   useEffect(() => {
     fetchData()
@@ -229,21 +258,116 @@ export default function StatsManagementClient({ user, teamId, teamName }: StatsM
           </div>
         </div>
 
+        {/* FACEIT Integration Section - Only for CS2 */}
+        {teamGame === 'cs2' && playersWithFaceit.length > 0 && (
+          <div className="bg-gradient-to-br from-orange-500/5 to-dark border border-orange-500/20 rounded-xl p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <img src="/images/faceit.svg" alt="FACEIT" className="w-8 h-8" />
+                <div>
+                  <h2 className="text-2xl font-bold text-white">{tFaceit('teamStats')}</h2>
+                  <p className="text-sm text-gray-400">{playersWithFaceit.length} {tFaceit('linkedPlayers')}</p>
+                </div>
+              </div>
+              <button
+                onClick={handleSyncTeam}
+                disabled={syncingTeam}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 shadow-lg hover:shadow-orange-500/25"
+              >
+                <RefreshCw className={`w-4 h-4 ${syncingTeam ? 'animate-spin' : ''}`} />
+                {syncingTeam ? tFaceit('syncing') : tFaceit('syncTeam')}
+              </button>
+            </div>
+
+            {/* FACEIT Top Performers */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {playersWithFaceit
+                .sort((a, b) => (b.faceit_stats?.kdRatio || 0) - (a.faceit_stats?.kdRatio || 0))
+                .slice(0, 3)
+                .map((player, index) => {
+                  const stats = player.faceit_stats
+                  const medals = ['🥇', '🥈', '🥉']
+                  return (
+                    <div 
+                      key={player.id}
+                      className="bg-dark/50 border border-gray-800 rounded-xl p-4 hover:border-orange-500/30 transition-all"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{medals[index]}</span>
+                          <div>
+                            <p className="font-bold text-white">{player.username}</p>
+                            <p className="text-xs text-gray-500">{player.in_game_name || player.faceit_nickname}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm text-gray-400">Lvl</span>
+                            <span className="text-lg font-bold text-orange-400">{player.faceit_level}</span>
+                          </div>
+                          <p className="text-xs text-gray-500">{player.faceit_elo} ELO</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
+                          <p className="text-gray-400">WR</p>
+                          <p className="text-green-400 font-bold">{stats?.winRate?.toFixed(0) || 0}%</p>
+                        </div>
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2">
+                          <p className="text-gray-400">K/D</p>
+                          <p className="text-blue-400 font-bold">{stats?.avgKdRatio?.toFixed(2) || '-'}</p>
+                        </div>
+                        <div className="bg-purple-500/10 border border-purple-500/30 rounded p-2">
+                          <p className="text-gray-400">Matches</p>
+                          <p className="text-purple-400 font-bold">{stats?.matches || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+
+            {/* Team Aggregate Stats */}
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center">
+                <p className="text-xs text-gray-400 mb-1">{tFaceit('avgElo')}</p>
+                <p className="text-2xl font-bold text-orange-400">
+                  {Math.round(playersWithFaceit.reduce((sum, p) => sum + (p.faceit_elo || 0), 0) / playersWithFaceit.length)}
+                </p>
+              </div>
+              <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center">
+                <p className="text-xs text-gray-400 mb-1">{tFaceit('avgLevel')}</p>
+                <p className="text-2xl font-bold text-yellow-400">
+                  {Math.round(playersWithFaceit.reduce((sum, p) => sum + (p.faceit_level || 0), 0) / playersWithFaceit.length)}
+                </p>
+              </div>
+              <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center">
+                <p className="text-xs text-gray-400 mb-1">{tFaceit('avgWinRate')}</p>
+                <p className="text-2xl font-bold text-green-400">
+                  {(playersWithFaceit.reduce((sum, p) => sum + (p.faceit_stats?.winRate || 0), 0) / playersWithFaceit.length).toFixed(1)}%
+                </p>
+              </div>
+              <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center">
+                <p className="text-xs text-gray-400 mb-1">{tFaceit('totalMatches')}</p>
+                <p className="text-2xl font-bold text-blue-400">
+                  {playersWithFaceit.reduce((sum, p) => sum + (p.faceit_stats?.matches || 0), 0)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Game Statistics - Identical to Admin Match History */}
           <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">{t('recentGameStatistics')}</h2>
-              <div className="flex gap-2">
-                <button className="px-3 py-1 bg-dark border border-gray-700 rounded text-sm text-gray-400 hover:text-white">
-                  <Filter className="w-4 h-4" />
-                </button>
-                <Link href="/dashboard/manager/stats/game/new">
-                  <ActionButton icon={Trophy}>
-                    {t('recordMatch')}
-                  </ActionButton>
-                </Link>
-              </div>
+              <Link href="/dashboard/manager/stats/game/new">
+                <ActionButton icon={Trophy}>
+                  {t('recordMatch')}
+                </ActionButton>
+              </Link>
             </div>
 
             {/* Filters */}

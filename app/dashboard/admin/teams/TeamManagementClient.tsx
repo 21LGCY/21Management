@@ -10,6 +10,8 @@ import { getTeamColors } from '@/lib/utils/teamColors'
 import ActionButton from '@/components/ActionButton'
 import { TimezoneOffset, getTimezoneShort, getHourOffset } from '@/lib/utils/timezone'
 import { useTranslations } from 'next-intl'
+import { GameSelectorWithLogo } from '@/components/GameSelector'
+import { GameType, DEFAULT_GAME } from '@/lib/types/games'
 
 // Format date with timezone offset applied
 function formatDateWithTimezone(dateStr: string, timezone: TimezoneOffset): string {
@@ -48,6 +50,7 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
   const [loading, setLoading] = useState(true)
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [showMatchModal, setShowMatchModal] = useState(false)
+  const [selectedGame, setSelectedGame] = useState<GameType | 'all'>('all')
   
   const supabase = createClient()
   const t = useTranslations('teams')
@@ -148,6 +151,18 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
     return { wins, losses, draws, winRate }
   }
 
+  // Filter teams and matches by selected game
+  const filteredTeams = selectedGame === 'all' 
+    ? teams 
+    : teams.filter(team => (team.game || DEFAULT_GAME) === selectedGame)
+
+  const filteredMatches = selectedGame === 'all'
+    ? matches
+    : matches.filter(match => {
+        const team = teams.find(t => t.id === match.team_id)
+        return team && (team.game || DEFAULT_GAME) === selectedGame
+      })
+
   if (loading) {
     return <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -156,6 +171,14 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
 
   return (
     <div className="space-y-6">
+      {/* Game Selector */}
+      <div className="flex items-center justify-between mb-6">
+        <GameSelectorWithLogo 
+          value={selectedGame} 
+          onChange={setSelectedGame}
+          showAllOption={true}
+        />
+      </div>
       {/* Teams List */}
       <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
@@ -168,49 +191,56 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map((team) => {
-            const teamColors = getTeamColors(team.tag)
-            return (
-              <Link
-                key={team.id}
-                href={`/dashboard/admin/teams/view/${team.id}`}
-                className={`group p-5 rounded-xl border bg-gradient-to-br ${teamColors.gradient} ${teamColors.border} ${teamColors.hoverBorder} transition-all cursor-pointer`}
-                style={{
-                  ...teamColors.style,
-                  boxShadow: '0 0 0 0 transparent',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = `0 10px 25px -5px ${teamColors.hoverShadow}, 0 8px 10px -6px ${teamColors.hoverShadow}`
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
-                }}
-              >
-                <div className="flex items-center gap-4 mb-2">
-                  {team.logo_url ? (
-                    <div className="w-12 h-12 rounded-xl overflow-hidden">
-                      <Image
-                        src={team.logo_url}
-                        alt={team.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
+          {filteredTeams.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">{t('noTeamsFound')}</p>
+            </div>
+          ) : (
+            filteredTeams.map((team) => {
+              const teamColors = getTeamColors(team.tag)
+              return (
+                <Link
+                  key={team.id}
+                  href={`/dashboard/admin/teams/view/${team.id}`}
+                  className={`group p-5 rounded-xl border bg-gradient-to-br ${teamColors.gradient} ${teamColors.border} ${teamColors.hoverBorder} transition-all cursor-pointer`}
+                  style={{
+                    ...teamColors.style,
+                    boxShadow: '0 0 0 0 transparent',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = `0 10px 25px -5px ${teamColors.hoverShadow}, 0 8px 10px -6px ${teamColors.hoverShadow}`
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 0 0 transparent'
+                  }}
+                >
+                  <div className="flex items-center gap-4 mb-2">
+                    {team.logo_url ? (
+                      <div className="w-12 h-12 rounded-xl overflow-hidden">
+                        <Image
+                          src={team.logo_url}
+                          alt={team.name}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                        <Users className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white transition text-lg">{team.name}</h3>
+                      <p className="text-sm text-gray-500">{team.game}</p>
                     </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                      <Users className="w-6 h-6 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white transition text-lg">{team.name}</h3>
-                    <p className="text-sm text-gray-500">{team.game}</p>
                   </div>
-                </div>
-              </Link>
-            )
-          })}
+                </Link>
+              )
+            })
+          )}
         </div>
       </div>
 
@@ -237,10 +267,10 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
             </div>
           </div>
           <div className="space-y-3">
-            {matches.filter(m => m.result).length === 0 ? (
+            {filteredMatches.filter(m => m.result).length === 0 ? (
               <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">{tMatches('noMatches')}</p>
             ) : (
-              matches.filter(m => m.result).slice(0, 5).map((match) => (
+              filteredMatches.filter(m => m.result).slice(0, 5).map((match) => (
                 <div
                   key={match.id}
                   className="group flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"
@@ -290,10 +320,10 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
           </div>
 
           <div className="space-y-3">
-            {matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).length === 0 ? (
+            {filteredMatches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).length === 0 ? (
               <p className="text-center text-gray-400 py-12 bg-gray-800/20 rounded-lg border border-gray-800/50">{tSchedule('noActivities')}</p>
             ) : (
-              matches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).slice(0, 5).map((match) => (
+              filteredMatches.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()).slice(0, 5).map((match) => (
                 <div
                   key={match.id}
                   className="group flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-800 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10"

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ProfileTryout, TryoutStatus, ValorantRole, TeamCategory } from '@/lib/types/database'
-import { GameType, CS2_ROLES } from '@/lib/types/games'
+import { ProfileTryout, TryoutStatus, TeamCategory } from '@/lib/types/database'
+import { GameType, GAME_CONFIGS } from '@/lib/types/games'
 import { Globe, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
@@ -42,26 +42,48 @@ interface ZoneStats {
   percentage: number
 }
 
-export default function ZonesInterface() {
+interface ZonesInterfaceProps {
+  gameFilter: GameType | 'all'
+  onGameFilterChange: (game: GameType | 'all') => void
+}
+
+export default function ZonesInterface({ gameFilter, onGameFilterChange }: ZonesInterfaceProps) {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
   const [loading, setLoading] = useState(true)
   
   const [teamFilter, setTeamFilter] = useState<TeamCategory | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
-  const [roleFilter, setRoleFilter] = useState<ValorantRole | 'all'>('all')
+  const [roleFilter, setRoleFilter] = useState<string | 'all'>('all')
 
   const supabase = createClient()
   const t = useTranslations('tryouts')
   const tRoles = useTranslations('roles')
 
-  // Determine current game based on team filter
+  // Determine current game based on gameFilter prop
   const currentGame: GameType = useMemo(() => {
-    return isCS2Team(teamFilter) ? 'cs2' : 'valorant'
-  }, [teamFilter])
+    if (gameFilter === 'all') {
+      // If 'all', use team filter to determine game, or default to valorant
+      return isCS2Team(teamFilter) ? 'cs2' : 'valorant'
+    }
+    return gameFilter
+  }, [gameFilter, teamFilter])
 
   // Get current zones based on game
   const currentZones = useMemo(() => {
     return currentGame === 'cs2' ? CS2_ZONES : VALORANT_ZONES
+  }, [currentGame])
+
+  // Get available roles based on current game
+  const getAvailableRoles = () => {
+    return currentGame === 'cs2' ? GAME_CONFIGS.cs2.roles : GAME_CONFIGS.valorant.roles
+  }
+
+  // Reset role filter when game changes if the current role isn't available
+  useEffect(() => {
+    const availableRoles = getAvailableRoles()
+    if (roleFilter !== 'all' && !availableRoles.includes(roleFilter)) {
+      setRoleFilter('all')
+    }
   }, [currentGame])
 
   useEffect(() => {
@@ -114,6 +136,11 @@ export default function ZonesInterface() {
   const zoneStats: ZoneStats[] = (() => {
     let filtered = tryouts
     
+    // Apply game filter
+    if (gameFilter !== 'all') {
+      filtered = filtered.filter(t => (t.game || 'valorant') === gameFilter)
+    }
+    
     // Apply filters
     if (teamFilter !== 'all') {
       filtered = filtered.filter(t => t.team_category === teamFilter)
@@ -132,14 +159,40 @@ export default function ZonesInterface() {
     
     const zoneMap = new Map<string, ProfileTryout[]>()
     
+    // When "all" games: categorize by the player's game to get the correct zones
     playersWithNationality.forEach(tryout => {
-      const zone = getZoneForNationality(tryout.nationality || '')
-      if (zone) {
-        if (!zoneMap.has(zone)) {
-          zoneMap.set(zone, [])
+      const playerGame = (tryout.game || 'valorant') as GameType
+      const zones = playerGame === 'cs2' ? CS2_ZONES : VALORANT_ZONES
+      
+      // Find zone for this player based on their game's zone system
+      let foundZone: string | null = null
+      if (tryout.nationality) {
+        const normalizedNationality = tryout.nationality.toLowerCase().trim()
+        const isCountryCode = normalizedNationality.length <= 3
+        
+        for (const [zone, countries] of Object.entries(zones)) {
+          if (countries.some(country => {
+            const normalizedCountry = country.toLowerCase().trim()
+            const isCountryCodeInList = normalizedCountry.length <= 3
+            
+            if (isCountryCode && isCountryCodeInList) {
+              return normalizedNationality === normalizedCountry
+            } else if (!isCountryCode && !isCountryCodeInList) {
+              return normalizedNationality.includes(normalizedCountry) || normalizedCountry.includes(normalizedNationality)
+            }
+            return false
+          })) {
+            foundZone = zone
+            break
+          }
         }
-        zoneMap.get(zone)?.push(tryout)
       }
+      
+      const zone = foundZone || 'Other'
+      if (!zoneMap.has(zone)) {
+        zoneMap.set(zone, [])
+      }
+      zoneMap.get(zone)?.push(tryout)
     })
 
     const total = playersWithNationality.length
@@ -208,6 +261,10 @@ export default function ZonesInterface() {
   const totalPlayersWithNationality = (() => {
     let filtered = tryouts
     
+    if (gameFilter !== 'all') {
+      filtered = filtered.filter(t => (t.game || 'valorant') === gameFilter)
+    }
+    
     if (teamFilter !== 'all') {
       filtered = filtered.filter(t => t.team_category === teamFilter)
     }
@@ -237,8 +294,12 @@ export default function ZonesInterface() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Globe className={`w-7 h-7 ${currentGame === 'cs2' ? 'text-[#de9b35]' : 'text-primary'}`} />
-            {currentGame === 'cs2' ? 'Zones CS2' : t('valorantZones')}
+            <Globe className={`w-7 h-7 ${
+              gameFilter === 'all' ? 'text-gray-400' : 
+              currentGame === 'cs2' ? 'text-[#de9b35]' : 'text-primary'
+            }`} />
+            {gameFilter === 'all' ? t('geographicZones') : 
+             currentGame === 'cs2' ? 'Zones CS2 (FACEIT/ESL)' : 'Zones VALORANT (EMEA)'}
           </h2>
           <p className="text-gray-400 mt-1">
             {t('geoDistribution', { count: totalPlayersWithNationality })}
@@ -279,27 +340,22 @@ export default function ZonesInterface() {
           />
 
           {/* Role Filter - Dynamic based on game */}
-          <CustomSelect
-            value={roleFilter}
-            onChange={(value) => setRoleFilter(value as ValorantRole | 'all')}
-            options={currentGame === 'cs2' ? [
-              { value: 'all', label: t('allRoles') },
-              { value: 'Entry Fragger', label: 'Entry Fragger' },
-              { value: 'Second Entry', label: 'Second Entry' },
-              { value: 'AWPer', label: 'AWPer' },
-              { value: 'Support', label: 'Support' },
-              { value: 'Lurker', label: 'Lurker' },
-              { value: 'IGL', label: 'IGL' }
-            ] : [
-              { value: 'all', label: t('allRoles') },
-              { value: 'Duelist', label: tRoles('duelist') },
-              { value: 'Initiator', label: tRoles('initiator') },
-              { value: 'Controller', label: tRoles('controller') },
-              { value: 'Sentinel', label: tRoles('sentinel') },
-              { value: 'Flex', label: tRoles('flex') }
-            ]}
-            className="min-w-[140px]"
-          />
+          <div className="relative">
+            <CustomSelect
+              value={roleFilter}
+              onChange={(value) => setRoleFilter(value)}
+              options={[
+                { value: 'all', label: t('allRoles') },
+                ...getAvailableRoles().map(role => ({ value: role, label: role }))
+              ]}
+              className="min-w-[140px]"
+            />
+            {gameFilter !== 'all' && (
+              <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
+                gameFilter === 'cs2' ? 'bg-[#de9b35]' : 'bg-[#ff4655]'
+              }`} title={`Filtered for ${gameFilter.toUpperCase()}`}></div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -356,8 +412,17 @@ export default function ZonesInterface() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="text-sm text-white font-medium">
-                          {player.username}
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm text-white font-medium">
+                            {player.username}
+                          </div>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                            (player.game || 'valorant') === 'valorant' 
+                              ? 'bg-[#ff4655]/20 text-[#ff4655] border border-[#ff4655]/30' 
+                              : 'bg-[#de9b35]/20 text-[#de9b35] border border-[#de9b35]/30'
+                          }`}>
+                            {(player.game || 'valorant').toUpperCase()}
+                          </span>
                         </div>
                         <div className="text-xs text-gray-500 mt-0.5">
                           {player.nationality}
@@ -386,31 +451,76 @@ export default function ZonesInterface() {
       )}
 
       {/* Zone Legend */}
-      <div className={`bg-gradient-to-br from-dark-card via-dark-card border border-gray-800 rounded-xl p-6 shadow-xl ${
-        currentGame === 'cs2' ? 'to-[#de9b35]/5' : 'to-primary/5'
-      }`}>
-        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <div className={`w-1 h-6 rounded-full ${
-            currentGame === 'cs2' 
-              ? 'bg-gradient-to-b from-[#de9b35] to-[#b8802a]' 
-              : 'bg-gradient-to-b from-primary to-primary-dark'
-          }`}></div>
-          {currentGame === 'cs2' ? 'CS2 Zone Definitions (FACEIT/ESL)' : t('zoneDefinitions')}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-          {Object.entries(currentZones).map(([zone, countries]) => (
-            <div key={zone} className="text-gray-400">
-              <span className={`inline-block px-2 py-1 rounded bg-gradient-to-r ${getZoneColor(zone)} text-white text-xs font-bold mr-2`}>
-                {zone}
-              </span>
-              <div className="mt-1 text-xs text-gray-500">
-                {countries.filter(c => c.length > 2).slice(0, 3).join(', ')}
-                {countries.filter(c => c.length > 2).length > 3 && ` +${countries.filter(c => c.length > 2).length - 3} more`}
-              </div>
-            </div>
-          ))}
+      {gameFilter === 'all' ? (
+        // Show intelligently combined zones when "all" is selected
+        <div className="bg-gradient-to-br from-dark-card via-dark-card to-gray-500/5 border border-gray-800 rounded-xl p-6 shadow-xl">
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className="w-1 h-6 rounded-full bg-gradient-to-b from-gray-400 to-gray-600"></div>
+            Zones actuellement affichées
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {/* Show only zones that are actually in use */}
+            {zoneStats.map(({ zone }) => {
+              // Determine if this zone is from Valorant or CS2
+              const isValorantZone = Object.keys(VALORANT_ZONES).includes(zone)
+              const isCS2Zone = Object.keys(CS2_ZONES).includes(zone)
+              const zones = isCS2Zone ? CS2_ZONES : VALORANT_ZONES
+              const countries = zones[zone] || []
+              const gameLabel = isCS2Zone ? 'CS2' : isValorantZone ? 'VAL' : ''
+              
+              return (
+                <div key={zone} className="text-gray-400">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`inline-block px-2 py-1 rounded bg-gradient-to-r ${getZoneColor(zone)} text-white text-xs font-bold`}>
+                      {zone}
+                    </span>
+                    {gameLabel && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                        isCS2Zone 
+                          ? 'bg-[#de9b35]/20 text-[#de9b35] border border-[#de9b35]/30' 
+                          : 'bg-[#ff4655]/20 text-[#ff4655] border border-[#ff4655]/30'
+                      }`}>
+                        {gameLabel}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    {countries.filter(c => c.length > 2).slice(0, 3).join(', ')}
+                    {countries.filter(c => c.length > 2).length > 3 && ` +${countries.filter(c => c.length > 2).length - 3} more`}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Show only relevant zone definition when a specific game is selected
+        <div className={`bg-gradient-to-br from-dark-card via-dark-card border border-gray-800 rounded-xl p-6 shadow-xl ${
+          currentGame === 'cs2' ? 'to-[#de9b35]/5' : 'to-primary/5'
+        }`}>
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className={`w-1 h-6 rounded-full ${
+              currentGame === 'cs2' 
+                ? 'bg-gradient-to-b from-[#de9b35] to-[#b8802a]' 
+                : 'bg-gradient-to-b from-primary to-primary-dark'
+            }`}></div>
+            {currentGame === 'cs2' ? 'Définitions des zones CS2 (FACEIT/ESL)' : 'Définitions des zones VALORANT (EMEA)'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {Object.entries(currentZones).map(([zone, countries]) => (
+              <div key={zone} className="text-gray-400">
+                <span className={`inline-block px-2 py-1 rounded bg-gradient-to-r ${getZoneColor(zone)} text-white text-xs font-bold mr-2`}>
+                  {zone}
+                </span>
+                <div className="mt-1 text-xs text-gray-500">
+                  {countries.filter(c => c.length > 2).slice(0, 3).join(', ')}
+                  {countries.filter(c => c.length > 2).length > 3 && ` +${countries.filter(c => c.length > 2).length - 3} more`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

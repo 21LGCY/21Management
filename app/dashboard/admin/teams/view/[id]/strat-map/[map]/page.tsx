@@ -3,9 +3,10 @@ import NavbarWrapper from '@/components/NavbarWrapper'
 import { notFound } from 'next/navigation'
 import StratMapClient from './StratMapClient'
 import { ValorantMap } from '@/lib/types/database'
-import { VALORANT_MAPS, CS2_MAPS } from '@/lib/types/games'
+import { VALORANT_MAPS, CS2_MAPS, ValorantMap as ValorantMapType, CS2Map } from '@/lib/types/games'
 
-const VALID_MAPS = [...VALORANT_MAPS, ...CS2_MAPS]
+type ValidMap = ValorantMapType | CS2Map
+const VALID_MAPS: ValidMap[] = [...VALORANT_MAPS, ...CS2_MAPS]
 
 export default async function StratMapPage({ 
   params 
@@ -19,7 +20,7 @@ export default async function StratMapPage({
   const mapName = map.charAt(0).toUpperCase() + map.slice(1)
   
   // Validate map name
-  if (!VALID_MAPS.includes(mapName)) {
+  if (!VALID_MAPS.includes(mapName as ValidMap)) {
     notFound()
   }
 

@@ -12,21 +12,20 @@ import { getTeamColors } from '@/lib/utils/teamColors'
 import CustomSelect from '@/components/CustomSelect'
 import ActionButton from '@/components/ActionButton'
 import { useTranslations } from 'next-intl'
+import { GameSelectorWithLogo } from '@/components/GameSelector'
 
-// Get all roles from all games for filtering
-const ALL_ROLES = [...new Set([
-  ...GAME_CONFIGS.valorant.roles,
-  ...GAME_CONFIGS.cs2.roles
-])]
+interface ScoutingDatabaseProps {
+  gameFilter: GameType | 'all'
+  onGameFilterChange: (game: GameType | 'all') => void
+}
 
-export default function ScoutingDatabase() {
+export default function ScoutingDatabase({ gameFilter, onGameFilterChange }: ScoutingDatabaseProps) {
   const [tryouts, setTryouts] = useState<ProfileTryout[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<TryoutStatus | 'all'>('all')
   const [roleFilter, setRoleFilter] = useState<string | 'all'>('all')
   const [teamFilter, setTeamFilter] = useState<TeamCategory | 'all'>('all')
-  const [gameFilter, setGameFilter] = useState<GameType | 'all'>('all')
   const [users, setUsers] = useState<Record<string, string>>({})
   
   const supabase = createClient()
@@ -38,6 +37,28 @@ export default function ScoutingDatabase() {
     fetchTryouts()
     fetchUsers()
   }, [])
+
+  // Get available roles based on the selected game filter
+  const getAvailableRoles = () => {
+    if (gameFilter === 'all') {
+      // Show all roles from both games when "all" is selected
+      return [...new Set([
+        ...GAME_CONFIGS.valorant.roles,
+        ...GAME_CONFIGS.cs2.roles
+      ])]
+    } else {
+      // Show only roles for the selected game
+      return GAME_CONFIGS[gameFilter].roles
+    }
+  }
+
+  // Reset role filter when game filter changes if the current role isn't available
+  useEffect(() => {
+    const availableRoles = getAvailableRoles()
+    if (roleFilter !== 'all' && !availableRoles.includes(roleFilter)) {
+      setRoleFilter('all')
+    }
+  }, [gameFilter])
 
   const fetchUsers = async () => {
     try {
@@ -214,26 +235,22 @@ export default function ScoutingDatabase() {
             className="min-w-[160px]"
           />
 
-          <CustomSelect
-            value={roleFilter}
-            onChange={(value) => setRoleFilter(value)}
-            options={[
-              { value: 'all', label: tCommon('viewAll') + ' ' + tRoles('player') },
-              ...ALL_ROLES.map(role => ({ value: role, label: role }))
-            ]}
-            className="min-w-[140px]"
-          />
-
-          <CustomSelect
-            value={gameFilter}
-            onChange={(value) => setGameFilter(value as GameType | 'all')}
-            options={[
-              { value: 'all', label: tCommon('all') + ' Games' },
-              { value: 'valorant', label: 'Valorant' },
-              { value: 'cs2', label: 'CS2' }
-            ]}
-            className="min-w-[120px]"
-          />
+          <div className="relative">
+            <CustomSelect
+              value={roleFilter}
+              onChange={(value) => setRoleFilter(value)}
+              options={[
+                { value: 'all', label: tCommon('viewAll') + ' ' + tRoles('player') },
+                ...getAvailableRoles().map(role => ({ value: role, label: role }))
+              ]}
+              className="min-w-[140px]"
+            />
+            {gameFilter !== 'all' && (
+              <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
+                gameFilter === 'valorant' ? 'bg-[#ff4655]' : 'bg-[#de9b35]'
+              }`} title={`Filtered for ${gameFilter.toUpperCase()}`}></div>
+            )}
+          </div>
 
           <Link href="/dashboard/admin/tryouts/scouts/new">
             <ActionButton icon={Plus}>
@@ -285,18 +302,9 @@ export default function ScoutingDatabase() {
                         
                         {/* Name & IGN */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
-                              {tryout.in_game_name || tryout.username}
-                            </h3>
-                            <span className={`px-1.5 py-0.5 text-[10px] rounded font-medium ${
-                              (tryout.game || DEFAULT_GAME) === 'valorant' 
-                                ? 'bg-[#ff4655]/20 text-[#ff4655]' 
-                                : 'bg-[#de9b35]/20 text-[#de9b35]'
-                            }`}>
-                              {(tryout.game || DEFAULT_GAME).toUpperCase()}
-                            </span>
-                          </div>
+                          <h3 className="font-bold text-white text-lg group-hover:text-primary transition truncate">
+                            {tryout.in_game_name || tryout.username}
+                          </h3>
                           {tryout.in_game_name && (
                             <p className="text-sm text-gray-400">@{tryout.username}</p>
                           )}
@@ -304,9 +312,16 @@ export default function ScoutingDatabase() {
                       </div>
 
                       {/* Team|Status Badge - Top Right */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 flex flex-col gap-2 items-end">
                         <span className={`px-3 py-1.5 text-xs border rounded-lg whitespace-nowrap font-semibold ${getStatusColor(tryout.status)}`}>
                           {tryout.team_category} | {getStatusLabel(tryout.status)}
+                        </span>
+                        <span className={`px-2 py-1 text-[10px] rounded font-medium ${
+                          (tryout.game || DEFAULT_GAME) === 'valorant' 
+                            ? 'bg-[#ff4655]/20 text-[#ff4655]' 
+                            : 'bg-[#de9b35]/20 text-[#de9b35]'
+                        }`}>
+                          {(tryout.game || DEFAULT_GAME).toUpperCase()}
                         </span>
                       </div>
                     </div>

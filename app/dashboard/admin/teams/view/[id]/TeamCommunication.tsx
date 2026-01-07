@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { TeamMessage, CommunicationSection, UserRole, ValorantMap, StratType } from '@/lib/types/database'
+import { TeamMessage, CommunicationSection, UserRole, StratType } from '@/lib/types/database'
 import { Send, Image as ImageIcon, Link as LinkIcon, Trash2, Loader2, Save } from 'lucide-react'
 import Image from 'next/image'
 import { deleteTeamMessageImage } from '@/lib/cloudinary/delete'
@@ -15,7 +15,7 @@ interface TeamCommunicationProps {
   userId: string
   userName: string
   userRole: UserRole
-  mapName?: ValorantMap // Optional: only for strat_map section
+  mapName?: string // Optional: only for strat_map section (accepts ValorantMap or CS2Map)
   matchId?: string // Optional: only for review_praccs section
   stratTypeFilter?: StratType // Optional: filter by strategy type
   compositionFilter?: string // Optional: filter by team composition

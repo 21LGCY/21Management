@@ -3,6 +3,7 @@
 import { GameType, GAME_CONFIGS, getGameConfig } from '@/lib/types/games'
 import { useTranslations } from 'next-intl'
 import CustomSelect from '@/components/CustomSelect'
+import Image from 'next/image'
 
 interface GameSelectorProps {
   value: GameType
@@ -43,6 +44,82 @@ export default function GameSelector({
         options={gameOptions}
         className={disabled ? 'opacity-50 pointer-events-none' : ''}
       />
+    </div>
+  )
+}
+
+/**
+ * Game selector with logos - Enhanced version for admin pages
+ */
+interface GameSelectorWithLogoProps {
+  value: GameType | 'all'
+  onChange: (game: GameType | 'all') => void
+  showAllOption?: boolean
+  className?: string
+}
+
+export function GameSelectorWithLogo({ 
+  value, 
+  onChange, 
+  showAllOption = true,
+  className = ''
+}: GameSelectorWithLogoProps) {
+  const t = useTranslations('common')
+
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      {showAllOption && (
+        <button
+          onClick={() => onChange('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            value === 'all'
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              : 'bg-dark-card border border-gray-800 text-gray-400 hover:text-white hover:border-gray-700'
+          }`}
+        >
+          {t('all')}
+        </button>
+      )}
+      
+      <button
+        onClick={() => onChange('valorant')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+          value === 'valorant'
+            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30'
+            : 'bg-dark-card border border-gray-800 text-gray-400 hover:text-white hover:border-red-500/50'
+        }`}
+      >
+        <div className="w-6 h-6 flex items-center justify-center relative">
+          <Image
+            src="/images/valorant.svg"
+            alt="Valorant"
+            width={24}
+            height={24}
+            className={`object-contain ${value === 'valorant' ? 'brightness-0 invert' : 'brightness-75'}`}
+          />
+        </div>
+        <span>Valorant</span>
+      </button>
+      
+      <button
+        onClick={() => onChange('cs2')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+          value === 'cs2'
+            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30'
+            : 'bg-dark-card border border-gray-800 text-gray-400 hover:text-white hover:border-orange-500/50'
+        }`}
+      >
+        <div className="w-6 h-6 flex items-center justify-center relative">
+          <Image
+            src="/images/cs2.svg"
+            alt="CS2"
+            width={24}
+            height={24}
+            className={`object-contain ${value === 'cs2' ? 'brightness-0 invert' : 'brightness-75'}`}
+          />
+        </div>
+        <span>CS2</span>
+      </button>
     </div>
   )
 }

@@ -14,7 +14,7 @@ import CustomSelect from '@/components/CustomSelect'
 import { getRankImage, getUserRoleColor, getUserRoleLabel, getValorantRoleColor } from '@/lib/utils/styling'
 import { useTranslations } from 'next-intl'
 import { GameType, getGameConfig, DEFAULT_GAME, getFaceitLevelImage } from '@/lib/types/games'
-import { GameBadge } from '@/components/GameSelector'
+import { GameBadge, GameSelectorWithLogo } from '@/components/GameSelector'
 
 export default function UserManagementClient() {
   const [users, setUsers] = useState<UserProfile[]>([])
@@ -40,7 +40,7 @@ export default function UserManagementClient() {
   const fetchTeams = async () => {
     const { data } = await supabase
       .from('teams')
-      .select('id, name, tag')
+      .select('id, name, tag, game')
       .order('name')
     setTeams(data || [])
   }
@@ -49,7 +49,7 @@ export default function UserManagementClient() {
     try {
       let query = supabase
         .from('profiles')
-        .select('*, teams(name, tag)')
+        .select('*, teams(name, tag, game)')
         .order('created_at', { ascending: false })
 
       const { data, error } = await query
@@ -75,12 +75,32 @@ export default function UserManagementClient() {
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     const matchesTeam = teamFilter === 'all' || user.team_id === teamFilter || (teamFilter === 'none' && !user.team_id)
     const matchesPosition = positionFilter === 'all' || user.position === positionFilter
-    const matchesGame = gameFilter === 'all' || (user.game || DEFAULT_GAME) === gameFilter
+    
+    // Check game: use team's game if user has a team, otherwise use user's game
+    const userGame = (user as any).teams?.game || user.game || DEFAULT_GAME
+    const matchesGame = gameFilter === 'all' || userGame === gameFilter
     
     return matchesSearch && matchesRole && matchesTeam && matchesPosition && matchesGame
   })
 
-  const roles = [...new Set(users.filter(u => u.role === 'player').map(u => u.position).filter(Boolean))]
+  // Get roles filtered by game
+  const roles = [...new Set(
+    users
+      .filter(u => u.role === 'player')
+      .filter(u => {
+        if (gameFilter === 'all') return true
+        const userGame = (u as any).teams?.game || u.game || DEFAULT_GAME
+        return userGame === gameFilter
+      })
+      .map(u => u.position)
+      .filter(Boolean)
+  )]
+
+  // Get teams filtered by game
+  const filteredTeamsForSelect = teams.filter(team => {
+    if (gameFilter === 'all') return true
+    return (team as any).game === gameFilter
+  })
 
   if (loading) {
     return (
@@ -92,6 +112,15 @@ export default function UserManagementClient() {
 
   return (
     <div className="space-y-6">
+      {/* Game Selector */}
+      <div className="flex items-center justify-between mb-6">
+        <GameSelectorWithLogo 
+          value={gameFilter} 
+          onChange={setGameFilter}
+          showAllOption={true}
+        />
+      </div>
+
       {/* Add User Button and Count */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <p className="text-gray-400 text-sm font-semibold">
@@ -140,7 +169,7 @@ export default function UserManagementClient() {
             options={[
               { value: 'all', label: tCommon('viewAll') + ' Teams' },
               { value: 'none', label: tCommon('noTeam') },
-              ...teams.map(team => ({
+              ...filteredTeamsForSelect.map(team => ({
                 value: team.id,
                 label: team.name
               }))
@@ -161,16 +190,6 @@ export default function UserManagementClient() {
             className=""
           />
 
-          <CustomSelect
-            value={gameFilter}
-            onChange={(value) => setGameFilter(value as GameType | 'all')}
-            options={[
-              { value: 'all', label: tCommon('all') + ' Games' },
-              { value: 'valorant', label: 'Valorant' },
-              { value: 'cs2', label: 'CS2' }
-            ]}
-            className=""
-          />
         </div>
       </div>
 
@@ -182,6 +201,9 @@ export default function UserManagementClient() {
             const teamTag = (user as any).teams?.tag || null
             const nationality = getNationalityDisplay(user.nationality)
             const teamColors = getTeamColors(teamTag)
+            
+            // Get user's game: use team's game if available, otherwise user's game
+            const userGame = (user as any).teams?.game || user.game || DEFAULT_GAME
             
             // Adjust opacity for team borders - reduce from /50 to /30
             const adjustedBorder = teamTag 
@@ -262,8 +284,6 @@ export default function UserManagementClient() {
                     {/* Role and Status Badges */}
                     {user.role === 'player' && (
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Game Badge */}
-                        <GameBadge game={(user.game as GameType) || DEFAULT_GAME} size="sm" />
                         {user.position && (
                           <span className={`px-3 py-1.5 text-xs font-semibold border rounded-lg ${getValorantRoleColor(user.position)}`}>
                             {user.position}
@@ -287,7 +307,7 @@ export default function UserManagementClient() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-dark/50 rounded-lg border border-gray-800 flex items-center justify-center group/rank relative">
                           {/* Show Faceit Level for CS2, Rank image for Valorant */}
-                          {(user.game || DEFAULT_GAME) === 'cs2' ? (
+                          {userGame === 'cs2' ? (
                             (user as any).faceit_level ? (
                               <Image
                                 src={getFaceitLevelImage((user as any).faceit_level)}
@@ -340,7 +360,7 @@ export default function UserManagementClient() {
                     )}
 
                     {/* Agent Pool - Only for Valorant */}
-                    {user.role === 'player' && (user.game || DEFAULT_GAME) === 'valorant' && user.champion_pool && user.champion_pool.length > 0 && (
+                    {user.role === 'player' && userGame === 'valorant' && user.champion_pool && user.champion_pool.length > 0 && (
                       <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
                         <p className="text-gray-400 text-xs mb-2 font-medium">{tPlayers('championPool')}</p>
                         <div className="flex flex-wrap gap-1.5">

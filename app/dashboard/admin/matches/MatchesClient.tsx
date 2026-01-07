@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Team, MatchHistoryWithStats, GameType } from '@/lib/types/database'
+import { Team, MatchHistoryWithStats } from '@/lib/types/database'
+import { GameType } from '@/lib/types/games'
 import { Trophy, Calendar, Search, Eye, Edit, Trash2, Filter, Plus } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
+import { GameSelectorWithLogo } from '@/components/GameSelector'
 
 interface MatchesClientProps {
   teams: Team[]
@@ -102,6 +104,21 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
 
   return (
     <div className="space-y-6">
+      {/* Game Selector */}
+      <div className="flex items-center justify-between mb-6">
+        <GameSelectorWithLogo 
+          value={selectedGame} 
+          onChange={setSelectedGame}
+          showAllOption={true}
+        />
+        <Link href="/dashboard/admin/matches/new">
+          <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/50">
+            <Plus className="w-5 h-5" />
+            {t('addMatch')}
+          </button>
+        </Link>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6">
@@ -169,21 +186,6 @@ export default function MatchesClient({ teams }: MatchesClientProps) {
                 className="w-full pl-10 pr-4 py-3 bg-dark border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none"
               />
             </div>
-          </div>
-
-          {/* Game Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Game</label>
-            <CustomSelect
-              value={selectedGame}
-              onChange={(value) => setSelectedGame(value as GameType | 'all')}
-              options={[
-                { value: 'all', label: 'All Games' },
-                { value: 'valorant', label: 'Valorant' },
-                { value: 'cs2', label: 'CS2' }
-              ]}
-              className="min-w-[140px]"
-            />
           </div>
 
           {/* Team Filter */}

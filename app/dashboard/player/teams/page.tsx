@@ -19,20 +19,22 @@ export default async function PlayerTeamsPage() {
   const userTimezone = (playerData?.timezone as TimezoneOffset) || DEFAULT_TIMEZONE
 
   // Get all team players for roster display
-  const { data: teamPlayers } = await supabase
+  const { data: teamPlayers, error: teamPlayersError } = await supabase
     .from('profiles')
-    .select('id, username, in_game_name, full_name, position, is_igl, is_substitute, avatar_url, rank, staff_role, faceit_level')
-    .eq('role', 'player')
+    .select('id, username, in_game_name, position, is_igl, is_substitute, avatar_url, rank, staff_role, faceit_level, role')
     .eq('team_id', playerData?.team_id || '')
+    .in('role', ['player', 'manager'])
     .order('is_substitute', { ascending: true })
     .order('created_at', { ascending: true })
 
-  // Get staff members
-  const { data: staffMembers } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('role', 'manager')
-    .eq('team_id', playerData?.team_id || '')
+  console.log('Current player team_id:', playerData?.team_id)
+  console.log('Team players found:', teamPlayers?.length || 0)
+  console.log('Team players:', teamPlayers)
+  console.log('Team players error:', teamPlayersError)
+
+  // Filter players from the results
+  const actualPlayers = teamPlayers?.filter(p => p.role === 'player') || []
+  const actualStaff = teamPlayers?.filter(p => p.role === 'manager') || []
 
   return (
     <div className="min-h-screen bg-dark">
@@ -44,8 +46,8 @@ export default async function PlayerTeamsPage() {
           teamName={playerData?.teams?.name || ''}
           teamGame={(playerData?.teams?.game as GameType) || DEFAULT_GAME}
           currentPlayerId={user.user_id}
-          teamPlayers={teamPlayers || []}
-          staffMembers={staffMembers || []}
+          teamPlayers={actualPlayers}
+          staffMembers={actualStaff}
           userTimezone={userTimezone}
         />
       </main>

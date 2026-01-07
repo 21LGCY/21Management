@@ -256,7 +256,7 @@ export default function ZonesInterfaceManager({ teamId, team, teamCategory }: Zo
             <Globe className="w-7 h-7 text-primary" />
             {isCS2Team 
               ? t('cs2ZonesTitle', { team: team?.name || 'CS2' })
-              : t('valorantZonesTitle', { team: getTeamLabel(teamCategory) || '' })
+              : t('valorantZonesTitle', { team: teamCategory ? getTeamLabel(teamCategory) : '' })
             }
           </h2>
           <p className="text-gray-400 mt-1">

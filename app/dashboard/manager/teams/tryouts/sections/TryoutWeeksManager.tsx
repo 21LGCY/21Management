@@ -191,7 +191,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
             <Calendar className="w-6 h-6 text-primary" />
             {isCS2Team 
               ? t('tryoutWeeksCS2Title', { team: team?.name || 'CS2' })
-              : t('tryoutWeeksTitle', { team: getTeamLabel(teamCategory) || '' })
+              : t('tryoutWeeksTitle', { team: teamCategory ? getTeamLabel(teamCategory) : '' })
             }
           </h2>
           <p className="text-gray-400 mt-1">{t('manageTryoutsDescription')}</p>
@@ -219,7 +219,7 @@ export default function TryoutWeeksManager({ teamId, team, teamCategory }: Tryou
         <div className="bg-dark-card border border-gray-800 rounded-lg p-12 text-center">
           <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">{t('noSessions')}</h3>
-          <p className="text-gray-400 mb-6">{t('createTryoutFor', { team: getTeamLabel(teamCategory) || '' })}</p>
+          <p className="text-gray-400 mb-6">{t('createTryoutFor', { team: teamCategory ? getTeamLabel(teamCategory) : '' })}</p>
           <Link href="/dashboard/manager/teams/tryouts/new">
             <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition mx-auto">
               <Plus className="w-4 h-4" />

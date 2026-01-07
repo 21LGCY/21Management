@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Users, Calendar, MapPin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { GameSelectorWithLogo } from '@/components/GameSelector'
+import { GameType } from '@/lib/types/games'
 import ScoutingDatabase from './sections/ScoutingDatabase'
 import TryoutWeeks from './sections/TryoutWeeks'
 import ZonesInterface from './sections/ZonesInterface'
@@ -11,6 +13,7 @@ type TabType = 'scouting' | 'tryouts' | 'zones'
 
 export default function TryoutsPageClient() {
   const [activeTab, setActiveTab] = useState<TabType>('scouting')
+  const [selectedGame, setSelectedGame] = useState<GameType | 'all'>('all')
   const t = useTranslations('tryouts')
 
   const tabs = [
@@ -33,6 +36,17 @@ export default function TryoutsPageClient() {
 
   return (
     <div className="space-y-6">
+      {/* Game Selector - Show for Scouting Database and Zones */}
+      {(activeTab === 'scouting' || activeTab === 'zones') && (
+        <div className="flex items-center justify-between mb-6">
+          <GameSelectorWithLogo 
+            value={selectedGame} 
+            onChange={setSelectedGame}
+            showAllOption={true}
+          />
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="border-b border-gray-800">
         <nav className="flex gap-4">
@@ -60,9 +74,9 @@ export default function TryoutsPageClient() {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'scouting' && <ScoutingDatabase />}
+        {activeTab === 'scouting' && <ScoutingDatabase gameFilter={selectedGame} onGameFilterChange={setSelectedGame} />}
         {activeTab === 'tryouts' && <TryoutWeeks />}
-        {activeTab === 'zones' && <ZonesInterface />}
+        {activeTab === 'zones' && <ZonesInterface gameFilter={selectedGame} onGameFilterChange={setSelectedGame} />}
       </div>
     </div>
   )

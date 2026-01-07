@@ -254,6 +254,87 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
                 </div>
               </div>
             </div>
+
+            {/* FACEIT Stats - Only for CS2 players with linked accounts */}
+            {gameType === 'cs2' && player.faceit_player_id && player.faceit_stats && (
+              <div className="bg-gradient-to-br from-orange-500/10 to-dark border border-orange-500/30 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src="/images/faceit.svg" 
+                      alt="FACEIT" 
+                      className="w-6 h-6"
+                    />
+                    <h2 className="text-xl font-semibold text-white">FACEIT Stats</h2>
+                  </div>
+                  {player.faceit_url && (
+                    <a 
+                      href={player.faceit_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-orange-400 hover:text-orange-300 transition text-sm flex items-center gap-1"
+                    >
+                      {t('viewProfile')}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+                
+                {/* FACEIT Level and ELO */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center p-4 bg-dark/50 rounded-lg">
+                    <p className="text-3xl font-bold text-orange-400">{player.faceit_stats.level || player.faceit_level || '-'}</p>
+                    <p className="text-gray-400 text-sm">Level</p>
+                  </div>
+                  <div className="text-center p-4 bg-dark/50 rounded-lg">
+                    <p className="text-3xl font-bold text-orange-400">{player.faceit_stats.elo || player.faceit_elo || '-'}</p>
+                    <p className="text-gray-400 text-sm">ELO</p>
+                  </div>
+                </div>
+
+                {/* Additional FACEIT Stats */}
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="text-center p-3 bg-dark/50 rounded-lg">
+                    <p className="text-xl font-bold text-white">{player.faceit_stats.matches || 0}</p>
+                    <p className="text-gray-400 text-xs">Matches</p>
+                  </div>
+                  <div className="text-center p-3 bg-dark/50 rounded-lg">
+                    <p className="text-xl font-bold text-green-400">{player.faceit_stats.winRate || 0}%</p>
+                    <p className="text-gray-400 text-xs">{t('winRate')}</p>
+                  </div>
+                  <div className="text-center p-3 bg-dark/50 rounded-lg">
+                    <p className="text-xl font-bold text-blue-400">{player.faceit_stats.kdRatio || 0}</p>
+                    <p className="text-gray-400 text-xs">K/D</p>
+                  </div>
+                  <div className="text-center p-3 bg-dark/50 rounded-lg">
+                    <p className="text-xl font-bold text-red-400">{player.faceit_stats.headshotPercentage || 0}%</p>
+                    <p className="text-gray-400 text-xs">HS %</p>
+                  </div>
+                </div>
+
+                {/* Last Sync Info */}
+                {player.faceit_last_sync && (
+                  <p className="text-gray-500 text-xs mt-4 text-center">
+                    Last synced: {new Date(player.faceit_last_sync).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* FACEIT Not Linked - Only for CS2 players */}
+            {gameType === 'cs2' && !player.faceit_player_id && (
+              <div className="bg-dark-card border border-gray-800 rounded-lg p-6 text-center">
+                <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <img 
+                    src="/images/faceit.svg" 
+                    alt="FACEIT" 
+                    className="w-6 h-6 opacity-50"
+                  />
+                </div>
+                <h3 className="text-white font-medium mb-1">FACEIT Not Linked</h3>
+                <p className="text-gray-400 text-sm">This player hasn't linked their FACEIT account yet.</p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

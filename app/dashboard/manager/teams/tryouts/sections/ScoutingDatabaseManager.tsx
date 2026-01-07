@@ -38,7 +38,7 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
   const tCommon = useTranslations('common')
 
   const isCS2Team = team?.game === 'cs2'
-  const teamGameConfig = team?.game ? GAME_CONFIGS[team.game] : GAME_CONFIGS.valorant
+  const teamGameConfig = team?.game ? GAME_CONFIGS[team.game as GameType] : GAME_CONFIGS.valorant
   const availableRoles = isCS2Team ? GAME_CONFIGS.cs2.roles : (teamGameConfig?.roles || GAME_CONFIGS.valorant.roles)
 
   useEffect(() => {
