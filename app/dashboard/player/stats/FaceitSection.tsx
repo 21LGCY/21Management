@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Loader2, RefreshCw, ExternalLink, Target, Trophy, Crosshair, Flame, TrendingUp } from 'lucide-react'
 import FaceitLinkButton from '@/components/FaceitLinkButton'
+import { getFaceitLevelImage } from '@/lib/types/games'
 
 interface FaceitSectionProps {
   isLinked: boolean
@@ -124,10 +125,6 @@ export default function FaceitSection({
                   />
                 </div>
               )}
-              {/* Level badge */}
-              <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${levelColors.gradient} flex items-center justify-center shadow-lg`}>
-                <span className="text-sm font-bold text-white">{faceitLevel}</span>
-              </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -174,9 +171,12 @@ export default function FaceitSection({
         {/* Main Stats - 3 columns */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           {/* Level */}
-          <div className={`${levelColors.bg} border ${levelColors.border} rounded-xl p-6 text-center`}>
-            <Trophy className={`w-6 h-6 ${levelColors.text} mx-auto mb-2`} />
-            <p className={`text-4xl font-bold ${levelColors.text} mb-1`}>{faceitLevel}</p>
+          <div className={`${levelColors.bg} border ${levelColors.border} rounded-xl p-6 text-center flex flex-col items-center justify-center`}>
+            <img 
+              src={getFaceitLevelImage(faceitLevel || 1)} 
+              alt={`Level ${faceitLevel}`}
+              className="w-16 h-16 mb-2"
+            />
             <p className="text-xs text-gray-500 uppercase tracking-wider">{t('level')}</p>
           </div>
 
@@ -240,14 +240,25 @@ export default function FaceitSection({
                 <p className="text-xl font-bold text-green-400 mt-1">{faceitStats.wins || 0}</p>
               </div>
 
-              {/* Total Kills */}
-              <div className="bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/30 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider">{tStats('kills')}</span>
-                  <Crosshair className="w-3 h-3 text-blue-400" />
+              {/* Total Kills - only show if available */}
+              {faceitStats.totalKills > 0 ? (
+                <div className="bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/30 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">{tStats('kills')}</span>
+                    <Crosshair className="w-3 h-3 text-blue-400" />
+                  </div>
+                  <p className="text-xl font-bold text-blue-400 mt-1">{faceitStats.totalKills}</p>
                 </div>
-                <p className="text-xl font-bold text-blue-400 mt-1">{faceitStats.totalKills || 0}</p>
-              </div>
+              ) : (
+                /* Show Matches instead when Kills not available */
+                <div className="bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/30 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">{tStats('matches')}</span>
+                    <Target className="w-3 h-3 text-blue-400" />
+                  </div>
+                  <p className="text-xl font-bold text-blue-400 mt-1">{faceitStats.matches || 0}</p>
+                </div>
+              )}
 
               {/* Current Streak */}
               {faceitStats.currentStreak !== undefined && (

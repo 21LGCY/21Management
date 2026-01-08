@@ -197,8 +197,6 @@ export default function NewScoutForm() {
         insertData.faceit_url = formData.faceit_url || null
       }
 
-      console.log('Inserting data:', JSON.stringify(insertData, null, 2))
-      
       const { data, error } = await supabase
         .from('profiles_tryouts')
         .insert([insertData])
@@ -214,13 +212,10 @@ export default function NewScoutForm() {
         throw error
       }
 
-      console.log('Insert successful:', data)
       router.push('/dashboard/admin/tryouts?tab=scouting')
       router.refresh()
     } catch (error: any) {
       console.error('Error creating scout profile:', error)
-      console.error('Error message:', error?.message)
-      console.error('Error details:', error?.details)
       alert(`${tForm('errorCreating')} ${error?.message || ''}`)
     } finally {
       setLoading(false)

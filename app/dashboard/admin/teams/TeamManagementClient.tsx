@@ -88,9 +88,6 @@ export default function TeamManagementClient({ userTimezone }: TeamManagementCli
         .limit(20)
 
       if (error) throw error
-      console.log('Fetched matches:', data)
-      console.log('Matches with results:', data?.filter(m => m.result))
-      console.log('Upcoming matches:', data?.filter(m => !m.result && new Date(m.scheduled_at) >= new Date()))
       setMatches(data || [])
     } catch (error) {
       console.error('Error fetching matches:', error)

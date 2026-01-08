@@ -111,17 +111,17 @@ class FaceitApiClient {
       region: cs2Game?.region || '',
       verified: player.verified,
       membershipType: player.membership_type || 'free',
-      // Lifetime stats
-      matches: parseInt(lifetime['Matches'] || '0', 10),
-      wins: parseInt(lifetime['Wins'] || '0', 10),
-      winRate: parseFloat(lifetime['Win Rate %'] || '0'),
-      kdRatio: parseFloat(lifetime['K/D Ratio'] || '0'),
-      avgKdRatio: parseFloat(lifetime['Average K/D Ratio'] || '0'),
-      headshotPercentage: parseFloat(lifetime['Average Headshots %'] || lifetime['Total Headshots %'] || '0'),
-      totalKills: parseInt(lifetime['Total Kills'] || lifetime['Kills'] || '0', 10),
-      totalDeaths: parseInt(lifetime['Total Deaths'] || lifetime['Deaths'] || '0', 10),
-      longestWinStreak: parseInt(lifetime['Longest Win Streak'] || '0', 10),
-      currentStreak: parseInt(lifetime['Current Win Streak'] || '0', 10),
+      // Lifetime stats - FACEIT API may use different key formats
+      matches: parseInt(lifetime['Matches'] || lifetime['matches'] || '0', 10),
+      wins: parseInt(lifetime['Wins'] || lifetime['wins'] || '0', 10),
+      winRate: parseFloat(lifetime['Win Rate %'] || lifetime['win_rate'] || '0'),
+      kdRatio: parseFloat(lifetime['K/D Ratio'] || lifetime['kd_ratio'] || '0'),
+      avgKdRatio: parseFloat(lifetime['Average K/D Ratio'] || lifetime['avg_kd_ratio'] || '0'),
+      headshotPercentage: parseFloat(lifetime['Average Headshots %'] || lifetime['Total Headshots %'] || lifetime['headshots_per_match'] || '0'),
+      totalKills: parseInt(lifetime['Kills'] || lifetime['Total Kills'] || lifetime['kills'] || '0', 10),
+      totalDeaths: parseInt(lifetime['Deaths'] || lifetime['Total Deaths'] || lifetime['deaths'] || '0', 10),
+      longestWinStreak: parseInt(lifetime['Longest Win Streak'] || lifetime['longest_win_streak'] || '0', 10),
+      currentStreak: parseInt(lifetime['Current Win Streak'] || lifetime['current_win_streak'] || '0', 10),
       segments: stats?.segments || [],
     }
   }

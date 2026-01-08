@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Team, UserProfile, PlayerMatchStats } from '@/lib/types/database'
 import { GameType } from '@/lib/types/games'
-import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp, ChevronUp, ChevronDown, Search, Medal } from 'lucide-react'
+import { BarChart3, User, Users as UsersIcon, Trophy, TrendingUp, ChevronUp, ChevronDown, Search, Medal, Target } from 'lucide-react'
 import Image from 'next/image'
 import { getTeamColors } from '@/lib/utils/teamColors'
 import { useTranslations } from 'next-intl'
 import { GameSelectorWithLogo } from '@/components/GameSelector'
+import AdminFaceitTeamStats from '@/components/AdminFaceitTeamStats'
 
 interface StatisticsClientProps {
   teams: Team[]
@@ -93,12 +94,96 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
   const [sortField, setSortField] = useState<SortField>('averageACS')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [searchQuery, setSearchQuery] = useState('')
+  const [teamPlayers, setTeamPlayers] = useState<UserProfile[]>([])
+  const [teamMatches, setTeamMatches] = useState<any[]>([])
 
   // Filter teams by selected game
   const filteredTeams = useMemo(() => 
     teams.filter(t => t.game === selectedGame),
     [teams, selectedGame]
   )
+
+  // Calculate map statistics from FACEIT data for CS2, manual matches for others
+  const mapStats = useMemo(() => {
+    // For CS2, use FACEIT data
+    if (selectedGame === 'cs2' && teamPlayers.length > 0) {
+      const faceitStats = teamPlayers
+        .filter(p => p.faceit_stats?.segments)
+        .reduce((acc: any, player) => {
+          const segments = player.faceit_stats?.segments || []
+          segments.forEach((segment: any) => {
+            const mapName = segment.label
+            if (!acc[mapName]) {
+              acc[mapName] = {
+                mapName,
+                matches: 0,
+                wins: 0,
+                totalKills: 0,
+                totalDeaths: 0,
+                kdRatio: 0,
+                playerCount: 0,
+                mapImage: segment.img_regular
+              }
+            }
+            const matches = parseInt(segment.stats['Matches'] || '0', 10)
+            const wins = parseInt(segment.stats['Wins'] || '0', 10)
+            const kdRatio = parseFloat(segment.stats['K/D Ratio'] || '0')
+            
+            acc[mapName].matches += matches
+            acc[mapName].wins += wins
+            acc[mapName].totalKills += parseInt(segment.stats['Kills'] || '0', 10)
+            acc[mapName].totalDeaths += parseInt(segment.stats['Deaths'] || '0', 10)
+            acc[mapName].kdRatio += kdRatio
+            acc[mapName].playerCount++
+          })
+          return acc
+        }, {})
+
+      return Object.values(faceitStats)
+        .map((stat: any) => ({
+          ...stat,
+          winRate: stat.matches > 0 ? (stat.wins / stat.matches) * 100 : 0,
+          avgKdRatio: stat.playerCount > 0 ? stat.kdRatio / stat.playerCount : 0
+        }))
+        .sort((a: any, b: any) => b.matches - a.matches)
+    }
+
+    // For other games, use manual match data
+    const stats = teamMatches
+      .filter(m => m.map_name)
+      .reduce((acc: any, match) => {
+        const mapName = match.map_name!
+        if (!acc[mapName]) {
+          acc[mapName] = {
+            mapName,
+            matches: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            totalRounds: 0,
+            roundsWon: 0,
+            roundsLost: 0
+          }
+        }
+        acc[mapName].matches++
+        if (match.result === 'win') acc[mapName].wins++
+        if (match.result === 'loss') acc[mapName].losses++
+        if (match.result === 'draw') acc[mapName].draws++
+        acc[mapName].totalRounds += (match.our_score || 0) + (match.opponent_score || 0)
+        acc[mapName].roundsWon += match.our_score || 0
+        acc[mapName].roundsLost += match.opponent_score || 0
+        return acc
+      }, {})
+
+    return Object.values(stats)
+      .map((stat: any) => ({
+        ...stat,
+        winRate: stat.matches > 0 ? (stat.wins / stat.matches) * 100 : 0,
+        avgRoundsWon: stat.matches > 0 ? stat.roundsWon / stat.matches : 0,
+        avgRoundsLost: stat.matches > 0 ? stat.roundsLost / stat.matches : 0
+      }))
+      .sort((a: any, b: any) => b.matches - a.matches)
+  }, [teamMatches, teamPlayers, selectedGame])
 
   // Calculate max values for stat bars
   const maxValues = useMemo(() => ({
@@ -152,8 +237,22 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
       if (!allPlayers) {
         setStats([])
+        setTeamPlayers([])
+        setTeamMatches([])
         return
       }
+
+      setTeamPlayers(allPlayers)
+
+      // Get all matches for teams in the selected game
+      const teamIds = [...new Set(allPlayers.map(p => p.team_id).filter(Boolean))]
+      const { data: matches } = await supabase
+        .from('match_history')
+        .select('*')
+        .in('team_id', teamIds)
+        .order('match_date', { ascending: false })
+      
+      setTeamMatches(matches || [])
 
       const aggregatedStats = await Promise.all(
         allPlayers.map(player => aggregatePlayerStats(player))
@@ -161,7 +260,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
       setStats(aggregatedStats.filter(s => s.matchesPlayed > 0).sort((a, b) => b.averageACS - a.averageACS))
     } catch (error) {
-      console.error('Error fetching all stats:', error)
+      // Error fetching all stats
     } finally {
       setLoading(false)
     }
@@ -178,8 +277,21 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
       if (!teamPlayers) {
         setStats([])
+        setTeamPlayers([])
+        setTeamMatches([])
         return
       }
+
+      setTeamPlayers(teamPlayers)
+
+      // Get matches for this specific team
+      const { data: matches } = await supabase
+        .from('match_history')
+        .select('*')
+        .eq('team_id', teamId)
+        .order('match_date', { ascending: false })
+      
+      setTeamMatches(matches || [])
 
       const aggregatedStats = await Promise.all(
         teamPlayers.map(player => aggregatePlayerStats(player))
@@ -187,7 +299,7 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
 
       setStats(aggregatedStats.filter(s => s.matchesPlayed > 0).sort((a, b) => b.averageACS - a.averageACS))
     } catch (error) {
-      console.error('Error fetching team stats:', error)
+      // Error fetching team stats
     } finally {
       setLoading(false)
     }
@@ -426,6 +538,80 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
         )}
       </div>
 
+      {/* CS2 FACEIT Statistics for Selected Team */}
+      {selectedGame === 'cs2' && viewMode === 'team' && selectedTeamId && teamPlayers.length > 0 && (
+        <div className="mb-6">
+          <AdminFaceitTeamStats 
+            teamId={selectedTeamId} 
+            teamName={filteredTeams.find(t => t.id === selectedTeamId)?.name || 'Team'} 
+            players={teamPlayers}
+          />
+        </div>
+      )}
+
+      {/* CS2 FACEIT Statistics for All Players */}
+      {selectedGame === 'cs2' && viewMode === 'all' && teamPlayers.length > 0 && (
+        <div className="mb-6">
+          <div className="bg-gradient-to-br from-orange-500/5 to-dark border border-orange-500/20 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/images/faceit.svg" alt="FACEIT" className="w-8 h-8" />
+              <div>
+                <h3 className="text-xl font-bold text-white">CS2 FACEIT Overview</h3>
+                <p className="text-sm text-gray-400">
+                  {teamPlayers.filter(p => p.faceit_player_id).length} players linked to FACEIT across all teams
+                </p>
+              </div>
+            </div>
+
+            {teamPlayers.filter(p => p.faceit_player_id).length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center hover:border-orange-500/30 transition-all">
+                  <p className="text-xs text-gray-400 mb-1">Average ELO</p>
+                  <p className="text-2xl font-bold text-orange-400">
+                    {Math.round(
+                      teamPlayers
+                        .filter(p => p.faceit_player_id)
+                        .reduce((sum, p) => sum + (p.faceit_elo || 0), 0) / 
+                      teamPlayers.filter(p => p.faceit_player_id).length
+                    )}
+                  </p>
+                </div>
+                <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center hover:border-yellow-500/30 transition-all">
+                  <p className="text-xs text-gray-400 mb-1">Average Level</p>
+                  <p className="text-2xl font-bold text-yellow-400">
+                    {(
+                      teamPlayers
+                        .filter(p => p.faceit_player_id)
+                        .reduce((sum, p) => sum + (p.faceit_level || 0), 0) / 
+                      teamPlayers.filter(p => p.faceit_player_id).length
+                    ).toFixed(1)}
+                  </p>
+                </div>
+                <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center hover:border-green-500/30 transition-all">
+                  <p className="text-xs text-gray-400 mb-1">Average Win Rate</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    {(
+                      teamPlayers
+                        .filter(p => p.faceit_player_id && p.faceit_stats)
+                        .reduce((sum, p) => sum + (p.faceit_stats?.winRate || 0), 0) / 
+                      Math.max(teamPlayers.filter(p => p.faceit_player_id && p.faceit_stats).length, 1)
+                    ).toFixed(1)}%
+                  </p>
+                </div>
+                <div className="bg-dark/50 border border-gray-800 rounded-lg p-4 text-center hover:border-blue-500/30 transition-all">
+                  <p className="text-xs text-gray-400 mb-1">Total FACEIT Matches</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {teamPlayers
+                      .filter(p => p.faceit_player_id && p.faceit_stats)
+                      .reduce((sum, p) => sum + (p.faceit_stats?.matches || 0), 0)}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Statistics Display */}
       {loading ? (
         <div className="flex justify-center py-24">
@@ -637,6 +823,131 @@ export default function StatisticsClient({ teams }: StatisticsClientProps) {
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 text-center text-sm text-gray-500">
               {t('showingPlayers', { count: displayedStats.length })}
               {searchQuery && <span> {t('matching')} &quot;{searchQuery}&quot;</span>}
+            </div>
+          )}
+
+          {/* Map Statistics Section */}
+          {mapStats.length > 0 && (
+            <div className="mt-6 bg-gradient-to-br from-dark-card via-dark-card to-primary/5 border border-gray-800 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Target className="w-6 h-6 text-primary" />
+                    {t('mapStatistics')}
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {selectedGame === 'cs2' ? t('faceitMapData') : (
+                      viewMode === 'team' && selectedTeamId 
+                        ? `${filteredTeams.find(t => t.id === selectedTeamId)?.name || 'Team'} ${t('performanceByMap')}`
+                        : t('allTeamsPerformanceByMap')
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg text-sm">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  <span className="text-white font-medium">{mapStats.length} {t('mapsPlayed')}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mapStats.map((mapStat: any) => {
+                  const winRateColor = 
+                    mapStat.winRate >= 60 ? 'from-green-500 to-emerald-600' :
+                    mapStat.winRate >= 40 ? 'from-yellow-500 to-orange-500' :
+                    'from-red-500 to-rose-600'
+                  
+                  return (
+                    <div 
+                      key={mapStat.mapName}
+                      className="bg-gradient-to-br from-dark to-dark-card border border-gray-800 rounded-xl p-5 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 group"
+                    >
+                      {/* Map Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-white truncate">{mapStat.mapName}</h3>
+                          <p className="text-xs text-gray-500">{mapStat.matches} {t('matches')}</p>
+                        </div>
+                        {mapStat.mapImage && (
+                          <img 
+                            src={mapStat.mapImage} 
+                            alt={mapStat.mapName}
+                            className="w-12 h-12 rounded-lg object-cover border border-gray-700"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Win Rate Bar */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between text-xs mb-2">
+                          <span className="text-gray-400">{t('winRate')}</span>
+                          <span className={`font-bold bg-gradient-to-r ${winRateColor} bg-clip-text text-transparent`}>
+                            {mapStat.winRate.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="h-2.5 bg-gray-800 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full bg-gradient-to-r ${winRateColor} transition-all duration-500`}
+                            style={{ width: `${Math.min(mapStat.winRate, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stats Grid */}
+                      {selectedGame === 'cs2' ? (
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">{t('matches')}</p>
+                            <p className="text-lg font-bold text-blue-400">{mapStat.matches}</p>
+                          </div>
+                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">{t('wins')}</p>
+                            <p className="text-lg font-bold text-green-400">{mapStat.wins}</p>
+                          </div>
+                          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">K/D</p>
+                            <p className="text-lg font-bold text-purple-400">{mapStat.avgKdRatio?.toFixed(2) || '0.00'}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">{t('wins')}</p>
+                            <p className="text-lg font-bold text-green-400">{mapStat.wins}</p>
+                          </div>
+                          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">{t('losses')}</p>
+                            <p className="text-lg font-bold text-red-400">{mapStat.losses}</p>
+                          </div>
+                          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2.5 text-center">
+                            <p className="text-xs text-gray-400 mb-1">{t('draws')}</p>
+                            <p className="text-lg font-bold text-yellow-400">{mapStat.draws}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Additional Stats */}
+                      {selectedGame !== 'cs2' && (
+                        <div className="mt-3 pt-3 border-t border-gray-800 grid grid-cols-2 gap-3 text-center text-xs">
+                          <div>
+                            <p className="text-gray-500">{t('avgRoundsWon')}</p>
+                            <p className="text-white font-medium">{mapStat.avgRoundsWon?.toFixed(1) || '0.0'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">{t('avgRoundsLost')}</p>
+                            <p className="text-white font-medium">{mapStat.avgRoundsLost?.toFixed(1) || '0.0'}</p>
+                          </div>
+                        </div>
+                      )}
+                      {selectedGame === 'cs2' && mapStat.playerCount && (
+                        <div className="mt-3 pt-3 border-t border-gray-800 text-center text-xs">
+                          <p className="text-gray-500">{t('aggregatedFromPlayers', { count: mapStat.playerCount })}</p>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>

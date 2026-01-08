@@ -130,9 +130,6 @@ export default function TryoutWeekDetail({ weekId, userTimezone = ORG_TIMEZONE }
 
       const { data: players, error } = await query
 
-      console.log('Fetched players:', players)
-      console.log('Error:', error)
-
       if (error) throw error
       setAvailablePlayers(players || [])
     } catch (error) {

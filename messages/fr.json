@@ -1075,9 +1075,21 @@
     "totalDeaths": "Total des morts",
     "totalAssists": "Total des assists",
     "avgACSShort": "ACS Moy.",
+    "mapStatistics": "Statistiques par carte",
+    "teamPerformanceByMap": "Performance de l'équipe par carte",
+    "performanceByMap": "performance par carte",
+    "allTeamsPerformanceByMap": "Performance de toutes les équipes par carte",
+    "mapsPlayed": "cartes jouées",
+    "avgRoundsWon": "Moy. Rounds Gagnés",
+    "avgRoundsLost": "Moy. Rounds Perdus",
+    "faceitMapData": "Statistiques de carte FACEIT agrégées des joueurs de l'équipe",
+    "aggregatedFromPlayers": "Données agrégées de {count} joueur(s)",
+    "manualMatchRecording": "Enregistrement manuel de match",
+    "recordMatchesNotOnFaceit": "Enregistrer les matchs qui n'ont pas été joués sur FACEIT",
     "noStatsForMatch": "Aucune statistique de joueur enregistrée pour ce match",
     "wins": "Victoires",
-    "losses": "Défaites"
+    "losses": "Défaites",
+    "draws": "Nuls"
   },
   "days": {
     "monday": "Lundi",

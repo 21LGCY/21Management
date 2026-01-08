@@ -91,8 +91,21 @@ export default function UserForm({ userId }: UserFormProps) {
       const selectedTeam = teams.find(t => t.id === formData.team_id)
       if (selectedTeam?.game) {
         setGameType(selectedTeam.game)
-        setFormData(prev => ({ ...prev, game: selectedTeam.game }))
+        setFormData(prev => ({ 
+          ...prev, 
+          game: selectedTeam.game,
+          // Reset position when game changes to avoid mismatched role/game combinations
+          position: prev.game !== selectedTeam.game ? '' : prev.position
+        }))
       }
+    } else {
+      // Reset to default game when no team is selected
+      setGameType(DEFAULT_GAME)
+      setFormData(prev => ({ 
+        ...prev, 
+        game: DEFAULT_GAME,
+        position: '' // Clear position when no team
+      }))
     }
   }, [formData.team_id, teams])
 

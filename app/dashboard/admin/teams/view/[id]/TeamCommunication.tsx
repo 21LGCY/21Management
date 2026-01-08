@@ -60,8 +60,6 @@ export default function TeamCommunication({
           table: 'team_messages',
         },
         (payload) => {
-          console.log('Real-time update:', payload) // Debug log
-          
           // Filter for this team, section, and map
           const message = payload.new as TeamMessage
           const matchesFilter = 
@@ -221,8 +219,6 @@ export default function TeamCommunication({
 
       const result = await response.json()
 
-      console.log('Cloudinary response:', result) // Debug log
-
       if (!response.ok) {
         console.error('Cloudinary error:', result)
         throw new Error(result.error?.message || JSON.stringify(result))
@@ -267,8 +263,6 @@ export default function TeamCommunication({
     if (!confirm('Delete this message?')) return
 
     try {
-      console.log('Attempting to delete message:', messageId)
-      
       // Get message first to check for image
       const { data: message } = await supabase
         .from('team_messages')
@@ -276,26 +270,19 @@ export default function TeamCommunication({
         .eq('id', messageId)
         .single()
 
-      console.log('Message to delete:', message)
-      console.log('Current user ID:', userId)
-
       // Delete from database directly (using client, not server action)
       const { data: deleteData, error: deleteError } = await supabase
         .from('team_messages')
         .delete()
         .eq('id', messageId)
 
-      console.log('Delete response:', { data: deleteData, error: deleteError })
-
       if (deleteError) {
-        console.error('Delete error:', deleteError)
+        console.error('Error deleting message:', deleteError)
         throw deleteError
       }
 
       // Immediately remove from local state for instant feedback
       setMessages(prev => prev.filter(m => m.id !== messageId))
-
-      console.log('Message deleted successfully from UI')
 
       // Delete from Cloudinary if it has an image (optional, non-blocking)
       if (message?.image_url) {

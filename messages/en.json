@@ -1048,9 +1048,21 @@
     "totalDeaths": "Total Deaths",
     "totalAssists": "Total Assists",
     "avgACSShort": "Avg ACS",
+    "mapStatistics": "Map Statistics",
+    "teamPerformanceByMap": "Team performance by map",
+    "performanceByMap": "performance by map",
+    "allTeamsPerformanceByMap": "All teams performance by map",
+    "mapsPlayed": "maps played",
+    "avgRoundsWon": "Avg Rounds Won",
+    "avgRoundsLost": "Avg Rounds Lost",
+    "faceitMapData": "FACEIT map statistics aggregated from team players",
+    "aggregatedFromPlayers": "Data aggregated from {count} player(s)",
+    "manualMatchRecording": "Manual Match Recording",
+    "recordMatchesNotOnFaceit": "Record matches that were not played on FACEIT",
     "noStatsForMatch": "No player statistics recorded for this match",
     "wins": "Wins",
-    "losses": "Losses"
+    "losses": "Losses",
+    "draws": "Draws"
   },
   "days": {
     "monday": "Monday",

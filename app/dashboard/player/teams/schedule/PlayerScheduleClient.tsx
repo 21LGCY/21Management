@@ -169,7 +169,6 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
     if (error) {
       console.error('Error fetching activities:', error)
     } else if (data) {
-      console.log('Loaded activities:', data)
       setActivities(data)
     }
     setLoading(false)

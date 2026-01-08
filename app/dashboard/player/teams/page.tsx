@@ -27,11 +27,6 @@ export default async function PlayerTeamsPage() {
     .order('is_substitute', { ascending: true })
     .order('created_at', { ascending: true })
 
-  console.log('Current player team_id:', playerData?.team_id)
-  console.log('Team players found:', teamPlayers?.length || 0)
-  console.log('Team players:', teamPlayers)
-  console.log('Team players error:', teamPlayersError)
-
   // Filter players from the results
   const actualPlayers = teamPlayers?.filter(p => p.role === 'player') || []
   const actualStaff = teamPlayers?.filter(p => p.role === 'manager') || []

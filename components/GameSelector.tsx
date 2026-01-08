@@ -85,7 +85,7 @@ export function GameSelectorWithLogo({
         onClick={() => onChange('valorant')}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
           value === 'valorant'
-            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30'
+            ? 'bg-dark-card border-2 border-red-500 text-white shadow-lg shadow-red-500/30'
             : 'bg-dark-card border border-gray-800 text-gray-400 hover:text-white hover:border-red-500/50'
         }`}
       >
@@ -95,7 +95,7 @@ export function GameSelectorWithLogo({
             alt="Valorant"
             width={24}
             height={24}
-            className={`object-contain ${value === 'valorant' ? 'brightness-0 invert' : 'brightness-75'}`}
+            className={`object-contain ${value === 'valorant' ? '' : 'brightness-75 opacity-60'}`}
           />
         </div>
         <span>Valorant</span>
@@ -105,7 +105,7 @@ export function GameSelectorWithLogo({
         onClick={() => onChange('cs2')}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
           value === 'cs2'
-            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30'
+            ? 'bg-dark-card border-2 border-orange-500 text-white shadow-lg shadow-orange-500/30'
             : 'bg-dark-card border border-gray-800 text-gray-400 hover:text-white hover:border-orange-500/50'
         }`}
       >
@@ -115,7 +115,7 @@ export function GameSelectorWithLogo({
             alt="CS2"
             width={24}
             height={24}
-            className={`object-contain ${value === 'cs2' ? 'brightness-0 invert' : 'brightness-75'}`}
+            className={`object-contain ${value === 'cs2' ? '' : 'brightness-75 opacity-60'}`}
           />
         </div>
         <span>CS2</span>
