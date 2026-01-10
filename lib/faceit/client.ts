@@ -122,6 +122,8 @@ class FaceitApiClient {
       totalDeaths: parseInt(lifetime['Deaths'] || lifetime['Total Deaths'] || lifetime['deaths'] || '0', 10),
       longestWinStreak: parseInt(lifetime['Longest Win Streak'] || lifetime['longest_win_streak'] || '0', 10),
       currentStreak: parseInt(lifetime['Current Win Streak'] || lifetime['current_win_streak'] || '0', 10),
+      adr: parseFloat(lifetime['Average Damage per Round'] || lifetime['ADR'] || lifetime['adr'] || '0'),
+      killsPerRound: parseFloat(lifetime['Kills per Round'] || lifetime['K/R'] || lifetime['kr'] || '0'),
       segments: stats?.segments || [],
     }
   }

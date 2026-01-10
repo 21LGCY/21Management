@@ -184,7 +184,7 @@ export default function FaceitStatsCard({
       </div>
 
       {/* Stats Grid */}
-      <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
         <div className="text-center p-3 bg-dark/50 rounded-lg">
           <Trophy className="w-5 h-5 text-yellow-400 mx-auto mb-2" />
           <p className="text-2xl font-bold text-white">{currentStats.wins}</p>
@@ -207,6 +207,18 @@ export default function FaceitStatsCard({
           <Crosshair className="w-5 h-5 text-red-400 mx-auto mb-2" />
           <p className="text-2xl font-bold text-white">{currentStats.headshotPercentage}%</p>
           <p className="text-xs text-gray-400">{t('headshots')}</p>
+        </div>
+
+        <div className="text-center p-3 bg-dark/50 rounded-lg">
+          <Target className="w-5 h-5 text-purple-400 mx-auto mb-2" />
+          <p className="text-2xl font-bold text-white">{currentStats.adr.toFixed(1)}</p>
+          <p className="text-xs text-gray-400">ADR</p>
+        </div>
+
+        <div className="text-center p-3 bg-dark/50 rounded-lg">
+          <Crosshair className="w-5 h-5 text-pink-400 mx-auto mb-2" />
+          <p className="text-2xl font-bold text-white">{currentStats.killsPerRound.toFixed(2)}</p>
+          <p className="text-xs text-gray-400">K/R</p>
         </div>
       </div>
 

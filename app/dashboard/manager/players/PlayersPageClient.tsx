@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
-import { Users, Search, Plus, Mail, Phone, MapPin, Trophy, Target, Award, Activity, Star } from 'lucide-react'
+import { Users, Search, Plus, Mail, Phone, MapPin, Trophy, Target, Award, Activity, Star, Calendar, Clock } from 'lucide-react'
 import Link from 'next/link'
 import CustomSelect from '@/components/CustomSelect'
 import { useTranslations } from 'next-intl'
@@ -29,6 +29,25 @@ const getRankImage = (rank: string | undefined | null, game: GameType = 'valoran
   return null
 }
 
+// Helper to calculate availability percentage
+const calculateAvailability = (timeSlots: any): number => {
+  if (!timeSlots) return 0
+  
+  let totalSlots = 0
+  let availableSlots = 0
+  
+  Object.values(timeSlots).forEach((daySlots: any) => {
+    if (daySlots && typeof daySlots === 'object') {
+      Object.values(daySlots).forEach((available) => {
+        totalSlots++
+        if (available === true) availableSlots++
+      })
+    }
+  })
+  
+  return totalSlots > 0 ? Math.round((availableSlots / totalSlots) * 100) : 0
+}
+
 interface Player {
   id: string
   username: string
@@ -47,26 +66,43 @@ interface Player {
   created_at: string
   // CS2-specific fields
   faceit_level?: number
+  faceit_stats?: any
   steam_url?: string
   faceit_url?: string
   tracker_url?: string
   teams?: { name: string; game?: string }
 }
 
+interface PlayerAvailability {
+  player_id: string
+  time_slots: any
+  week_start: string
+}
+
 interface PlayersPageProps {
   players: Player[]
+  playerAvailabilities: PlayerAvailability[]
   user: any
   team: any
   gameType: GameType
 }
 
-export default function PlayersPageClient({ players, user, team, gameType }: PlayersPageProps) {
+export default function PlayersPageClient({ players, playerAvailabilities, user, team, gameType }: PlayersPageProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [rankFilter, setRankFilter] = useState('')
   const t = useTranslations('players')
   const tCommon = useTranslations('common')
   const gameConfig = getGameConfig(gameType)
+
+  // Create a map of player availability
+  const availabilityMap = useMemo(() => {
+    const map = new Map<string, number>()
+    playerAvailabilities.forEach(avail => {
+      map.set(avail.player_id, calculateAvailability(avail.time_slots))
+    })
+    return map
+  }, [playerAvailabilities])
 
   const filteredPlayers = useMemo(() => {
     return players.filter(player => {
@@ -195,7 +231,10 @@ export default function PlayersPageClient({ players, user, team, gameType }: Pla
         {/* Players Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPlayers.length > 0 ? (
-            filteredPlayers.map((player) => (
+            filteredPlayers.map((player) => {
+              const availability = availabilityMap.get(player.id) ?? null
+              
+              return (
               <div
                 key={player.id}
                 className="bg-gradient-to-br from-dark-card to-dark border border-gray-800 rounded-xl p-6 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/10 group"
@@ -251,30 +290,34 @@ export default function PlayersPageClient({ players, user, team, gameType }: Pla
                       </p>
                       <div className="flex items-center gap-2">
                         {gameType === 'cs2' ? (
-                          // CS2: Show Faceit Level
+                          // CS2: Show Faceit Level with larger icon
                           player.faceit_level ? (
-                            <>
+                            <div className="flex items-center gap-2">
                               <img 
                                 src={getFaceitLevelImage(player.faceit_level)} 
                                 alt={`Level ${player.faceit_level}`}
-                                className="w-6 h-6"
+                                className="w-8 h-8"
                               />
-                              <p className="text-white font-semibold text-sm">Level {player.faceit_level}</p>
-                            </>
+                              <p className="text-white font-semibold text-sm">Lvl {player.faceit_level}</p>
+                            </div>
                           ) : (
                             <p className="text-gray-400 font-semibold text-sm">{player.rank || t('unranked')}</p>
                           )
                         ) : (
-                          // Valorant: Show Rank
+                          // Valorant: Show Rank with larger icon
                           <>
                             {getRankImage(player.rank, gameType) ? (
-                              <img 
-                                src={getRankImage(player.rank, gameType)!} 
-                                alt={player.rank}
-                                className="w-6 h-6"
-                              />
-                            ) : null}
-                            <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
+                              <>
+                                <img 
+                                  src={getRankImage(player.rank, gameType)!} 
+                                  alt={player.rank}
+                                  className="w-8 h-8"
+                                />
+                                <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
+                              </>
+                            ) : (
+                              <p className="text-white font-semibold text-sm">{player.rank || t('unranked')}</p>
+                            )}
                           </>
                         )}
                       </div>
@@ -295,6 +338,20 @@ export default function PlayersPageClient({ players, user, team, gameType }: Pla
                       </p>
                     </div>
                   </div>
+
+                  {/* FACEIT Stats - Only for CS2 with linked FACEIT */}
+                  {gameType === 'cs2' && player.faceit_stats && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
+                        <p className="text-gray-400 text-xs mb-1.5">ADR</p>
+                        <p className="text-white font-semibold text-lg">{player.faceit_stats.adr?.toFixed(1) || '0.0'}</p>
+                      </div>
+                      <div className="p-3 bg-dark/50 rounded-lg border border-gray-800">
+                        <p className="text-gray-400 text-xs mb-1.5">K/R</p>
+                        <p className="text-white font-semibold text-lg">{player.faceit_stats.killsPerRound?.toFixed(2) || '0.00'}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Agent Pool - Only for Valorant */}
                   {gameType === 'valorant' && player.champion_pool && player.champion_pool.length > 0 && (
@@ -380,6 +437,41 @@ export default function PlayersPageClient({ players, user, team, gameType }: Pla
                   )}
                 </div>
 
+                {/* Availability Indicator */}
+                {availability !== null && (
+                  <div className="mt-4 pt-4 border-t border-gray-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs text-gray-400">{t('weeklyAvailability') || 'Disponibilité'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${
+                          availability >= 70 ? 'bg-green-500/20 text-green-300 border border-green-500/40' :
+                          availability >= 40 ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
+                          availability > 0 ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+                          'bg-gray-700/50 text-gray-400 border border-gray-600/50'
+                        }`}>
+                          <Clock className="w-3 h-3" />
+                          <span>{availability}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Visual progress bar */}
+                    <div className="mt-2 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all ${
+                          availability >= 70 ? 'bg-green-500' :
+                          availability >= 40 ? 'bg-yellow-500' :
+                          availability > 0 ? 'bg-orange-500' :
+                          'bg-gray-600'
+                        }`}
+                        style={{ width: `${availability}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Join Date */}
                 <div className="mt-4 pt-4 border-t border-gray-800">
                   <div className="flex justify-between items-center text-xs">
@@ -388,7 +480,8 @@ export default function PlayersPageClient({ players, user, team, gameType }: Pla
                   </div>
                 </div>
               </div>
-            ))
+            )
+            })
           ) : (
             <div className="col-span-full text-center py-16">
               <div className="w-20 h-20 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-6">

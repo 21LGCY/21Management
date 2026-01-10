@@ -278,6 +278,8 @@
     "yourTeamActivities": "Les activités à venir de votre équipe",
     "viewSchedule": "Voir le Planning",
     "noActivitiesScheduled": "Aucune activité planifiée",
+    "hour": "heure",
+    "hours": "heures",
     "showingUpcoming": "Affichage de {count} {count, plural, one {activité} other {activités}} à venir",
     "quickTeamStats": "Stats Rapides",
     "mainRoster": "Effectif Principal",
@@ -407,7 +409,8 @@
     "notSet": "Non défini",
     "inGameLeader": "IGL",
     "substitutePlayer": "SUB",
-    "followOnSocial": "Suivre sur les réseaux sociaux"
+    "followOnSocial": "Suivre sur les réseaux sociaux",
+    "weeklyAvailability": "Disponibilité"
   },
   "tryouts": {
     "title": "Gestion des Tryouts",

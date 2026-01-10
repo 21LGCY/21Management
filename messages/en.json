@@ -269,6 +269,8 @@
     "yourTeamActivities": "Your team's upcoming activities",
     "viewSchedule": "View Schedule",
     "noActivitiesScheduled": "No activities scheduled",
+    "hour": "hour",
+    "hours": "hours",
     "showingUpcoming": "Showing {count} upcoming {count, plural, one {activity} other {activities}}",
     "quickTeamStats": "Quick Team Stats",
     "mainRoster": "Main Roster",
@@ -398,7 +400,8 @@
     "notSet": "Not set",
     "inGameLeader": "IGL",
     "substitutePlayer": "SUB",
-    "followOnSocial": "Follow on social media"
+    "followOnSocial": "Follow on social media",
+    "weeklyAvailability": "Availability"
   },
   "tryouts": {
     "title": "Tryout Management",

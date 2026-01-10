@@ -51,6 +51,10 @@ export interface FaceitLifetimeStats {
   'K/D Ratio'?: string
   'Longest Win Streak'?: string
   'Current Win Streak'?: string
+  'Average Damage per Round'?: string
+  'ADR'?: string
+  'Kills per Round'?: string
+  'K/R'?: string
   // Allow additional stats
   [key: string]: string | undefined
 }
@@ -177,6 +181,8 @@ export interface FormattedFaceitStats {
   totalDeaths: number
   longestWinStreak: number
   currentStreak: number
+  adr: number
+  killsPerRound: number
   segments?: FaceitSegmentStats[]
   // Timestamps
   linkedAt?: string
