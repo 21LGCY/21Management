@@ -36,15 +36,15 @@ export default function StratMapSelection({ teamId, gameType = 'valorant' }: Str
             >
               <div className="aspect-video relative">
                 <Image
-                  src={`/images/${gameType}/${map.toLowerCase()}.webp`}
+                  src={`/images/${gameType}/${gameType === 'cs2' ? map : map.toLowerCase()}.webp`}
                   alt={map}
                   fill
                   className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   onError={(e) => {
-                    // Fallback to old path for backward compatibility
+                    // Fallback if image not found
                     const target = e.target as HTMLImageElement
-                    target.src = `/images/${map.toLowerCase()}.webp`
+                    target.style.display = 'none'
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
