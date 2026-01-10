@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MatchHistory } from '@/lib/types/database'
+import { MatchHistory, MatchType } from '@/lib/types/database'
 import Link from 'next/link'
 import { MessageSquare, Calendar, Trophy, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -29,7 +29,6 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
         .from('match_history')
         .select('*')
         .eq('team_id', teamId)
-        .in('match_type', ['Scrim', 'Other']) // Assuming 'Other' can be praccs
         .order('match_date', { ascending: false })
 
       if (error) throw error
@@ -56,6 +55,17 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
       case 'loss': return t('defeat')
       case 'draw': return t('draw')
       default: return t('noResult')
+    }
+  }
+
+  const getMatchTypeLabel = (matchType?: MatchType) => {
+    switch (matchType) {
+      case 'Scrim': return tMatches('scrim')
+      case 'Tournament': return tMatches('tournament')
+      case 'Qualifier': return tMatches('qualifier')
+      case 'League': return tMatches('league')
+      case 'Other': return tMatches('other')
+      default: return t('practice')
     }
   }
 
@@ -106,7 +116,7 @@ export default function PraccsReviewSelection({ teamId }: PraccsReviewSelectionP
                       </span>
                     </div>
                     <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded">
-                      {match.match_type === 'Scrim' ? tMatches('scrim') : t('practice')}
+                      {getMatchTypeLabel(match.match_type)}
                     </span>
                   </div>
 

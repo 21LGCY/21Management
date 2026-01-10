@@ -298,12 +298,12 @@ export default function MatchDetailsClient({ matchId, teamId, userId, userName, 
         )}
       </div>
 
-      {/* Practice Review Section - Only for Scrims/Praccs */}
-      {match && (match.match_type === 'Scrim' || match.match_type === 'Other') && (
+      {/* Match Review Section - Available for All Match Types */}
+      {match && (
         <div className="bg-dark-card border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <MessageSquare className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold text-white">Practice Review</h2>
+            <h2 className="text-2xl font-bold text-white">Match Review</h2>
           </div>
           <TeamCommunication
             teamId={teamId}
