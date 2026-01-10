@@ -132,17 +132,25 @@ export async function DELETE(
     }
 
     // Delete the activity
-    const { error } = await supabase
+    const { data, error, count } = await supabase
       .from('schedule_activities')
       .delete()
       .eq('id', id)
+      .select()
 
     if (error) {
       console.error('Error deleting schedule activity:', error)
       return NextResponse.json({ error: 'Failed to delete schedule activity' }, { status: 500 })
     }
 
-    return NextResponse.json({ message: 'Activity deleted successfully' })
+    // Check if any row was actually deleted
+    if (!data || data.length === 0) {
+      console.error('No activity was deleted - activity may not exist')
+      return NextResponse.json({ error: 'Activity not found or already deleted' }, { status: 404 })
+    }
+
+    console.log('Activity deleted successfully:', id)
+    return NextResponse.json({ message: 'Activity deleted successfully', deletedId: id })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

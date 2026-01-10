@@ -131,6 +131,9 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
   const [weekDates, setWeekDates] = useState<string[]>([])
   const [selectedActivity, setSelectedActivity] = useState<ScheduleActivity | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
+  const [playerAvailabilities, setPlayerAvailabilities] = useState<any[]>([])
+  const [totalPlayers, setTotalPlayers] = useState(0)
+  const [showAvailabilityDetails, setShowAvailabilityDetails] = useState<{day: string, timeSlot: string} | null>(null)
   const t = useTranslations('schedule')
 
   // Convert time slots to user's timezone for display
@@ -153,8 +156,68 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
   }, [currentWeekOffset])
 
   useEffect(() => {
-    fetchActivities()
+    const loadInitialData = async () => {
+      const supabase = createClient()
+      
+      // Fetch team players count
+      const { data: playersData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('team_id', teamId)
+        .eq('role', 'player')
+      
+      if (playersData) {
+        setTotalPlayers(playersData.length)
+      }
+      
+      await fetchActivities()
+    }
+    
+    loadInitialData()
   }, [teamId])
+
+  // Fetch player availabilities when week changes
+  useEffect(() => {
+    const fetchPlayerAvailabilities = async () => {
+      if (weekDates.length === 0) return
+      
+      const weekStart = weekDates[0]
+      const supabase = createClient()
+      
+      const { data: availData, error: availError } = await supabase
+        .from('player_weekly_availability')
+        .select('*')
+        .eq('team_id', teamId)
+        .eq('week_start', weekStart)
+      
+      if (availError) {
+        console.error('Error fetching availabilities:', availError)
+        return
+      }
+      
+      if (!availData || availData.length === 0) {
+        setPlayerAvailabilities([])
+        return
+      }
+      
+      // Fetch player details in parallel
+      const playerIds = availData.map(a => a.player_id)
+      const { data: playerData } = await supabase
+        .from('profiles')
+        .select('id, username, in_game_name, avatar_url')
+        .in('id', playerIds)
+      
+      // Merge the data
+      const mergedData = availData.map(avail => ({
+        ...avail,
+        player: playerData?.find(p => p.id === avail.player_id)
+      }))
+      
+      setPlayerAvailabilities(mergedData)
+    }
+    
+    fetchPlayerAvailabilities()
+  }, [weekDates, teamId])
 
   const fetchActivities = async () => {
     const supabase = createClient()
@@ -172,6 +235,60 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
       setActivities(data)
     }
     setLoading(false)
+  }
+
+  const convertTimeSlotToHour = (timeSlot: string): number | null => {
+    // Convert "1:00 PM" to 13, "12:00 AM" to 0, etc.
+    const match = timeSlot.match(/(\d+):00 (AM|PM)/)
+    if (!match) return null
+    
+    let hour = parseInt(match[1])
+    const period = match[2]
+    
+    if (period === 'AM' && hour === 12) hour = 0
+    else if (period === 'PM' && hour !== 12) hour += 12
+    
+    return hour
+  }
+
+  const getAvailablePlayersForSlot = (day: string, timeSlot: string): number => {
+    const dayKey = day.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+    const timeHour = convertTimeSlotToHour(timeSlot)
+    
+    if (timeHour === null) return 0
+    
+    let availableCount = 0
+    
+    playerAvailabilities.forEach((availability) => {
+      const timeSlots = availability.time_slots || {}
+      const daySlots = timeSlots[dayKey] || {}
+      
+      if (daySlots[timeHour] === true) {
+        availableCount++
+      }
+    })
+    
+    return availableCount
+  }
+
+  const getAvailablePlayersDetails = (day: string, timeSlot: string) => {
+    const dayKey = day.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+    const timeHour = convertTimeSlotToHour(timeSlot)
+    
+    if (timeHour === null) return []
+    
+    const available: any[] = []
+    
+    playerAvailabilities.forEach(availability => {
+      const timeSlots = availability.time_slots || {}
+      const daySlots = timeSlots[dayKey] || {}
+      
+      if (daySlots[timeHour] === true && availability.player) {
+        available.push(availability.player)
+      }
+    })
+    
+    return available
   }
 
   const getActivityForSlot = (dayKey: string, timeSlot: string, date: string): ScheduleActivity | undefined => {
@@ -337,12 +454,67 @@ export default function PlayerScheduleClient({ teamId, teamName, userTimezone }:
                   {dayKeys.map((dayKey, dayIndex) => {
                     const activity = getActivityForSlot(dayKey, timeSlot, weekDates[dayIndex])
                     const activityInfo = activity ? getActivityConfig(activity.type) : null
+                    const availablePlayers = getAvailablePlayersForSlot(dayKey, timeSlot)
+                    const availabilityPercentage = totalPlayers > 0 ? (availablePlayers / totalPlayers) * 100 : 0
 
                     return (
                       <div
                         key={`${dayKey}-${timeSlot}`}
-                        className="p-2 min-h-[80px] border-l border-gray-700/50 bg-gray-900/20"
+                        className="p-2 min-h-[80px] border-l border-gray-700/50 bg-gray-900/20 relative"
+                        onMouseLeave={() => setShowAvailabilityDetails(null)}
                       >
+                        {/* Player Availability Indicator */}
+                        {totalPlayers > 0 && (
+                          <div 
+                            className="absolute top-1 right-1 z-20 flex items-center gap-1"
+                            onMouseEnter={() => setShowAvailabilityDetails({day: dayKey, timeSlot})}
+                          >
+                            <div className={`px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1 ${
+                              availabilityPercentage >= 70 ? 'bg-green-500/30 text-green-300 border border-green-400/50' :
+                              availabilityPercentage >= 40 ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-400/50' :
+                              availabilityPercentage > 0 ? 'bg-orange-500/30 text-orange-300 border border-orange-400/50' :
+                              'bg-gray-700/50 text-gray-400 border border-gray-600/50'
+                            }`}>
+                              <Users className="w-3 h-3" />
+                              <span>{availablePlayers}/{totalPlayers}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Availability Details Tooltip */}
+                        {showAvailabilityDetails?.day === dayKey && showAvailabilityDetails?.timeSlot === timeSlot && (
+                          <div className="absolute top-8 right-1 z-30 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl p-3 min-w-[200px] max-w-[280px]">
+                            <div className="text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              {t('availablePlayers')} ({availablePlayers}/{totalPlayers})
+                            </div>
+                            {availablePlayers > 0 ? (
+                              <div className="space-y-1 max-h-48 overflow-y-auto">
+                                {getAvailablePlayersDetails(dayKey, timeSlot).map((player: any) => (
+                                  <div key={player.id} className="flex items-center gap-2 p-1.5 bg-gray-700/50 rounded text-xs text-gray-300">
+                                    {player.avatar_url ? (
+                                      <img 
+                                        src={player.avatar_url} 
+                                        alt={player.username}
+                                        className="w-5 h-5 rounded-full"
+                                      />
+                                    ) : (
+                                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                                        <span className="text-[8px] text-primary font-semibold">
+                                          {player.username.substring(0, 2).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <span className="truncate">{player.in_game_name || player.username}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-gray-400">{t('noPlayersAvailableSlot')}</p>
+                            )}
+                          </div>
+                        )}
+
                         {activity && activityInfo && (
                           <div
                             onClick={() => openActivityDetails(activity)}

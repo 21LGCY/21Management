@@ -183,6 +183,7 @@ export interface FormattedFaceitStats {
   currentStreak: number
   adr: number
   killsPerRound: number
+  totalRounds: number
   segments?: FaceitSegmentStats[]
   // Timestamps
   linkedAt?: string

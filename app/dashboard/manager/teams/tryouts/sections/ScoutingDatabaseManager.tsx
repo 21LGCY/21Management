@@ -221,7 +221,10 @@ export default function ScoutingDatabaseManager({ teamId, team, teamCategory }: 
     if (gameType === 'cs2') {
       // For CS2, use faceit level
       if (tryout.faceit_level) {
-        return `/images/cs2/faceit_${tryout.faceit_level}.svg`
+        // Only levels 8, 9, 10 have SVG files, use 8 as fallback
+        const availableLevels = [8, 9, 10]
+        const validLevel = availableLevels.includes(tryout.faceit_level) ? tryout.faceit_level : 8
+        return `/images/cs2/faceit_${validLevel}.svg`
       }
       return null
     }

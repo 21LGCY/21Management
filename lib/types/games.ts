@@ -221,9 +221,14 @@ export const getRanksForGame = (game: GameType): readonly string[] => {
 
 /**
  * Get Faceit level image path
+ * Note: Only levels 8, 9, 10 have SVG files available
+ * Other levels will use level 8 as fallback to avoid 404 errors
  */
 export const getFaceitLevelImage = (level: number): string => {
-  return `/images/cs2/faceit_${level}.svg`
+  // Only levels 8, 9, 10 have actual SVG files
+  const availableLevels = [8, 9, 10]
+  const validLevel = availableLevels.includes(level) ? level : 8
+  return `/images/cs2/faceit_${validLevel}.svg`
 }
 
 /**

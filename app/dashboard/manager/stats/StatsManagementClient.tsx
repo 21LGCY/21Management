@@ -418,6 +418,13 @@ export default function StatsManagementClient({ user, teamId, teamName, teamGame
                       .sort((a, b) => (b.faceit_elo || 0) - (a.faceit_elo || 0))
                       .map((player, index) => {
                         const stats = player.faceit_stats
+                        
+                        // Debug: Log stats to console to check if ADR and K/R are present
+                        if (index === 0) {
+                          console.log('Player stats:', stats)
+                          console.log('ADR:', stats?.adr, 'K/R:', stats?.killsPerRound)
+                        }
+                        
                         const levelColor = player.faceit_level >= 8 ? 'from-red-600 to-orange-500' :
                                           player.faceit_level >= 5 ? 'from-orange-500 to-yellow-500' :
                                           player.faceit_level >= 3 ? 'from-yellow-500 to-green-500' :
@@ -503,6 +510,18 @@ export default function StatsManagementClient({ user, teamId, teamName, teamGame
                               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 text-center">
                                 <p className="text-[10px] text-gray-400 uppercase mb-1">Matches</p>
                                 <p className="text-sm font-bold text-yellow-400">{stats?.matches || 0}</p>
+                              </div>
+                            </div>
+
+                            {/* Secondary Stats Grid - ADR and K/R */}
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-400 uppercase mb-1">ADR</p>
+                                <p className="text-sm font-bold text-pink-400">{stats?.adr?.toFixed(1) || '-'}</p>
+                              </div>
+                              <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-400 uppercase mb-1">K/R</p>
+                                <p className="text-sm font-bold text-cyan-400">{stats?.killsPerRound?.toFixed(2) || '-'}</p>
                               </div>
                             </div>
 

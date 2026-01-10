@@ -68,40 +68,23 @@ export default function PlayerTeamsClient({
     try {
       setLoadingActivities(true)
       
-      // Get current date and time
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const currentDay = today.getDay() // 0 = Sunday, 1 = Monday, etc.
-      
-      // Get next 3 weeks of dates
-      const dateRange: string[] = []
-      for (let i = 0; i < 21; i++) {
-        const date = new Date(today)
-        date.setDate(today.getDate() + i)
-        dateRange.push(date.toISOString().split('T')[0])
-      }
+      // Get current date
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
 
-      // Fetch all activities for the team
+      // Fetch activities for the team - only future dated activities or recurring ones (null date)
       const { data, error } = await supabase
         .from('schedule_activities')
         .select('*')
         .eq('team_id', teamId)
+        .or(`activity_date.gte.${today},activity_date.is.null`)
 
       if (error) {
         console.error('Error fetching activities:', error)
         throw error
       }
       
-      // Filter and sort activities
+      // Sort and limit activities
       const upcomingActivities = (data || [])
-        .filter(activity => {
-          // If activity has specific date, check if it's in the next 3 weeks
-          if (activity.activity_date) {
-            return dateRange.includes(activity.activity_date)
-          }
-          // For recurring activities, include all
-          return true
-        })
         .sort((a, b) => {
           // Sort by date if available, otherwise by day of week
           if (a.activity_date && b.activity_date) {

@@ -455,12 +455,22 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
         fetch(`/api/schedule/${activityId}`, { method: 'DELETE' })
       )
 
-      await Promise.all(promises)
+      const responses = await Promise.all(promises)
       
-      setActivities(activities.filter(a => !activitiesToDelete.has(a.id)))
+      // Check if all deletions were successful
+      const failedDeletions = responses.filter(r => !r.ok)
+      if (failedDeletions.length > 0) {
+        console.error(`Failed to delete ${failedDeletions.length} activities`)
+        alert(`Erreur: ${failedDeletions.length} activité(s) n'ont pas pu être supprimée(s)`)
+      }
+      
+      // Only remove successfully deleted activities from state
+      const successfulDeletions = Array.from(activitiesToDelete).filter((_, index) => responses[index].ok)
+      setActivities(activities.filter(a => !successfulDeletions.includes(a.id)))
       setActivitiesToDelete(new Set())
     } catch (error) {
       console.error('Error deleting activities:', error)
+      alert('Erreur lors de la suppression des activités')
     }
   }
 
@@ -635,11 +645,18 @@ export default function ScheduleManagementClient({ team, user, userTimezone }: S
       })
 
       if (response.ok) {
+        const data = await response.json()
+        console.log('Activity deleted:', data)
         setActivities(activities.filter(a => a.id !== id))
         closeActivityModal()
+      } else {
+        const error = await response.json()
+        console.error('Failed to delete activity:', error)
+        alert(`Erreur lors de la suppression: ${error.error || 'Erreur inconnue'}`)
       }
     } catch (error) {
       console.error('Error deleting activity:', error)
+      alert('Erreur lors de la suppression de l\'activité')
     }
   }
 

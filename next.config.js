@@ -34,6 +34,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cldlwdgvlnajothqcjfx.supabase.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.faceit.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'distribution-us-east-1.faceit.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.faceit.com',
+      },
     ],
   },
   async headers() {

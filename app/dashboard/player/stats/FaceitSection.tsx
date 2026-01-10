@@ -195,8 +195,9 @@ export default function FaceitSection({
           </div>
         </div>
 
-        {/* Secondary Stats - 3 columns */}
+        {/* Secondary Stats - 3x2 grid */}
         <div className="grid grid-cols-3 gap-4">
+          {/* Row 1 */}
           {/* Matches */}
           <div className="bg-dark/50 border border-gray-800 rounded-xl p-4">
             <div className="flex items-center justify-between">
@@ -224,6 +225,40 @@ export default function FaceitSection({
               <Crosshair className="w-4 h-4 text-yellow-400" />
             </div>
             <p className="text-2xl font-bold text-white mt-2">{faceitStats?.headshotPercentage || '-'}%</p>
+          </div>
+
+          {/* Row 2 */}
+          {/* ADR */}
+          <div className="bg-gradient-to-br from-pink-500/20 to-pink-500/5 border border-pink-500/30 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">ADR</span>
+              <Target className="w-4 h-4 text-pink-400" />
+            </div>
+            <p className="text-2xl font-bold text-pink-400 mt-2">
+              {faceitStats?.adr ? faceitStats.adr.toFixed(1) : '-'}
+            </p>
+          </div>
+
+          {/* K/R */}
+          <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 border border-cyan-500/30 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">K/R</span>
+              <Crosshair className="w-4 h-4 text-cyan-400" />
+            </div>
+            <p className="text-2xl font-bold text-cyan-400 mt-2">
+              {faceitStats?.killsPerRound ? faceitStats.killsPerRound.toFixed(2) : '-'}
+            </p>
+          </div>
+
+          {/* Total Kills */}
+          <div className="bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 border border-indigo-500/30 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Total Kills</span>
+              <Crosshair className="w-4 h-4 text-indigo-400" />
+            </div>
+            <p className="text-2xl font-bold text-indigo-400 mt-2">
+              {faceitStats?.totalKills ? faceitStats.totalKills.toLocaleString() : '-'}
+            </p>
           </div>
         </div>
 

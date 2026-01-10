@@ -100,6 +100,11 @@ class FaceitApiClient {
     const cs2Game = player.games?.[CS2_GAME_ID]
     const lifetime = stats?.lifetime || {}
 
+    // Calculate K/R from total kills and total rounds
+    const totalKills = parseInt(lifetime['Total Kills with extended stats'] || '0', 10)
+    const totalRounds = parseInt(lifetime['Total Rounds with extended stats'] || '0', 10)
+    const killsPerRound = totalRounds > 0 ? totalKills / totalRounds : 0
+
     return {
       playerId: player.player_id,
       nickname: player.nickname,
@@ -118,12 +123,13 @@ class FaceitApiClient {
       kdRatio: parseFloat(lifetime['K/D Ratio'] || lifetime['kd_ratio'] || '0'),
       avgKdRatio: parseFloat(lifetime['Average K/D Ratio'] || lifetime['avg_kd_ratio'] || '0'),
       headshotPercentage: parseFloat(lifetime['Average Headshots %'] || lifetime['Total Headshots %'] || lifetime['headshots_per_match'] || '0'),
-      totalKills: parseInt(lifetime['Kills'] || lifetime['Total Kills'] || lifetime['kills'] || '0', 10),
+      totalKills: totalKills,
       totalDeaths: parseInt(lifetime['Deaths'] || lifetime['Total Deaths'] || lifetime['deaths'] || '0', 10),
       longestWinStreak: parseInt(lifetime['Longest Win Streak'] || lifetime['longest_win_streak'] || '0', 10),
       currentStreak: parseInt(lifetime['Current Win Streak'] || lifetime['current_win_streak'] || '0', 10),
-      adr: parseFloat(lifetime['Average Damage per Round'] || lifetime['ADR'] || lifetime['adr'] || '0'),
-      killsPerRound: parseFloat(lifetime['Kills per Round'] || lifetime['K/R'] || lifetime['kr'] || '0'),
+      adr: parseFloat(lifetime['ADR'] || lifetime['Average Damage per Round'] || lifetime['adr'] || '0'),
+      killsPerRound: killsPerRound,
+      totalRounds: totalRounds,
       segments: stats?.segments || [],
     }
   }
